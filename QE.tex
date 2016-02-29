@@ -20,7 +20,7 @@
 \section{Introduction}
 
 \subsection{Entities and relations in different domains}
-Deep learning architectures built from neural nets have achieved wide spread success in 3 domains: speech recognition, image recognition, and natural language processing. In order to understand how it can handle prediction tasks in graph mining, first we take an overview on 3 types entities in these 3 domains and 3 types entities in graph mining. Table \ref{tab:domains} provides a summary of these entities, their representations in neural nets and inter-entity relation examples.
+Deep learning architectures built from neural nets have achieved wide spread success in 3 domains: speech recognition, image recognition, and natural language processing. In order to understand how it can handle prediction tasks in graph mining, first we take an overview on 3 types entities in these 3 domains and 3 types entities in graph mining. \autoref{tab:domains} provides a summary of these entities, their representations in neural nets and inter-entity relation examples.
 
 \begin{table}[h]
 	\centering
@@ -39,7 +39,7 @@ Deep learning architectures built from neural nets have achieved wide spread suc
 \end{table}
 
 \subsection{Representations of entities in different domains}
-In Table \ref{tab:domains}, the entities listed in the lower rows have increasing representation complexities. Pixel and spectrogram arrays for images and utterances can be measured by physical instruments from the entities themselves. Figure \ref{fig:Airy-pattern} shows how an image is represented by a 2D pixel intensity array in image recognition. Figure \ref{fig:Spectrogram-19thC} shows how an utterance is represented by a 2D spectrogram array in speech recognition. Notice that beside the differences in their axes, these 2 representations have little difference.
+In \autoref{tab:domains}, the entities listed in the lower rows have increasing representation complexities. Pixel and spectrogram arrays for images and utterances can be measured by physical instruments from the entities themselves. \autoref{fig:Airy-pattern} shows how an image is represented by a 2D pixel intensity array in image recognition. \autoref{fig:Spectrogram-19thC} shows how an utterance is represented by a 2D spectrogram array in speech recognition. Notice that beside the differences in their axes, these 2 representations have little difference.
 
 \begin{figure}[h]
 	\centering
@@ -51,7 +51,7 @@ In Table \ref{tab:domains}, the entities listed in the lower rows have increasin
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth]{Spectrogram-19thC}
-	\caption{The 2D spectrogram array of \href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{a male voice saying "nineteenth century"}(Aquegg / Wikimedia Commons / Public Domain): the horizontal and vertical axes represent the time and frequency; the numerical value at a specific (time, frequency) location is the sound intensity measured in unit dBFS(decibel relative to full scale).}
+	\caption{The 2D spectrogram array of \href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{a male voice saying [nineteenth century]}(Aquegg / Wikimedia Commons / Public Domain): the horizontal and vertical axes represent the time and frequency; the numerical value at a specific (time, frequency) location is the sound intensity measured in unit dBFS(decibel relative to full scale).}
 	\label{fig:Spectrogram-19thC}
 \end{figure}
 
@@ -66,7 +66,7 @@ In this section, I summarize word embedding(representing every word in a vocabul
 
 \subsection{The goal}
 
-In order to apply neural nets to perform prediction tasks in natural language processing, we want to be able to represent each word in the vocabulary with a word vector. We expect the information about this word (its relations with other words) be stored in this vector, so that a neural net can use it to perform prediction tasks like language modeling. Word vectors are more difficult to get compared to 2D arrays of images and utterances. This is because no instrument can measure words and produce the vector; instead every word vector can only be learned from its relations to other words in texts. There is only one way to explain a word using a language, which is used in every dictionary: describe the word using other words(establish relations between words). Table \ref{tab:word} shows how each word in a vocabulary is represented by a 1D array which we call word vector.
+In order to apply neural nets to perform prediction tasks in natural language processing, we want to be able to represent each word in the vocabulary with a word vector. We expect the information about this word (its relations with other words) be stored in this vector, so that a neural net can use it to perform prediction tasks like language modeling. Word vectors are more difficult to get compared to 2D arrays of images and utterances. This is because no instrument can measure words and produce the vector; instead every word vector can only be learned from its relations to other words in the corpus. \autoref{tab:word} shows how each word in a vocabulary is represented by a 1D array which we call word vector.
 
 \begin{table}[h]
 	\centering
@@ -110,7 +110,17 @@ No matter which one is better, we have the observation that related words provid
 
 \subsection{Implementation}
 
-The paper uses skip-gram neural net model to learn the word vectors. In order to take advantage large corpora, skip-gram model trades off some accuracy for high learning speed by reducing its neural net complexity, shown in Figure \ref{fig:skipGram}. In fact, skip-gram model is a shallow neural net.
+\subsubsection{Skip-gram model}
+The paper uses skip-gram neural net model to learn the word vectors. In order to take advantage large corpora, skip-gram model trades off some accuracy for high learning speed by minimizing its neural net complexity to only 3 fully connected layers with formation [n, d, n], where n is the vocabulary size and d is the embedding size. An example model with n=8 and d=4 is shown in \autoref{fig:skipGram}. In fact, skip-gram model is a shallow neural net. The ith unit in the embedding layer has linear activation function:
+\begin{equation}
+	y_i = f_i(x) = v_i \cdot x
+	\label{eq:linear}
+\end{equation}
+where $ v_i $ and x are the weight vector and the input vector with dimension n. The ith unit in the output layer has softmax activation function:
+\begin{equation}
+	y_i = f_i(x) = \frac{exp(v_i \cdot x)}{\sum_{i = 1}^{n}exp(v_i \cdot x)}
+\end{equation}
+where $ v_i $ and x are the weight vector and the input vector with dimension d. Notice that these symbols are not related to those in \autoref{eq:linear}. Also notice that although $ g_i(x) $ is easily implementable, $ f_i(x) $ is not. What I show here is a conceptual illustration - the real implementation has more optimized and complex structure.
 
 \begin{figure}[h]
 	\centering
@@ -125,41 +135,42 @@ The paper uses skip-gram neural net model to learn the word vectors. In order to
 	\tikzstyle{hidden neuron}=[neuron, fill=blue!50];
 	\tikzstyle{annot} = [text width=4em, text centered]
 	
-	% Draw the input layer nodes
+	% Draw the input layer
 	\foreach \name / \y in {1,...,\vocabularySize}
 	% This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
 	\node[input neuron, pin=left:$ w_\y $] (I-\name) at (0,-\y) {};
 	
-	% Draw the hidden layer nodes
+	% Draw the hidden layer
 	\foreach \name / \y in {1,...,\embeddingSize}
 	\path[yshift=-2cm]
 	node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
 	
-	% Draw the output layer node
+	% Draw the output layer
 	\foreach \name / \y in {1,...,\vocabularySize}
 	\node[output neuron, pin={[pin edge={->}]right:$ w_\y $}] (O-\name) at (2*\layersep,-\y) {};
-	% \node[output neuron,pin={[pin edge={->}]right:Output}, right of=H-3] (O) {};
 	
-	% Connect every node in the input layer with every node in the
-	% hidden layer.
+	% Connect the input layer with the hidden layer
 	\foreach \source in {1,...,\vocabularySize}
 	\foreach \dest in {1,...,\embeddingSize}
 	\path (I-\source) edge (H-\dest);
 	
-	% Connect every node in the hidden layer with the output layer
+	% Connect the hidden layer with the output layer
 	\foreach \source in {1,...,\embeddingSize}
 	\foreach \dest in {1,...,\vocabularySize}
 	\path (H-\source) edge (O-\dest);
 	
 	% Annotate the layers
-	\node[annot,above of=H-1, node distance=1cm] (hl) {embedding layer};
+	\node[annot,above of=H-2] {embedding layer};
 	\node[annot,above of=I-2] {input layer};
 	\node[annot,above of=O-2] {output layer};
 	\end{tikzpicture}
 	
-	\caption{The skip-gram model with vocabulary size 8 and embedding size 4: the model consists of only 3 layers: an input layer expecting one-hot activation, an embedding layer of linear units, and an output layer of softmax units. For example, given sequence = [$ w_3, w_2, w_8, w_1, w_4 $], we have word = [$ w_8 $](in the input layer, $ w_8 $ is 1 and others are 0) and context = [$ w_1, w_2, w_3, w_4 $](in the output layer, $ w_1, w_2, w_3, w_4 $ are 1 and others are 0). The weights between the input layer and the embedding layer are the word vectors shown in Table \ref{tab:word}. These word vectors are randomly initialized and learned by the neural net during training. The embedding layer's activation is equal to the word vector of the current word due to one-hot activation in the input layer.}
+	\caption{The skip-gram model with vocabulary size 8 and embedding size 4: the model consists of only 3 layers - an input layer with one-hot activation, an embedding layer of linear units, and an output layer of softmax units. For example, given sequence = [$ w_3, w_2, w_8, w_1, w_4 $], we have input word = [$ w_8 $] and output context = [$ w_1, w_2, w_3, w_4 $]. The input layer has activation = (0, 0, 0...0, 1), where $ w_8 $ is 1 and others are 0; the output layer has activation = (1, 1, 1, 1, 0 ... 0), where $ w_1, w_2, w_3, w_4 $ are 1 and others are 0. The weights in the embedding layer are the word vectors shown in \autoref{tab:word}. For example, the word vector for $ w_8 $ are the weights in the embedding layer units connected to $ w_8 $ These weights are randomly initialized and learned by the neural net during training. The embedding layer's activation is equal to the word vector of the current word due to one-hot activation in the input layer.}
 	\label{fig:skipGram}
 \end{figure}
+
+\subsubsection{Learning algorithm}
+The paper uses the de facto standard learning algorithm for neural net: stochastic gradient descent with back propagation\cite{lecun2012efficient}.
 
 \section{Node embedding in graph mining}
 
@@ -167,7 +178,7 @@ In this section, I summarize node embedding(representing every node in a graph w
 
 \subsection{The goal}
 
-The goal of node embedding is identical to word embedding: to represent nodes with node vectors so that a neural net can use it. Similar to word vectors shown in Table \ref{tab:word}, node vectors are shown in Table \ref{tab:node}.
+The goal of node embedding is identical to word embedding: to represent nodes with node vectors so that a neural net can use it. Similar to word vectors shown in \autoref{tab:word}, node vectors are shown in \autoref{tab:node}.
 
 \begin{table}[h]
 	\centering
@@ -185,7 +196,7 @@ The goal of node embedding is identical to word embedding: to represent nodes wi
 
 \subsection{Application scenario}
 
-The application mentioned in the paper is node classification. The dataset is a graph in which links do not have attributes but every node can have any number of the n labels in a finite label set. More formally, every node has one attribute - a list of n boolean variables where each variable indicates whether the node has a particular label. For example,
+Once word embedding is accomplished, neural nets can use the resulting word vectors to perform prediction tasks. The application mentioned in the paper is node classification. The dataset is a graph in which links do not have attributes but every node can have any number of the n labels in a finite label set. More formally, every node has one attribute - a list of n boolean variables where each variable indicates whether the node has a particular label. For example,
 \begin{lstlisting}
 node[4].attribute = [ture, false, false... true]
 \end{lstlisting}
@@ -193,7 +204,7 @@ means $ node_4 $ has $ label_0 $, has no $ label_1 $, has no $ label_2 $... and 
 
 \subsection{Observations and the approach}
 
-By comparing the data in natural language processing and that in graph mining, we can observe their similarities, shown in Table \ref{tab:word_vs_node}. Most importantly, a sentence is very similar to a walk.
+By comparing the data in natural language processing and that in graph mining, we can observe their similarities, shown in \autoref{tab:word_vs_node}. Most importantly, a sentence is very similar to a walk.
 
 \begin{table}[h]
 	\centering
@@ -209,14 +220,67 @@ By comparing the data in natural language processing and that in graph mining, w
 	\label{tab:word_vs_node}
 \end{table}
 
-As neural nets can represent every word in a vocabulary based on the relations between words in word sequences in natural languages (sentences), in the same way it should be able to represent every node in the node set based on the links between nodes in node sequences in the graph (walks). Based on these observations, we can reduce node embedding to word embedding.
+As neural nets can represent every word in a vocabulary based on the relations between words in word sequences in natural languages (sentences), in the same way it should be able to represent every node in the node set based on the links between nodes in node sequences in the graph (walks). Based on these observations, the node vectors can be learned supervised by the nodes in the random walk.
 
 \subsection{Implementations}
+The paper implement node embedding the same way as word embedding discussed in previous section. The node sequences are random walks sampled from the graph. After the the neural net learned the word vectors, the output layer replaces the softmax units with logistic regression units to perform label prediction task. Its neural net has 3 fully connected layers with formation [n, d, l], where n is the node set size, d is the embedding size and l is the label set size. An example model with n=8, d=4 and l=2 is shown in \autoref{fig:label}. This model is a shallow neural net. The ith unit in the output layer has logistic regression activation function:
+\begin{equation}
+y = f(x) = \frac{1}{1 + exp(-v_i \cdot x)}
+\end{equation}
+where $ v_i $ and x are the weight vector and the input vector with dimension d. Notice that during this stage, only the activation layer update its weight during the learning, while the embedding layer does not. Otherwise, the node vectors learned from previous node embedding stage will be destroyed.
+
+\begin{figure}[h]
+	\centering
+	\newcommand{\layersep}{2.5cm}
+	\newcommand{\vocabularySize}{8}
+	\newcommand{\embeddingSize}{4}
+	\newcommand{\labelSetSize}{2}
+	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
+	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
+	\tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
+	\tikzstyle{input neuron}=[neuron, fill=green!50];
+	\tikzstyle{output neuron}=[neuron, fill=red!50];
+	\tikzstyle{hidden neuron}=[neuron, fill=blue!50];
+	\tikzstyle{annot} = [text width=4em, text centered]
+	
+	% Draw the input layer
+	\foreach \name / \y in {1,...,\vocabularySize}
+	% This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
+	\node[input neuron, pin=left:$ node_\y $] (I-\name) at (0,-\y) {};
+	
+	% Draw the hidden layer
+	\foreach \name / \y in {1,...,\embeddingSize}
+	\path[yshift=-2cm]
+	node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
+	
+	% Draw the output layer
+	\foreach \name / \y in {1,...,\labelSetSize}
+	\node[output neuron, pin={[pin edge={->}]right:$ label_\y $}] (O-\name) at (2*\layersep,-\y) {};
+	
+	% Connect the input layer with the hidden layer
+	\foreach \source in {1,...,\vocabularySize}
+	\foreach \dest in {1,...,\embeddingSize}
+	\path (I-\source) edge (H-\dest);
+	
+	% Connect the hidden layer with the output layer
+	\foreach \source in {1,...,\embeddingSize}
+	\foreach \dest in {1,...,\labelSetSize}
+	\path (H-\source) edge (O-\dest);
+	
+	% Annotate the layers
+	\node[annot,above of=H-2] {embedding layer};
+	\node[annot,above of=I-2] {input layer};
+	\node[annot,above of=O-2] {output layer};
+	\end{tikzpicture}
+	
+	\caption{The label prediction model with node set size 8, embedding size 4 and label set size 2: the model consists of only 3 layers - an input layer with one-hot activation, an embedding layer of linear units, and an output layer of logistic regression units. For example, given input node = [$ node_8 $] and output label = [$ label_1 $]. The input layer has activation = (0, 0, 0...0, 1), where $ w_8 $ is 1 and others are 0; the output layer has activation = (1, 0), where $ label_1 $ is 1 and $ label_2 $ is 0. The weights in the embedding layer are the node vectors shown in \autoref{tab:node}. In this stage, the units in embedding layer already have all node vectors learned and will not update the weights; only the unites in output layer will update their weights.}
+	\label{fig:label}
+\end{figure}
 
 \subsection{Strengths of this approach}
 
 \subsubsection{Representing nodes as node vectors}
-In terms of information flow, we can understand this approach of graph mining as a node-centric approach, as information about nodes is extracted from links connecting these nodes and then stored in nodes. In a social network scenario where we want to understand a user, this means who a user contacts and what a user does tells us what kind of person he is. This fits many real world graphs well: usually a graph has complex entities with unobservable attributes which we represent as nodes; it also has simple interactions/relations between these entities with observable attributes which we represent as links, as shown in Table \ref{tab:nodes_vs_links}.
+In terms of information flow, we can understand this approach of graph mining as a node-centric approach, as information about nodes is extracted from links connecting these nodes and then stored in nodes. In a social network scenario where we want to understand a user, this means who a user contacts and what a user does tells us what kind of person he is. This fits many real world graphs well: usually a graph has complex entities with unobservable attributes which we represent as nodes; it also has simple interactions/relations between these entities with observable attributes which we represent as links, as shown in \autoref{tab:nodes_vs_links}.
 
 \begin{table}[h]
 	\centering
@@ -244,12 +308,43 @@ The node sequence generation with random walks on the graph is likely a weakness
 \end{enumerate}
 
 \subsubsection{Information loss during node embedding}
-One obvious weakness is that node attribute is not used in the node embedding process. If every node with known attribute value can have that information embedded in its node vector, this information can propagate to nodes with unknown attribute values in the random walk and embeds in their node vectors. In this way, every node vector can contain more valuable information.
+Another weakness is that node attribute is not used in the node embedding process. If every node with known attribute value can have that information embedded in its node vector, this information can propagate to nodes with unknown attribute values in the random walk and embeds in their node vectors. In this way, every node vector can contain more valuable information.
 
 \subsubsection{Unable to use rich attributes in graph}
-One character of this node embedding approach is that it can produce good node vectors when the available information about the graph is limited to the topology. This character becomes a weakness when rich node or link attributes provide much more information than topology of the graph does.
+The fundamental weakness in this node embedding approach is that it is unable to use information provided by node and link attributes in many real world graphs. One feature of this approach is that it can produce good node vectors when the available information about the graph is limited to the topology. This feature becomes a weakness when rich node attributes and link attributes provide much more information than topology of the graph does. Graphs can have many measurable attributes and also many types of relations to other entities. For example, a user has attributes like age, weight, salary, DNA sequence, and has relations with other entities like rating songs, writing articles, messaging other users. Every one of these attributes and relations provides useful information about what kind of person the user is and potentially useful in a prediction task like whether this user would be interested in a specific song or article. \autoref{fig:weakness} illustrates this weakness using a simple example in a movie rating prediction scenario.
 
-However, representing nodes in a graph turns out to be more challenging because they can have many measurable attributes and also many types of relations to other entities. For example, a user has attributes like age, weight, salary, DNA sequence, and has relations with other entities like rating songs, writing articles, messaging other users. Every one of these attributes and relations provides useful information about what kind of person the user is and potentially useful in a prediction task like whether this user would be interested in a specific song or article.
+\begin{figure}[h]
+	\centering
+	\newcommand{\layersep}{8}
+	\newcommand{\vocabularySize}{3}
+	\newcommand{\embeddingSize}{5}
+	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
+	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
+	\tikzstyle{neuron}=[circle, draw, minimum size=20]
+	\tikzstyle{input neuron}=[neuron];
+	\tikzstyle{output neuron}=[neuron];
+	\tikzstyle{hidden neuron}=[neuron];
+	\tikzstyle{annot} = [text width=4em, text centered]
+	
+	% Draw the input layer
+	\foreach \name / \y in {1,...,\vocabularySize}
+	\node[input neuron] (I-\name) at (0,-2*\y) {$ user_\name $};
+	
+	% Draw the hidden layer
+	\foreach \name / \y in {1,...,\embeddingSize}
+	\path[yshift=2cm]
+	node[hidden neuron] (H-\name) at (\layersep,-2*\y) {$ movie_\name $};
+	
+	% Connect the input layer with the hidden layer
+	\foreach \source in {1,...,\vocabularySize}
+	\foreach \dest in {1,...,\embeddingSize}
+	\path (I-\source) edge (H-\dest);
+	\end{tikzpicture}
+	
+	\caption{The weakness of solely relying on topology and ignoring graph attributes: in a graph where users rate movies, users and movies are represented as nodes and ratings are represented as links. In this paper, the node embedding approach is not able to use the link attribute - the rating values. Therefore, if 3 users have rated the same 5 movies, they will have same node vector due to the topology, even if they give very different ratings to each movie. This makes the node vectors useless to perform any prediction task.}
+	\label{fig:weakness}
+\end{figure}
+
 
 \section{Node prediction:others}
 
