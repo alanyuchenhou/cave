@@ -4,6 +4,7 @@
 \usepackage{fullpage}
 \usepackage{tabularx}
 \usepackage{graphicx}
+\usepackage{tikz}
 \usepackage{cite}
 \usepackage{hyperref}
 \begin{document}
@@ -48,6 +49,7 @@ In Table \ref{tab:domains}, the entities listed in the lower rows have increasin
 \end{figure}
 
 \begin{figure}[h]
+	\centering
 	\includegraphics[width=\linewidth]{Spectrogram-19thC}
 	\caption{The 2D spectrogram array of \href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{a male voice saying "nineteenth century"}(Aquegg / Wikimedia Commons / Public Domain): the horizontal and vertical axes represent the time and frequency; the numerical value at a specific (time, frequency) location is the sound intensity measured in unit dBFS(decibel relative to full scale).}
 	\label{fig:Spectrogram-19thC}
@@ -64,19 +66,7 @@ In this section, I summarize word embedding(representing every word in a vocabul
 
 \subsection{The goal}
 
-In order to apply neural nets to perform prediction tasks in natural language processing, we want to be able to represent each word in the vocabulary with a word vector. We expect the information about this word (its relations with other words) be stored in this vector, so that a neural net can use it to perform prediction tasks like language modeling.
-
-\subsection{Application scenario}
-
-The dataset is a graph in which links do not have attributes but every node can have any number of the n possible labels. More formally, every node has one attribute - a list of n boolean variables where each variable indicates whether the node has a particular label. For example,
-\begin{lstlisting}
-node[4].attribute = [ture, false, false... true]
-\end{lstlisting}
-means $ node_4 $ has $ label_0 $, has no $ label_1 $, has no $ label_2 $... and has $ label_n $. The attribute values are known for a portion of nodes, which serve as training data. The application scenario in the paper is language modeling: given a sequence of n words, the classifier needs to predict the next word. The prediction task is a node classification problem: given a node, predict its attribute value(determine which labels it has).
-
-\subsection{Implementation}
-
-Word vectors are more difficult to get compared to 2D arrays of images and utterances. This is because no instrument can measure words and produce the vector; instead every word vector can only be learned from its relations to other words in texts. There is only one way to explain a word using a language, which is used in every dictionary: describe the word using other words(establish relations between words). Table \ref{tab:word} shows how each word in a vocabulary is represented by a 1D array which we call word vector.
+In order to apply neural nets to perform prediction tasks in natural language processing, we want to be able to represent each word in the vocabulary with a word vector. We expect the information about this word (its relations with other words) be stored in this vector, so that a neural net can use it to perform prediction tasks like language modeling. Word vectors are more difficult to get compared to 2D arrays of images and utterances. This is because no instrument can measure words and produce the vector; instead every word vector can only be learned from its relations to other words in texts. There is only one way to explain a word using a language, which is used in every dictionary: describe the word using other words(establish relations between words). Table \ref{tab:word} shows how each word in a vocabulary is represented by a 1D array which we call word vector.
 
 \begin{table}[h]
 	\centering
@@ -88,9 +78,88 @@ Word vectors are more difficult to get compared to 2D arrays of images and utter
 		... & ... & ... \\ \hline
 		n & $ word_n $ & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
 	\end{tabularx}
-	\caption{1D arrays of words in English sorted by the popularity of the words: there are n words in the entire vocabulary; each word is represented by a 1D array of size d; the numerical values in this table are hypothetical, which are learned in real applications.}
+	\caption{1D arrays of words in English sorted by the popularity of the words: there are n words in the entire vocabulary; each word is represented by a 1D array of size d; the numerical values in this table are hypothetical, which will be learned in real applications.}
 	\label{tab:word}
 \end{table}
+
+\subsection{Application scenario}
+
+Once word embedding is accomplished, neural nets can use the resulting word vectors to perform prediction tasks. The application discussed in the paper is language modeling. The dataset is a corpus in which every word can be any one of the n words in a finite vocabulary. The prediction task is: given a sequence X of t words, predict the next word Y. In other words, both X and Y can be viewed as random variables and we want to find the conditional probability:
+\begin{equation}
+P(Y = w_t|X = (w_0, w_1, w_2 ... w_{t-1}))
+\end{equation}
+where w's are words indexed by their ordering in the corpus. In the simplest case, we don't want to find the above possibility for every word; we only want to find the word that has the maximum possibility:
+\begin{equation}
+	w = argmax_{w_t}P(Y = w_t|X = (w_0, w_1, w_2 ... w_{t-1}))
+\end{equation}
+
+\subsection{Observations and the approach}
+
+It's easy to see why word vectors can be learned from relations between words manifested in word co-occurrences within a corpus. In any word sequence, we refer the surrounding words of word w the context of w. For example, the sequence [guard, peace, and, justice, in, the, universe], its word and its context are shown below:
+\begin{itemize}
+	\item sequence = [guard, peace, and, justice, in, the, universe]
+	\item word = [justice]
+	\item context = [guard, peace, and, in, the, universe]
+\end{itemize}
+Every word in the context is related to [justice] in some way and these relations provide information about it. For example, [guard] describes its attribute of existing condition: justice exists if there are those who protect it; otherwise evil will destroy it. As another example, [peace] describes its attribute of virtue: justice is morally good and desirable, like peace. Now it's very clear that words in the context of a word w provides information about different attributes of w. A stronger statement is: every word w can be defined by words in all its contexts within the corpus. In fact, this is also how exactly every dictionary define words - describing a word using other related words. As a follow-up to the previous sequence example, this is the definition of the word [Jedi] provided by Google Dictionary: [a member of the mystical knightly order in the Star Wars films, trained to guard peace and justice in the universe]. Apparently, we can understand this phenomenon in 2 ways:
+\begin{enumerate}
+	\item words in the contexts of a word describe its relations with other words
+	\item words in the contexts of a word describe its attributes
+\end{enumerate}
+No matter which one is better, we have the observation that related words provide all the information about a word we can possibly get from a corpus. Therefore, it's a good idea to learn the word vector for each word supervised by the words in its contexts.
+
+\subsection{Implementation}
+
+The paper uses skip-gram neural net model to learn the word vectors. In order to take advantage large corpora, skip-gram model trades off some accuracy for high learning speed by reducing its neural net complexity, shown in Figure \ref{fig:skipGram}. In fact, skip-gram model is a shallow neural net.
+
+\begin{figure}[h]
+	\centering
+	\newcommand{\layersep}{2.5cm}
+	\newcommand{\vocabularySize}{8}
+	\newcommand{\embeddingSize}{4}
+	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
+	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
+	\tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
+	\tikzstyle{input neuron}=[neuron, fill=green!50];
+	\tikzstyle{output neuron}=[neuron, fill=red!50];
+	\tikzstyle{hidden neuron}=[neuron, fill=blue!50];
+	\tikzstyle{annot} = [text width=4em, text centered]
+	
+	% Draw the input layer nodes
+	\foreach \name / \y in {1,...,\vocabularySize}
+	% This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
+	\node[input neuron, pin=left:$ w_\y $] (I-\name) at (0,-\y) {};
+	
+	% Draw the hidden layer nodes
+	\foreach \name / \y in {1,...,\embeddingSize}
+	\path[yshift=-2cm]
+	node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
+	
+	% Draw the output layer node
+	\foreach \name / \y in {1,...,\vocabularySize}
+	\node[output neuron, pin={[pin edge={->}]right:$ w_\y $}] (O-\name) at (2*\layersep,-\y) {};
+	% \node[output neuron,pin={[pin edge={->}]right:Output}, right of=H-3] (O) {};
+	
+	% Connect every node in the input layer with every node in the
+	% hidden layer.
+	\foreach \source in {1,...,\vocabularySize}
+	\foreach \dest in {1,...,\embeddingSize}
+	\path (I-\source) edge (H-\dest);
+	
+	% Connect every node in the hidden layer with the output layer
+	\foreach \source in {1,...,\embeddingSize}
+	\foreach \dest in {1,...,\vocabularySize}
+	\path (H-\source) edge (O-\dest);
+	
+	% Annotate the layers
+	\node[annot,above of=H-1, node distance=1cm] (hl) {embedding layer};
+	\node[annot,above of=I-2] {input layer};
+	\node[annot,above of=O-2] {output layer};
+	\end{tikzpicture}
+	
+	\caption{The skip-gram model with vocabulary size 8 and embedding size 4: the model consists of only 3 layers: an input layer expecting one-hot activation, an embedding layer of linear units, and an output layer of softmax units. For example, given sequence = [$ w_3, w_2, w_8, w_1, w_4 $], we have word = [$ w_8 $](in the input layer, $ w_8 $ is 1 and others are 0) and context = [$ w_1, w_2, w_3, w_4 $](in the output layer, $ w_1, w_2, w_3, w_4 $ are 1 and others are 0). The weights between the input layer and the embedding layer are the word vectors shown in Table \ref{tab:word}. These word vectors are randomly initialized and learned by the neural net during training. The embedding layer's activation is equal to the word vector of the current word due to one-hot activation in the input layer.}
+	\label{fig:skipGram}
+\end{figure}
 
 \section{Node embedding in graph mining}
 
@@ -116,11 +185,11 @@ The goal of node embedding is identical to word embedding: to represent nodes wi
 
 \subsection{Application scenario}
 
-The dataset is a graph in which links do not have attributes but every node can have any number of the n possible labels. More formally, every node has one attribute - a list of n boolean variables where each variable indicates whether the node has a particular label. For example,
+The application mentioned in the paper is node classification. The dataset is a graph in which links do not have attributes but every node can have any number of the n labels in a finite label set. More formally, every node has one attribute - a list of n boolean variables where each variable indicates whether the node has a particular label. For example,
 \begin{lstlisting}
 node[4].attribute = [ture, false, false... true]
 \end{lstlisting}
-means $ node_4 $ has $ label_0 $, has no $ label_1 $, has no $ label_2 $... and has $ label_n $. The attribute values are known for a portion of nodes, which serve as training data. The prediction task is a node classification problem: given a node, predict its attribute value(determine which labels it has).
+means $ node_4 $ has $ label_0 $, has no $ label_1 $, has no $ label_2 $... and has $ label_n $. The attribute values are known for a portion of nodes, which serve as training data. The prediction task is: given a node X, predict its attribute value Y(determine which labels it has).
 
 \subsection{Observations and the approach}
 
@@ -170,7 +239,7 @@ The training samples in this approach are walks in the graph. Every walk is rand
 The node sequence generation with random walks on the graph is likely a weakness, although these sequences shares 3 similarities with word sequences used by very successful skip-gram model. These similarities are listed and explained below:
 \begin{enumerate}
 	\item Sentences and walks are both very natural sequences. Skip-gram model uses sentences because they are the only available data in corpora, not because this provides special benefits to the model. Furthermore, most of the words in the context of a word are usually related to it so using sentences doesn't not have much negative effect to skip-gram. However, the situation is not the same for walks in graph. First, sampling nodes from long walks in the graph is not the only option; a more computational efficient one is to sample nodes from the neighborhood of the node. Also, a deep walk is likely to sample remote nodes, which are not strongly related to the root node.
-	\item Words and nodes in the sequences have informative ordering. Although the ordering is significant in both cases, they are 2 different types of orderings. In a sentence, words are ordered to make the sentence correct and meaningful, not to make more similar words closer to each other. For example, in sentence [The quick brown fox jumps over the lazy dog.], quick and brown are very close but they are in fact very unrelated words; fox and dog are very far but they are strongly related words. Fortunately, his undesirable phenomena doesn't have negative effect on skip-gram model, because skip-gram model is not capable to pick up word ordering information anyway. This is not the case in a node sequence, where nodes with closer distances in the graph usually have closer distances in the sequence. This ordering is very critical and contains information we want skip-gram model to capture, but its indifference to ordering makes this impossible.
+	\item Words and nodes in the sequences have informative ordering. Although the ordering is significant in both cases, they are 2 different types of orderings. In a sentence, words are ordered to make the sentence correct and meaningful, not to make more similar words closer to each other. For example, in sentence [The quick brown fox jumps over the lazy dog.], [quick] and [brown] are very close but they are in fact very unrelated words; [fox] and [dog] are very far but they are strongly related words. Fortunately, his undesirable phenomena doesn't have negative effect on skip-gram model, because skip-gram model is not capable to pick up word ordering information anyway. This is not the case in a node sequence, where nodes with closer distances in the graph usually have closer distances in the sequence. This ordering is very critical and contains information we want skip-gram model to capture, but its indifference to ordering makes this impossible.
 	\item The frequency distribution of words and nodes follow power law. This one is bad for both cases, which should be avoided instead of taken advantage of. For example, skip-gram model can get useful information from co-occurrences of 'capital' and 'Beijing', but not so much from co-occurrences of 'the' and 'capital'. Here 'the' is a prominent example word with very high frequency but provides little information about anything. Frequent words like 'the' reduce both the speed and accuracy of learning word embedding, and are intentionally discard with sub-sampling technique in natural language processing \cite{mikolov2013distributed}.
 \end{enumerate}
 
