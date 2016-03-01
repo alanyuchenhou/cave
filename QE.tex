@@ -61,7 +61,7 @@ If words and nodes can be represented by numerical arrays like those for images 
 	\item Section 3: node embedding in graph mining and node classification.
 \end{itemize}
 
-\section{Word embedding in natural language processing}
+\section{Word embedding}
 In this section, I summarize word embedding(representing every word in a vocabulary with a word vector) introduced in \cite{mikolov2013efficient}, which is used as the foundation of node embedding in \cite{perozzi2014deepwalk}.
 
 \subsection{The goal}
@@ -116,7 +116,7 @@ The paper uses skip-gram neural net model to learn the word vectors. In order to
 	y_i = f_i(x) = v_i \cdot x
 	\label{eq:linear}
 \end{equation}
-where $ v_i $ and x are the weight vector and the input vector with dimension n. The ith unit in the output layer has softmax activation function:
+where $ v_i $ and x are the weight vector and the input vector with dimension n. The ith unit in the output layer has softmax activation function (generalized from multi-class logistic regression):
 \begin{equation}
 	y_i = f_i(x) = \frac{exp(v_i \cdot x)}{\sum_{i = 1}^{n}exp(v_i \cdot x)}
 \end{equation}
@@ -165,14 +165,29 @@ where $ v_i $ and x are the weight vector and the input vector with dimension d.
 	\node[annot,above of=O-2] {output layer};
 	\end{tikzpicture}
 	
-	\caption{The skip-gram model with vocabulary size 8 and embedding size 4: the model consists of only 3 layers - an input layer with one-hot activation, an embedding layer of linear units, and an output layer of softmax units. For example, given sequence = [$ w_3, w_2, w_8, w_1, w_4 $], we have input word = [$ w_8 $] and output context = [$ w_1, w_2, w_3, w_4 $]. The input layer has activation = (0, 0, 0...0, 1), where $ w_8 $ is 1 and others are 0; the output layer has activation = (1, 1, 1, 1, 0 ... 0), where $ w_1, w_2, w_3, w_4 $ are 1 and others are 0. The weights in the embedding layer are the word vectors shown in \autoref{tab:word}. For example, the word vector for $ w_8 $ are the weights in the embedding layer units connected to $ w_8 $ These weights are randomly initialized and learned by the neural net during training. The embedding layer's activation is equal to the word vector of the current word due to one-hot activation in the input layer.}
+	\caption{The skip-gram model with vocabulary size 8 and embedding size 4: the model consists of only 3 layers - an input layer with one-hot activation, an embedding layer of linear units, and an output layer of softmax units. For example, given sequence = [$ w_3, w_2, w_8, w_1, w_4 $], we have input word = [$ w_8 $] and output context = [$ w_1, w_2, w_3, w_4 $]. The input layer has activation x = (0, 0, 0...0, 1), where $ w_8 $ is 1 and others are 0; the output layer has activation y = (1, 1, 1, 1, 0 ... 0), where $ w_1, w_2, w_3, w_4 $ are 1 and others are 0. The weights in the embedding layer are the word vectors shown in \autoref{tab:word}. For example, the word vector for $ w_8 $ are the weights in the embedding layer units connected to $ w_8 $ These weights are randomly initialized and learned by the neural net during training. The embedding layer's activation is equal to the word vector of the current word due to one-hot activation in the input layer.}
 	\label{fig:skipGram}
 \end{figure}
+
+\subsubsection{Loss function}
+The paper uses the common loss function for classification models with softmax output layer - the cross entropy loss:
+\begin{equation}
+loss = H(\hat{y}, y) = - \sum_{i = 1}^{n} \hat{y}_i log(y_i)
+\end{equation}
+where $ \hat{y} $'s are the ture target values from the training data and $ y $'s are the predicted target values from the model.
 
 \subsubsection{Learning algorithm}
 The paper uses the de facto standard learning algorithm for neural net: stochastic gradient descent with back propagation\cite{lecun2012efficient}.
 
-\section{Node embedding in graph mining}
+\subsection{Learning outcome}
+The word embedding process can produce word vectors that capture semantic information about words (i.e., their relations to other words). In other words, the words are embedded into a word space as word points. There are 2 useful and interesting properties about these points in the space:
+\begin{enumerate}
+	\item the distance between 2 word vectors represents the semantic similarity between the 2 words, e.g., $ \mid vector(university) - vector(college) \mid < \mid vector(university) - vector(kingdom) \mid $;
+	\item the difference of 2 word vectors represents the semantic relation of the 2 words, e.g., $ \mid vector(king) - vector(man) \mid < \mid vector(queen) - vector(woman) \mid $;
+\end{enumerate}
+There are nice visualizations demonstrated by Tensor Flow project in their \href{https://www.tensorflow.org/versions/r0.7/tutorials/word2vec/index.html}{word2vec tutorial}.
+
+\section{Node embedding}
 
 In this section, I summarize node embedding(representing every node in a graph with a node vector) introduced in \cite{perozzi2014deepwalk}.
 
@@ -204,7 +219,7 @@ means $ node_4 $ has $ label_0 $, has no $ label_1 $, has no $ label_2 $... and 
 
 \subsection{Observations and the approach}
 
-By comparing the data in natural language processing and that in graph mining, we can observe their similarities, shown in \autoref{tab:word_vs_node}. Most importantly, a sentence is very similar to a walk.
+By comparing the data in natural language processing and that in graph mining, we can observe their similarities, shown in \autoref{tab:wordVSnode}. Most importantly, a sentence is very similar to a walk.
 
 \begin{table}[h]
 	\centering
@@ -217,17 +232,17 @@ By comparing the data in natural language processing and that in graph mining, w
 		entity sequences & sentences(word sequences) & walks(node sequences) \\ \hline
 	\end{tabularx}
 	\caption{A comparison of natural language processing and graph mining from several aspects: the similarity of these 2 domains across all these aspects makes it possible to reduce node embedding to word embedding.}
-	\label{tab:word_vs_node}
+	\label{tab:wordVSnode}
 \end{table}
 
 As neural nets can represent every word in a vocabulary based on the relations between words in word sequences in natural languages (sentences), in the same way it should be able to represent every node in the node set based on the links between nodes in node sequences in the graph (walks). Based on these observations, the node vectors can be learned supervised by the nodes in the random walk.
 
-\subsection{Implementations}
-The paper implement node embedding the same way as word embedding discussed in previous section. The node sequences are random walks sampled from the graph. After the the neural net learned the word vectors, the output layer replaces the softmax units with logistic regression units to perform label prediction task. Its neural net has 3 fully connected layers with formation [n, d, l], where n is the node set size, d is the embedding size and l is the label set size. An example model with n=8, d=4 and l=2 is shown in \autoref{fig:label}. This model is a shallow neural net. The ith unit in the output layer has logistic regression activation function:
+\subsection{Implementation}
+The paper implement node embedding the same way as word embedding discussed in previous section, which won't be repeated here. The node sequences are random walks sampled from the graph. After the model finishes the node embedding learning stage, the output layer replaces the softmax units with logistic regression units to learn to perform label prediction task. During this learning stage, only the activation layer update its weight during the learning, while the embedding layer maintains its weights learned during the previous node embedding. Otherwise, the learned node vectors will be destroyed. Its neural net has 3 fully connected layers with formation [n, d, l], where n is the node set size, d is the embedding size and l is the label set size. An example model with n=8, d=4 and l=2 is shown in \autoref{fig:label}. This model is a shallow neural net. The ith unit in the output layer has logistic regression activation function:
 \begin{equation}
 y = f(x) = \frac{1}{1 + exp(-v_i \cdot x)}
 \end{equation}
-where $ v_i $ and x are the weight vector and the input vector with dimension d. Notice that during this stage, only the activation layer update its weight during the learning, while the embedding layer does not. Otherwise, the node vectors learned from previous node embedding stage will be destroyed.
+where $ v_i $ and x are the weight vector and the input vector with dimension d.
 
 \begin{figure}[h]
 	\centering
@@ -251,11 +266,11 @@ where $ v_i $ and x are the weight vector and the input vector with dimension d.
 	% Draw the hidden layer
 	\foreach \name / \y in {1,...,\embeddingSize}
 	\path[yshift=-2cm]
-	node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
+	node[hidden neuron] (H-\name) at (\layersep,-\y) {};
 	
 	% Draw the output layer
 	\foreach \name / \y in {1,...,\labelSetSize}
-	\node[output neuron, pin={[pin edge={->}]right:$ label_\y $}] (O-\name) at (2*\layersep,-\y) {};
+	\node[output neuron, pin={[pin edge={->}]right:$ label_\y $}] (O-\name) at (2*\layersep,-\y-3) {};
 	
 	% Connect the input layer with the hidden layer
 	\foreach \source in {1,...,\vocabularySize}
@@ -280,7 +295,7 @@ where $ v_i $ and x are the weight vector and the input vector with dimension d.
 \subsection{Strengths of this approach}
 
 \subsubsection{Representing nodes as node vectors}
-In terms of information flow, we can understand this approach of graph mining as a node-centric approach, as information about nodes is extracted from links connecting these nodes and then stored in nodes. In a social network scenario where we want to understand a user, this means who a user contacts and what a user does tells us what kind of person he is. This fits many real world graphs well: usually a graph has complex entities with unobservable attributes which we represent as nodes; it also has simple interactions/relations between these entities with observable attributes which we represent as links, as shown in \autoref{tab:nodes_vs_links}.
+In terms of information flow, we can understand this approach of graph mining as a node-centric approach, as information about nodes is extracted from links connecting these nodes and then stored in nodes. In a social network scenario where we want to understand a user, this means who a user contacts and what a user does tells us what kind of person he is. This fits many real world graphs well: usually a graph has complex entities with unobservable attributes which we represent as nodes; it also has simple interactions/relations between these entities with observable attributes which we represent as links, as shown in \autoref{tab:nodesVSlinks}.
 
 \begin{table}[h]
 	\centering
@@ -290,7 +305,7 @@ In terms of information flow, we can understand this approach of graph mining as
 		attribute observability & low & high \\ \hline
 	\end{tabularx}
 	\caption{A comparison of node and link with respect to their complexity and attribute observability: links tend to have low complexity and high attribute observability while nodes are the opposite. In a social network example, it's easy to observe simple user activities like sending messages other users, leaving comments on posts and give ratings to music, but it's hard to observe complex user attributes like personality, style or taste in music.}
-	\label{tab:nodes_vs_links}
+	\label{tab:nodesVSlinks}
 \end{table}
 
 \subsubsection{Online learning}
@@ -346,18 +361,74 @@ The fundamental weakness in this node embedding approach is that it is unable to
 \end{figure}
 
 
-\section{Node prediction:others}
+\section{Other deep learning approaches in graph mining}
 
-\section{Link prediction}
+There are several other deep learning approaches in similar node attribute prediction scenarios. In this section, I briefly summarize their approaches. The goals, application scenarios and observations in these approaches are similar to those in the paper and won't be repeated here.
 
-\subsection{Graphs with rich node attributes and link attributes}
-In some prediction tasks, graphs need to incorporate rich attributes in nodes and links to take advantage of large amount of available information. This becomes significant in scenarios where a service provider allows a wide range of activities from the users and record these activities. The popular Amazon e-commerce service is a good example, which records these activities as available information:
+\subsection{Graph neural net}
+
+Graph neural nets are discussed in \cite{scarselli2009graph}. A concept called state is used there but I will refer to it using the term node vector. A node vectors naturally depend on the node's attributes and the node vectors of neighbors. Therefore, it's possible to let a neural net implement a function to compute a node vector given the node's attributes and neighbors' vectors:
+\begin{equation}
+	x_n = f(l_n, x_{children[n]}, l_{children[n]})
+\end{equation}
+where $ x_n $ is the node vector for node n, $ l_n $ is its label/ attribute vector, $ x_{children[n]} $ are the node vectors of node n's children node(neighbors connected to it), and $ l_{children[n]} $ are their attribute vectors. In the iterative learning process, the node vectors flow along the links in the graph and get captured by this function. On one hand, every node vector assimilates the attributes from the node, and stores the information; on the other hand, every node vector propagates to the neighbors and deposits the information it carries. This process allows the node vectors to represent the its attributes, the attributes and topology of the neighbors and also remote nodes. As these node vectors are unknown, there are no direct supervisions for the training. And the solution is to stack another neural net on top of it:
+\begin{equation}
+	o_n = g(x_n, l_n)
+\end{equation}
+where $ o_n $ is an observable attribute vector of node n, which can be used to supervise the learning. Therefore, the 2 neural nets f and g will unit and fit the data together:
+\begin{equation}
+	o_n = g(f(l_n, x_{children[n]}, l_{children[n]}), l_n)
+\end{equation}
+with one top to bottom back propagation during learning. After learning, this model can predict the target value $ o_n $ for the nodes where this value has not been observed yet. Furthermore, if the model needs to predict another attribute y, it can stack another neural net h on top of x and learn to predict the the new attribute:
+\begin{equation}
+	y_n = g(x_n, l_n)
+\end{equation}
+which is the same approach shown in previous implementations of node embedding.
+
+\subsection{Relational neural net}
+Relational neural nets are discussed in \cite{uwents2011neural}. This is a very similar approach to graph neural net. The main differences are listed in \autoref{tab:graphVSrelational}.
+
+\begin{table}[h]
+	\centering
+	\begin{tabularx}{\textwidth}{ |X|X|X| } \hline
+		aspect  & relational neural net & graph neural net \\ \hline
+		graph topology & acyclic & can have cycles \\ \hline
+		supervised node & root node only & many nodes \\ \hline
+		target attribute & graph attribute & node attributes \\ \hline
+	\end{tabularx}
+	\caption{A comparison of relational neural net and graph neural net: relational neural net requires the graph to be an acyclic graph with a root node - a tree; while graph neural net does not have this requirement. Another difference is that relational neural net only has the root node supervised during the learning, and the prediction target is the attribute of the entire graph; where graph neural net learns from and predicts attributes of the nodes.}
+	\label{tab:graphVSrelational}
+\end{table}
+
+\section{Node embedding for graphs with rich attributes}
+
+In this section, I introduce a new node embedding approach I'm actively working on with the following expected strengths:
 \begin{enumerate}
-	\item buyers can buy, rate, write reviews, post questions and answers for products, and rate, write reviews for sellers, 
-	\item manufactures produce, write descriptions for products
-	\item sellers sell, write advertisements for products
+	\item low complexity: the model architecture is very simple, which makes it scalable and easy to understand;
+	\item comprehensive learning: it fully exploits rich node and link attributes in real world graphs;
+	\item versatile prediction: it can learn to predict any node or link attribute, if the dataset provides the corresponding training data;
 \end{enumerate}
-Beside these activities, buyers, manufactures and sellers have very limited information about themselves in their profile, while products have richer information like price, category, specs. Having all this comprehensive information in hand, it is of great interest to the service provider to.
+
+\subsection{Motivations}
+
+There are 2 reasons to develop a new node embedding approach oriented for graphs with rich node and link attributes:
+\begin{enumerate}
+	\item to improve prediction accuracy by taking advantage of large amount of available information. For example, in a dataset collected by an e-commerce company:
+	\begin{enumerate}
+		\item node attributes: customers have age, location, credit, hobbies, etc;
+		\item link attributes: customers can purchase, rate, write reviews for products;
+	\end{enumerate}
+	Although some of these attributes are observable(we call them observables), some are not, the company is interested in understanding its customers with whatever information it has. In this sense, every observable provides some insight about the customer from a certain aspect and therefore should be used during the node embedding to enhance the expressiveness of the node vectors.
+	\item to accomplish more challenging prediction tasks. The application scenario in the paper is a simple node classification with community information based on the idea that nodes closer to each other have similar labels. However, there are many more challenging predictions tasks that can't be modeled this way. For example, an e-commerce company needs to predict which products a customer would most likely to purchase based on his previous purchases, ratings reviews and also those of other customers.
+\end{enumerate}
+Although the goal of the new approach is the same as the one mentioned in the paper - node embedding, these 2 reasons suggests it is necessary to design a new model to achieve better performance in various prediction tasks.
+
+\subsection{Application scenario}
+resume here.
+
+\subsection{Observations and the approach}
+
+\subsection{Implementation}
 
 \bibliographystyle{acm}
 \bibliography{references}
