@@ -5,6 +5,7 @@
 \usepackage{tabularx}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
 \usepackage{cite}
 \usepackage{hyperref}
 \begin{document}
@@ -111,7 +112,7 @@ No matter which one is better, we have the observation that related words provid
 \subsection{Implementation}
 
 \subsubsection{Skip-gram model}
-The paper uses skip-gram neural net model to learn the word vectors. In order to take advantage large corpora, skip-gram model trades off some accuracy for high learning speed by minimizing its neural net complexity to only 3 fully connected layers with formation [n, d, n], where n is the vocabulary size and d is the embedding size. An example model with n=8 and d=4 is shown in \autoref{fig:skipGram}. In fact, skip-gram model is a shallow neural net. The ith unit in the embedding layer has linear activation function:
+The paper uses skip-gram neural net model to learn the word vectors. In order to take advantage of large corpora, skip-gram model trades off some accuracy for high learning speed by minimizing its neural net complexity to only 3 fully connected layers with formation [n, d, n], where n is the vocabulary size and d is the embedding size. An example model with n=8 and d=4 is shown in \autoref{fig:skipGram}. In fact, skip-gram model is a shallow neural net. The ith unit in the embedding layer has linear activation function:
 \begin{equation}
 	y_i = f_i(x) = v_i \cdot x
 	\label{eq:linear}
@@ -177,7 +178,7 @@ loss = H(\hat{y}, y) = - \sum_{i = 1}^{n} \hat{y}_i log(y_i)
 where $ \hat{y} $'s are the ture target values from the training data and $ y $'s are the predicted target values from the model.
 
 \subsubsection{Learning algorithm}
-The paper uses the de facto standard learning algorithm for neural net: stochastic gradient descent with back propagation\cite{lecun2012efficient}.
+The paper uses the standard learning algorithm for neural net: stochastic gradient descent with back propagation\cite{lecun2012efficient}.
 
 \subsection{Learning outcome}
 The word embedding process can produce word vectors that capture semantic information about words (i.e., their relations to other words). In other words, the words are embedded into a word space as word points. There are 2 useful and interesting properties about these points in the space:
@@ -406,7 +407,7 @@ In this section, I introduce a new node embedding approach I'm actively working 
 \begin{enumerate}
 	\item low complexity: the model architecture is very simple, which makes it scalable and easy to understand;
 	\item comprehensive learning: it fully exploits rich node and link attributes in real world graphs;
-	\item versatile prediction: it can learn to predict any node or link attribute, if the dataset provides the corresponding training data;
+	\item multi-task prediction: it can learn to predict any node or link attribute, if the dataset provides the corresponding training data;
 \end{enumerate}
 
 \subsection{Motivations}
@@ -424,11 +425,100 @@ There are 2 reasons to develop a new node embedding approach oriented for graphs
 Although the goal of the new approach is the same as the one mentioned in the paper - node embedding, these 2 reasons suggests it is necessary to design a new model to achieve better performance in various prediction tasks.
 
 \subsection{Application scenario}
-resume here.
+
+First, I demonstrate the basic usage of this node embedding approach through a simple movie rating prediction scenario which was discussed earlier, shown in \autoref{fig:weakness}. The dataset is a graph consisting of 2 types of nodes - users and movies, and 1 type of links - ratings. A movie node doesn't have any attribute; a user node has 1 boolean attribute: French (true if the user is French, false otherwise); a link has 1 numerical attribute: rating value (continuous in range(0, 10)). Every user has given ratings for a number of movies, and some of them has stated their nationality, which serve as training data. The prediction task is: given a user u and a movie m, predict the rating u would give m - how much would user u like movie m.
 
 \subsection{Observations and the approach}
 
+It's easy to see how these attributes can provide valuable information about users and movies: 
+\begin{enumerate}
+	\item If a group of users give high ratings to a movie and another group give low ones to the same movie, these 2 groups are likely very different in some aspect(e.g., taste on a certain genre); if a user give very low ratings for a group of movies, these movies are likely similar in some aspect(e.g., directed by the user's favorite director).
+	\item If a user gives high ratings to French movies much more than average, he is more likely French.
+\end{enumerate}
+Now we have the observation that both rating and French attributes provide the information about users and movies, we can consider construct a neural net model to learn the node vector for each node supervised by these attributes.
+
 \subsection{Implementation}
+
+\subsubsection{Multi-task model}
+
+First of all, I introduce the multi-task prediction model, illustrated with a simplified diagram in \autoref{fig:multiTask}. The embedding layer has linear units:
+\begin{equation}
+y = f(x) = w x
+\end{equation}
+where y is the activation vector, w is the weight matrix and x is the input vector. The hidden layers have ReLU(rectified linear units)
+\begin{equation}
+y = f(x) = max(0, w x)
+\end{equation}
+The output layer has linear regression unit to perform regression for rating attribute:
+\begin{equation}
+	y = f(x) = w x
+\end{equation}
+and logistic regression unit to perform classification for French attribute:
+\begin{equation}
+	y = f(x) = \frac{1}{1 + exp(-w x)}
+\end{equation}
+
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[node distance=2cm]
+	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=0cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+	\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+	\tikzstyle{arrow} = [thick,->,>=stealth]
+	\node (linearRegression) [io] {linear regression};
+	\node (logisticRegression) [io, right of=linearRegression, xshift=4cm] {logistic regression};
+	\node (relu1) [process, below of=logisticRegression, yshift=-2cm] {ReLU[d=16]};
+	\node (relu2) [process, below of=linearRegression] {ReLU[d=16]};
+	\node (relu3) [process, below of=relu2] {ReLU[d=32]};
+	\node (linear1) [process, below of=relu1] {linear[d=64]};
+	\node (linear2) [process, below of=relu3] {linear[d=64]};
+	\node (oneHot2) [io, below of=linear1] {one-hot[d=n]};
+	\node (oneHot1) [io, below of=linear2] {one-hot[d=m]};
+	\node (rating) [above of=linearRegression] {rating};
+	\node (french) [above of=logisticRegression] {French};
+	\node (output) [left of=linearRegression, xshift=-2cm] {output layer};
+	\node (hidden2) [below of=output] {hidden layer};
+	\node (hidden1) [below of=hidden2] {hidden layer};
+	\node (embedding) [below of=hidden1] {embedding layer};
+	\node (input) [below of=embedding] {input layer};
+	\node (movie) [below of=oneHot1] {movie};
+	\node (user) [below of=oneHot2] {user};
+	\draw [arrow] (movie) -- (oneHot1);
+	\draw [arrow] (user) -- (oneHot2);
+	\draw [arrow] (oneHot2) -- (linear1);
+	\draw [arrow] (oneHot1) -- (linear2);
+	\draw [arrow] (linear1) -- (relu1);
+	\draw [arrow] (linear1) -- (relu3);
+	\draw [arrow] (linear2) -- (relu3);
+	\draw [arrow] (relu3) -- (relu2);
+	\draw [arrow] (relu1) -- (logisticRegression);
+	\draw [arrow] (relu2) -- (linearRegression);
+	\draw [arrow] (linearRegression) -- (rating);
+	\draw [arrow] (logisticRegression) -- (french);
+	\end{tikzpicture}
+	
+	\caption{The multi-task prediction model with movie set size m, user set size n, embedding size 64: the model consists of only 5 layers - an input layer with one-hot activation, an embedding layer of linear units, 2 hidden layers of rectified linear unites and an output layer of a linear regression unit and a logistic regression unit. The units in each layer are not shown with d referring to the layer's dimension (number of units in the layer).}
+	\label{fig:multiTask}
+\end{figure}
+
+\subsubsection{Loss function}
+I use hinge loss for logistic regression:
+\begin{equation}
+loss = l(t, y) = max(0, 1 - ty)
+\end{equation}
+where t is the expected output from the training data and y is the actual output from the model; and squared error for linear regression:
+\begin{equation}
+	loss = l(t, y) = (t - y)^2
+\end{equation}
+
+\subsubsection{Learning algorithm}
+I use the standard learning algorithm for neural net: stochastic gradient descent with back propagation. However, there are 2 types of training data:
+\begin{enumerate}
+	\item x = (movie, user), y = (rating): in this case, the output and hidden layers on French side are deactivated as there is no supervision for them;
+	\item x = (user), y = (French): in this case, all layers on the rating side are deactivated as there is no supervision for them;
+\end{enumerate}
+
+\section{Conclusions}
+I summarize node embedding, a neural net approaches for learning vector representations of nodes in a graph. This process converts relational data to numerical data so that neural net can use them directly to perform various prediction tasks. The learning algorithm is on-line so it works well with streaming graph. I also introduce a new node embedding approach, to address the weaknesses in the summarized approach. Specifically, the new approach has strengths of low complexity, comprehensive learning and multi-task prediction.
 
 \bibliographystyle{acm}
 \bibliography{references}
