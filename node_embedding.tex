@@ -11,13 +11,32 @@
 \usepackage{float}
 \begin{document}
 \lstset{language=python, tabsize=4}
-\title{Node embedding}
+\title{Node mapping}
 \author{Yuchen Hou \and Larry Holder}
 \maketitle
 
+\begin{abstract}
+	We present node mapping, a technique created for general purpose node and 
+	link attribute prediction tasks, powered by neural networks.
+	This technique builds a neural net model, which learns to map every node in 
+	a graph to a node vector of real numbers and learns to predict the target 
+	link attribute using these node vectors.
+	Every node vector contains information about the node related to the
+	prediction task.
+	The main idea is to convert nodes (categorical variables) to vectors 
+	(numerical variables), as neural nets can directly handle only numerical 
+	variables.
+\end{abstract}
+
 \section{Introduction}
 
-\subsection{Deep learning in different domains}
+\subsection{Background and motivation}
+We have seen the wide spread success of neural networks since 2010, as they are becoming state-of-the-art models in a growing number of application domains of machine learning, (e.g., speech recognition\cite{hannun2014deep}, image recognition\cite{simonyan2014very}, and natural language processing\cite{yao2013recurrent}).
+In 2016, neural net powered Google AlphaGo defeated top human go player Lee Sedol, 19 years after IBM Deep Blue defeated top human chess player Garry Kasparov in 1997.
+AlphaGo demonstrated how a statistical approach can still work in solving challenging decision making problems when logical approaches fail - specifically, when search based algorithms easily exhaust available computing resources in a game with too many possible configurations to explore\cite{silver2016mastering}.
+If we regard search algorithms as a graph algorithm, we naturally wonder whether this statistical approach (i.e. neural net) can also help in other graph related problems.
+
+In order to understand how it can handle prediction tasks in graph mining, first we take an overview on 3 types entities in these 3 domains and in graph mining. \autoref{tab:domains} provides a summary of these entities, their representations in neural nets and inter-entity relation examples in these domains.
 \begin{itemize}
 	\item image recognition
 	\item speech recognition
@@ -30,44 +49,56 @@
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.5\linewidth]{Airy-pattern}
-	\caption{\href{https://commons.wikimedia.org/wiki/File:Airy-pattern.svg}{the airy pattern} (John Doe / Wikimedia Commons / Public Domain): an image is represented by a 2D light intensity array.}
+	\caption{\href{https://commons.wikimedia.org/wiki/File:Airy-pattern.svg}{the
+	 airy pattern} (John Doe / Wikimedia Commons / Public Domain): an image is 
+	represented by a 2D light intensity array.}
 	\label{fig:Airy-pattern}
 \end{figure}
 \subsubsection{Utterance representation: 2D sound intensity array}
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth]{Spectrogram-19thC}
-	\caption{\href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{Digitally produced spectrogram of a male voice saying [nineteenth century]}(Aquegg / Wikimedia Commons / Public Domain): a spectrogram is represented by a 2D sound intensity array.}
+	\caption{\href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{Digitally
+	 produced spectrogram of a male voice saying [nineteenth century]}(Aquegg / 
+	Wikimedia Commons / Public Domain): a spectrogram is represented by a 2D 
+	sound intensity array.}
 	\label{fig:Spectrogram-19thC}
 \end{figure}
 \subsubsection{Natural language representation: ?}
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth]{State_of_the_union_word_clouds}
-	\caption{ \href{https://commons.wikimedia.org/wiki/File:State_of_the_union_word_clouds.png}{State of the union word clouds}(Pyrsmis / Wikimedia Commons / Attribution-Share Alike 3.0 Unported): words are conceptual.}
+	\caption{ 
+	\href{https://commons.wikimedia.org/wiki/File:State_of_the_union_word_clouds.png}{State
+	 of the union word clouds}(Pyrsmis / Wikimedia Commons / Attribution-Share 
+	Alike 3.0 Unported): words are conceptual.}
 	\label{fig:State_of_the_union_word_clouds}
 \end{figure}
 \subsubsection{Graph representation: ?}
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth]{Social_Network_Analysis_Visualization}
-	\caption{ \href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{Social Network Analysis Visualization}(Martin Grandjean / Wikimedia Commons / Attribution-Share Alike 3.0 Unported): nodes are categorical.}
+	\caption{ 
+	\href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{Social
+	 Network Analysis Visualization}(Martin Grandjean / Wikimedia Commons / 
+	Attribution-Share Alike 3.0 Unported): nodes are categorical.}
 	\label{fig:Social_Network_Analysis_Visualization}
 \end{figure}
 \begin{itemize}
-	\item light and sound intensities: measurable, numerical - easy for neural nets
+	\item light and sound intensities: measurable, numerical - easy for neural 
+	nets
 	\item words, nodes and links: conceptual, categorical - hard for neural nets
 	\item can we reduce words and nodes to numbers for neural nets?
 \end{itemize}
 
 \subsection{From natural language processing to graph mining}
 \begin{itemize}
-	\item word embedding: Mikolov 2013
-	\item node embedding: Perozzi 2014
-	\item node embedding for graphs with rich attributes: work in progress
+	\item word mapping: Mikolov 2013
+	\item node mapping: Perozzi 2014
+	\item node mapping for graphs with rich attributes: work in progress
 \end{itemize}
 
-\section{Word embedding}
+\section{Word mapping}
 
 \subsection{The goal}
 \begin{itemize}
@@ -83,7 +114,8 @@
 		... & ... & ... \\ \hline
 		n & $ word_n $ & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
 	\end{tabularx}
-	\caption{Word vectors sorted by the popularity of the words in English: a word is represented by a vector of size d.}
+	\caption{Word vectors sorted by the popularity of the words in English: a 
+	word is represented by a vector of size d.}
 	\label{tab:word}
 \end{table}
 
@@ -100,16 +132,21 @@
 	\centering
 	\begin{tabularx}{\textwidth}{|c|X|c|} \hline
 		co-occurrence & relation & attribute \\ \hline
-		(guard, justice) & justice is protected because it's important and evil wants to destroy it & value, vulnerability \\ \hline
-		(peace, justice) & justice is morally good and desirable, like peace & virtue \\ \hline
+		(guard, justice) & justice is protected because it's important and evil 
+		wants to destroy it & value, vulnerability \\ \hline
+		(peace, justice) & justice is morally good and desirable, like peace & 
+		virtue \\ \hline
 		... & ... & ... \\ \hline
 	\end{tabularx}
-	\caption{Attributes and relations about word [justice]: the information of a word is implicitly expressed by words in its contexts.}
+	\caption{Attributes and relations about word [justice]: the information of 
+	a word is implicitly expressed by words in its contexts.}
 	\label{tab:cooccurrences}
 \end{table}
 \subsubsection{Learn a word from its contexts}
 \begin{itemize}
-	\item learn [Jedi]: a member of the mystical knightly order in the Star Wars films, trained to guard peace and justice in the universe (Google Dictionary)
+	\item learn [Jedi]: a member of the mystical knightly order in the Star 
+	Wars films, trained to guard peace and justice in the universe (Google 
+	Dictionary)
 	\item learn every word supervised by the words in its contexts
 \end{itemize}
 
@@ -119,7 +156,7 @@
 	\centering
 	\newcommand{\layersep}{2.5cm}
 	\newcommand{\vocabularySize}{8}
-	\newcommand{\embeddingSize}{4}
+	\newcommand{\mappingSize}{4}
 	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
 	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
 	\tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
@@ -134,48 +171,53 @@
 	\node[input neuron, pin=left:$ w_\y $] (I-\name) at (0,-\y) {};
 	
 	% Draw the hidden layer
-	\foreach \name / \y in {1,...,\embeddingSize}
+	\foreach \name / \y in {1,...,\mappingSize}
 	\path[yshift=-2cm]
 	node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
 	
 	% Draw the output layer
 	\foreach \name / \y in {1,...,\vocabularySize}
-	\node[output neuron, pin={[pin edge={->}]right:$ w_\y $}] (O-\name) at (2*\layersep,-\y) {};
+	\node[output neuron, pin={[pin edge={->}]right:$ w_\y $}] (O-\name) at 
+	(2*\layersep,-\y) {};
 	
 	% Connect the input layer with the hidden layer
 	\foreach \source in {1,...,\vocabularySize}
-	\foreach \dest in {1,...,\embeddingSize}
+	\foreach \dest in {1,...,\mappingSize}
 	\path (I-\source) edge (H-\dest);
 	
 	% Connect the hidden layer with the output layer
-	\foreach \source in {1,...,\embeddingSize}
+	\foreach \source in {1,...,\mappingSize}
 	\foreach \dest in {1,...,\vocabularySize}
 	\path (H-\source) edge (O-\dest);
 	
 	% Annotate the layers
-	\node[annot,above of=H-2] {embedding layer};
+	\node[annot,above of=H-2] {mapping layer};
 	\node[annot,above of=I-2] {input layer};
 	\node[annot,above of=O-2] {output layer};
 	\end{tikzpicture}
 	
-	\caption{The skip-gram model with vocabulary size 8 and embedding size 4: learning a word vector supervised by its contexts}
+	\caption{The skip-gram model with vocabulary size 8 and mapping size 4: 
+	learning a word vector supervised by its contexts}
 	\label{fig:skipGram}
 \end{figure}
 \begin{itemize}
-	\item linear units in the embedding layer: $ y_i = f(x_i) = w_i x_i $
-	\item softmax units in the output layer: $ y_i = f_i(x) = \frac{exp(w_i \cdot x)}{\sum_{i = 1}^{n}exp(w_i \cdot x)} $
-	\item cross entropy loss: $ loss = H(t, y) = - \sum_{i = 1}^{n} t_i log(y_i) $
+	\item linear units in the mapping layer: $ y_i = f(x_i) = w_i x_i $
+	\item softmax units in the output layer: $ y_i = f_i(x) = \frac{exp(w_i 
+	\cdot x)}{\sum_{i = 1}^{n}exp(w_i \cdot x)} $
+	\item cross entropy loss: $ loss = H(t, y) = - \sum_{i = 1}^{n} t_i 
+	log(y_i) $
 \end{itemize}
 
 \subsection{Learning outcome}
 \begin{enumerate}
-	\item word vectors stored in weights in embedding layer
+	\item word vectors stored in weights in mapping layer
 	\item word vector distance $ \approx $ word semantic similarity
 	\item word vector differences $ \approx $ word semantic relation
 \end{enumerate}
-\href{https://www.tensorflow.org/versions/r0.7/tutorials/word2vec/index.html}{word2vec visualization} by TensorFlow project
+\href{https://www.tensorflow.org/versions/r0.7/tutorials/word2vec/index.html}{word2vec
+ visualization} by TensorFlow project
 
-\section{Node embedding}
+\section{Node mapping}
 
 \subsection{The goal}
 \begin{itemize}
@@ -191,7 +233,8 @@
 		... & ... & ... \\ \hline
 		n & $ node_n $ & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
 	\end{tabularx}
-	\caption{Node vectors sorted by the node ID in a graph: each node is represented by a vector of size d.}
+	\caption{Node vectors sorted by the node ID in a graph: each node is 
+	represented by a vector of size d.}
 	\label{tab:node}
 \end{table}
 
@@ -246,18 +289,19 @@
 		entity sequences & sentences & random walks \\ \hline
 		representation & word vector & node vector \\ \hline
 	\end{tabularx}
-	\caption{A comparison of natural language processing and graph mining from several aspects: from word embedding to node embedding.}
+	\caption{A comparison of natural language processing and graph mining from 
+	several aspects: from word mapping to node mapping.}
 	\label{tab:wordVSnode}
 \end{table}
 
 \subsection{Implementation}
 
-\subsubsection{Node embedding stage}
+\subsubsection{Node mapping stage}
 \begin{itemize}
 	\item model: skip-gram model
 	\item node sequence generation: sampled random walks on the graph
 	\item weights update: weights in all layers
-	\item learning outcome: node vectors stored in weights in embedding layer
+	\item learning outcome: node vectors stored in weights in mapping layer
 \end{itemize}
 \subsubsection{Label prediction stage}
 \begin{itemize}
@@ -268,7 +312,7 @@
 	\centering
 	\newcommand{\layersep}{2.5cm}
 	\newcommand{\vocabularySize}{8}
-	\newcommand{\embeddingSize}{4}
+	\newcommand{\mappingSize}{4}
 	\newcommand{\labelSetSize}{2}
 	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
 	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
@@ -284,30 +328,32 @@
 	\node[input neuron, pin=left:$ node_\y $] (I-\name) at (0,-\y) {};
 	
 	% Draw the hidden layer
-	\foreach \name / \y in {1,...,\embeddingSize}
+	\foreach \name / \y in {1,...,\mappingSize}
 	\path[yshift=-2cm]
 	node[hidden neuron] (H-\name) at (\layersep,-\y) {};
 	
 	% Draw the output layer
 	\foreach \name / \y in {1,...,\labelSetSize}
-	\node[output neuron, pin={[pin edge={->}]right:$ label_\y $}] (O-\name) at (2*\layersep,-\y-3) {};
+	\node[output neuron, pin={[pin edge={->}]right:$ label_\y $}] (O-\name) at 
+	(2*\layersep,-\y-3) {};
 	
 	% Connect the input layer with the hidden layer
 	\foreach \source in {1,...,\vocabularySize}
-	\foreach \dest in {1,...,\embeddingSize}
+	\foreach \dest in {1,...,\mappingSize}
 	\path (I-\source) edge (H-\dest);
 	
 	% Connect the hidden layer with the output layer
-	\foreach \source in {1,...,\embeddingSize}
+	\foreach \source in {1,...,\mappingSize}
 	\foreach \dest in {1,...,\labelSetSize}
 	\path (H-\source) edge (O-\dest);
 	
 	% Annotate the layers
-	\node[annot,above of=H-2] {embedding layer};
+	\node[annot,above of=H-2] {mapping layer};
 	\node[annot,above of=I-2] {input layer};
 	\node[annot,above of=O-2] {output layer};
 	\end{tikzpicture}
-	\caption{The label prediction model with node set size 8, embedding size 4 and label set size 2: learning label prediction.}
+	\caption{The label prediction model with node set size 8, mapping size 4 
+	and label set size 2: learning label prediction.}
 	\label{fig:label}
 \end{figure}
 
@@ -322,7 +368,8 @@
 		observability & low & high \\ \hline
 		example & user & activities \\ \hline
 	\end{tabularx}
-	\caption{A comparison of node and link with respect to their complexity and attribute observability: what one does tells us what kind of person he is.}
+	\caption{A comparison of node and link with respect to their complexity and 
+	attribute observability: what one does tells us what kind of person he is.}
 	\label{tab:nodesVSlinks}
 \end{table}
 
@@ -352,7 +399,7 @@
 	\centering
 	\newcommand{\layersep}{8}
 	\newcommand{\vocabularySize}{3}
-	\newcommand{\embeddingSize}{5}
+	\newcommand{\mappingSize}{5}
 	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
 	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
 	\tikzstyle{neuron}=[circle, draw, minimum size=20]
@@ -366,21 +413,22 @@
 	\node[input neuron] (I-\name) at (0,-2*\y) {$ user_\name $};
 	
 	% Draw the hidden layer
-	\foreach \name / \y in {1,...,\embeddingSize}
+	\foreach \name / \y in {1,...,\mappingSize}
 	\path[yshift=2cm]
 	node[hidden neuron] (H-\name) at (\layersep,-2*\y) {$ movie_\name $};
 	
 	% Connect the input layer with the hidden layer
 	\foreach \source in {1,...,\vocabularySize}
-	\foreach \dest in {1,...,\embeddingSize}
+	\foreach \dest in {1,...,\mappingSize}
 	\path (I-\source) edge (H-\dest);
 	\end{tikzpicture}
 	
-	\caption{The weakness of solely relying on topology and ignoring other rich attributes: unable to discriminate nodes.}
+	\caption{The weakness of solely relying on topology and ignoring other rich 
+	attributes: unable to discriminate nodes.}
 	\label{fig:weakness}
 \end{figure}
 
-\section{Node embedding for graphs with rich attributes}
+\section{Node mapping for graphs with rich attributes}
 
 \subsection{Advanced features/strengths}
 \begin{enumerate}
@@ -449,12 +497,17 @@
 \begin{figure}[H]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
-	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=0cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
-	\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
+	angle=110, minimum width=0cm, minimum height=1cm, text centered, 
+	draw=black, fill=blue!30]
+	\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, 
+	text centered, draw=black, fill=green!30]
 	\tikzstyle{arrow} = [thick,->,>=stealth]
 	\node (linearRegression) [io] {linear regression};
-	\node (logisticRegression) [io, right of=linearRegression, xshift=4cm] {logistic regression};
-	\node (relu1) [process, below of=logisticRegression, yshift=-2cm] {ReLU[d=16]};
+	\node (logisticRegression) [io, right of=linearRegression, xshift=4cm] 
+	{logistic regression};
+	\node (relu1) [process, below of=logisticRegression, yshift=-2cm] 
+	{ReLU[d=16]};
 	\node (relu2) [process, below of=linearRegression] {ReLU[d=32]};
 	\node (relu3) [process, below of=relu2] {ReLU[d=32]};
 	\node (linear1) [process, below of=relu1] {linear[d=64]};
@@ -466,8 +519,8 @@
 	\node (output) [left of=linearRegression, xshift=-2cm] {output layer};
 	\node (hidden2) [below of=output] {hidden layer};
 	\node (hidden1) [below of=hidden2] {hidden layer};
-	\node (embedding) [below of=hidden1] {embedding layer};
-	\node (input) [below of=embedding] {input layer};
+	\node (mapping) [below of=hidden1] {mapping layer};
+	\node (input) [below of=mapping] {input layer};
 	\node (movie) [below of=oneHot1] {movie};
 	\node (user) [below of=oneHot2] {user};
 	\draw [arrow] (movie) -- (oneHot1);
@@ -483,15 +536,19 @@
 	\draw [arrow] (linearRegression) -- (rating);
 	\draw [arrow] (logisticRegression) -- (french);
 	\end{tikzpicture}	
-	\caption{The multi-task prediction model with movie set size m, user set size n, embedding size 64: learning rating and french attribute prediction.}
+	\caption{The multi-task prediction model with movie set size m, user set 
+	size n, mapping size 64: learning rating and french attribute prediction.}
 	\label{fig:multiTask}
 \end{figure}
 \begin{itemize}
-	\item embedding layer with linear units: $ y = f(x) = w x $
-	\item hidden layers with ReLU(rectified linear units): $ y = f(x) = max(0, w x) $
+	\item mapping layer with linear units: $ y = f(x) = w x $
+	\item hidden layers with ReLU(rectified linear units): $ y = f(x) = max(0, 
+	w x) $
 	\item output layer with linear regression unit: $ y = f(x) = w x $
-	\item output layer with logistic regression unit: $ y = f(x) = \frac{1}{1 + exp(-w x)} $
-	\item hinge loss for logistic regression: $ loss = l(t, y) = max(0, 1 - ty) $
+	\item output layer with logistic regression unit: $ y = f(x) = \frac{1}{1 + 
+	exp(-w x)} $
+	\item hinge loss for logistic regression: $ loss = l(t, y) = max(0, 1 - ty) 
+	$
 	\item squared error for linear regression: $ loss = l(t, y) = (t - y)^2 $
 \end{itemize}
 
@@ -499,28 +556,41 @@
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\textwidth}{ |c|c|c|X| }
-		\hline domain & entity & representation & relations to other entities \\ 
+		\hline domain & entity & representation & relations to other entities 
+		\\ 
 		\hline image recognition & image & 2D array & NA \\ 
 		\hline speech recognition & utterance & 2D array & NA \\ 
-		\hline natural language & word & word vector & relations to other words \\ 
-		\hline graph mining & movie & node vector & directed by director, etc \\ 
+		\hline natural language & word & word vector & relations to other words 
+		\\ 
+		\hline graph mining & movie & node vector & directed by director, etc 
+		\\ 
 		\hline graph mining & user & node vector & rate movies, etc \\ 
-		\hline graph mining & article & node vector & cite other articles, etc \\
+		\hline graph mining & article & node vector & cite other articles, etc 
+		\\
 		\hline
 	\end{tabularx}
-	\caption{A summary of various types of entities in different domains: numerical array representations for neural nets.}
+	\caption{A summary of various types of entities in different domains: 
+	numerical array representations for neural nets.}
 	\label{tab:domains}
 \end{table}
 \begin{itemize}
-	\item node embedding: neural net approach for learning vector representations of nodes
+	\item node mapping: neural net approach for learning vector 
+	representations of nodes
 	\item online learning: good for streaming graph
-	\item node embedding for graphs with rich attributes: low complexity, comprehensive learning and multi-task prediction
+	\item node mapping for graphs with rich attributes: low complexity, 
+	comprehensive learning and multi-task prediction
 \end{itemize}
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth]{Thank-you-word-cloud}
-	\caption{ \href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{Thank you word cloud}(Aquegg / Wikimedia Commons / Attribution-Share Alike 4.0 International)}
+	\caption{ 
+	\href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{Thank 
+	you word cloud}(Aquegg / Wikimedia Commons / Attribution-Share Alike 4.0 
+	International)}
 	\label{fig:Thank-you-word-cloud}
 \end{figure}
+
+\bibliographystyle{acm}
+\bibliography{references}
 
 \end{document}
