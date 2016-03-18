@@ -16,7 +16,8 @@
 \maketitle
 
 \begin{abstract}
-	We present node mapping, a technique created for link attribute prediction tasks, powered by neural networks.
+	We present node mapping, a technique created for link attribute prediction 
+	tasks, powered by neural networks.
 	This technique builds a neural net model, which learns to map every node in 
 	a graph to a node vector of real numbers and learns to predict the target 
 	link attribute using these node vectors.
@@ -30,50 +31,102 @@
 \section{Introduction}
 
 \subsection{Background}
-We have seen the wide spread success of neural networks since 2010, as they are becoming state-of-the-art models in a growing number of application domains of machine learning, (e.g., speech recognition\cite{hannun2014deep}, image recognition\cite{simonyan2014very}, and natural language processing\cite{yao2013recurrent}).
-These neural net models not only achieved higher prediction accuracy than traditional models, but also require much less domain knowledge and engineering.
-In 2016, Google AlphaGo AI - powered by neural net and Monte Carlo tree search - defeated go champion Lee Sedol, demonstrated how a statistical approach can complement logical approaches in solving challenging problems\cite{silver2016mastering}.
-Specifically, in a game like go with simple rules but too many possible configurations to explore, neural net models achieve good results with reasonable computing resources, which are easily exhausted by algorithms solely powered by search.
+We have seen the wide spread success of neural networks since 2010, as they are 
+becoming state-of-the-art models in a growing number of application domains of 
+machine learning, (e.g., speech recognition\cite{hannun2014deep}, image 
+recognition\cite{simonyan2014very}, and natural language 
+processing\cite{yao2013recurrent}).
+These neural net models not only achieved higher prediction accuracy than 
+traditional models, but also require much less domain knowledge and engineering.
+In 2016, Google AlphaGo AI - powered by neural net and Monte Carlo tree search 
+- defeated go champion Lee Sedol, demonstrated how a statistical approach can 
+complement logical approaches in solving challenging 
+problems\cite{silver2016mastering}.
+Specifically, in a game like go with simple rules but too many possible 
+configurations to explore, neural net models achieve good results with 
+reasonable computing resources, which are easily exhausted by algorithms solely 
+powered by search.
 
 \subsection{Motivation}
-As neural nets have demonstrated their power in many domains, we naturally wonder if we can apply them in prediction tasks in graph mining domain, and what kind of techniques are helpful in using their power.
+As neural nets have demonstrated their power in many domains, we naturally 
+wonder if we can apply them in prediction tasks in graph mining domain, and 
+what kind of techniques are helpful in using their power.
 There are existing techniques with promising results already.
-Two earlier attempts were graph neural nets and relational neural nets\cite{scarselli2009graph}, where neural nets are incorporated into a traditional iterative graph information propagation approach.
-A later attempt was deep walk\cite{perozzi2014deepwalk}, where a graph is reduced to a natural language corpus so that existing neural net models designed for natural language processing can handle the graph.
-We find these techniques complex, indirect and unable to fully use rich graph information in real applications, e.g. making recommendations for social network users based on user activities like messaging friends, commenting articles, and rating movies.
-However, these attempts all include an essential step of applying neural net in graphs: converting graph to numerical variables.
-This step is essential in other application domains as well, because neural nets cannot directly handle non-numerical variables.
+Two earlier attempts were graph neural nets and relational neural 
+nets\cite{scarselli2009graph}, where neural nets are incorporated into a 
+traditional iterative graph information propagation approach.
+A later attempt was deep walk\cite{perozzi2014deepwalk}, where a graph is 
+reduced to a natural language corpus so that existing neural net models 
+designed for natural language processing can handle the graph.
+We find these techniques complex, indirect and unable to fully use rich graph 
+information in real applications, e.g. making recommendations for social 
+network users based on user activities like messaging friends, commenting 
+articles, and rating movies.
+However, these attempts all include an essential step of applying neural net in 
+graphs: converting graph to numerical variables.
+This step is essential in other application domains as well, because neural 
+nets cannot directly handle non-numerical variables.
 
 \subsection{Goal}
-We want to create a technique to predict link attributes in a graph using a neural net model. The graph can have any topology and its links can have any number of numerical(including boolean) attributes. The technique should build a neural net model, which learns to represent the graph in a meaningful way and to predict the target link attribute using the representation it learns.
+We want to create a technique to predict link attributes in a graph using a 
+neural net model. The graph can have any topology and its links can have any 
+number of numerical(including boolean) attributes. The technique should build a 
+neural net model, which learns to represent the graph in a meaningful way and 
+to predict the target link attribute using the representation it learns.
 
 \section{Observations and approach}
-In order to understand how a neural net can handle prediction tasks in graphs, we take an overview on 3 types entities in these 3 domains and in graph mining. \autoref{tab:domains} provides a summary of these entities, their representations in neural nets and inter-entity relation examples in these domains.
+In order to understand how a neural net can handle prediction tasks in graphs, 
+we take an overview on 3 types entities in these 3 domains and in graph mining. 
+\autoref{tab:domains} provides a summary of these entities, their 
+representations in neural nets and inter-entity relation examples in these 
+domains.
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\textwidth}{ |c|c|c|X| }
 		\hline domain & entity & representation & relations to other entities 
 		\\ 
 		\hline image recognition & image & 2D light intensity array & NA \\ 
-		\hline speech recognition & utterance/spectrogram & 2D sound intensity array & NA \\ 
-		\hline natural language & word & word vector & relations to other words \\ 
+		\hline speech recognition & utterance/spectrogram & 2D sound intensity 
+		array & NA \\ 
+		\hline natural language & word & word vector & relations to other words 
+		\\ 
 		\hline graph & movie & node vector & directed by director, etc \\ 
 		\hline graph & user & node vector & rate movies, etc \\
 		\hline
 	\end{tabularx}
-	\caption{A summary of various types of entities, their numerical representations and inter-entity relations in different domains: images and utterances can be directly represented by 2D numerical arrays, but have no strong relations to other images or utterances; words and various types of nodes in graphs can represented by 1D numerical arrays(which will be introduced below), and have strong relations to other words and nodes. Notice that the representations for all the entities are numerical arrays, because neural nets rely on neurons' activations and communications, which are both numerical.}
+	\caption{A summary of various types of entities, their numerical 
+	representations and inter-entity relations in different domains: images and 
+	utterances can be directly represented by 2D numerical arrays, but have no 
+	strong relations to other images or utterances; words and various types of 
+	nodes in graphs can represented by 1D numerical arrays(which will be 
+	introduced below), and have strong relations to other words and nodes. 
+	Notice that the representations for all the entities are numerical arrays, 
+	because neural nets rely on neurons' activations and communications, which 
+	are both numerical.}
 	\label{tab:domains}
 \end{table}
 
 \subsection{Entity representations in different domains}
-In \autoref{tab:domains}, the entities listed in the lower rows have increasing representation complexities. Images and utterances(spectrograms) can be naturally represent as 2D numerical arrays, which makes them easy for neural net to process. Words are categorical variables and consequently harder, but they can be mapped to 1D numerical arrays (i.e. word vectors) by word2vec technique \cite{mikolov2013efficient} so neural nets can still process them.
+In \autoref{tab:domains}, the entities listed in the lower rows have increasing 
+representation complexities. Images and utterances(spectrograms) can be 
+naturally represent as 2D numerical arrays, which makes them easy for neural 
+net to process. Words are categorical variables and consequently harder, but 
+they can be mapped to 1D numerical arrays (i.e. word vectors) by word2vec 
+technique \cite{mikolov2013efficient} so neural nets can still process them.
 
 \subsection{Learning word vectors}
-Interestingly, it turns out neural net itself has the capability to do the mapping.
-In word2vec, a neural net learns to map every word to a vector without any domain knowledge. In a corpus, every word is described/defined only by related words in its context, although relations between the words are implicit. Nonetheless, the neural net can learn from word co-occurrences and map words accordingly such that the relations between words are preserved in the vector space \cite{mikolov2013distributed}.
+Interestingly, it turns out neural net itself has the capability to do the 
+mapping.
+In word2vec, a neural net learns to map every word to a vector without any 
+domain knowledge. In a corpus, every word is described/defined only by related 
+words in its context, although relations between the words are implicit. 
+Nonetheless, the neural net can learn from word co-occurrences and map words 
+accordingly such that the relations between words are preserved in the vector 
+space \cite{mikolov2013distributed}.
 
 \subsection{Learning node vectors}
-If we compare language data and graph data, we can immediately realize they have many similarities, shown in \autoref{tab:wordVSnode}.
+If we compare language data and graph data, we can immediately realize they 
+have many similarities, shown in \autoref{tab:wordVSnode}.
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{\textwidth}{ |X|X|X| } \hline
@@ -85,10 +138,21 @@ If we compare language data and graph data, we can immediately realize they have
 		representation & word vectors & node vectors \\ \hline
 	\end{tabularx}
 	\caption{A comparison of language data and graph data from 
-		several aspects: these similarities suggest a neural net might be able to map nodes to node vectors just like mapping words to word vectors.}
+		several aspects: these similarities suggest a neural net might be able 
+		to map nodes to node vectors just like mapping words to word vectors.}
 	\label{tab:wordVSnode}
 \end{table}
-Apparently, mapping node to node vectors can only be easier than mapping word to word vectors, because the relations between nodes are explicit(i.e., link and link attributes), while relations between words are implicit(i.e., word co-occurrences). In a social network example, the rating a movie received from a user explicitly tells us how much the user likes that movie; the number of messages a user sends to another user explicitly tells us how close they are connected. In a corpus example, the co-occurrences of words [the, quick, brown, fox, jumps, over] implicitly suggest these words may be related but do not tell us what their relations are. This means the neural net should be able to learn node mapping supervised by the link attributes in a more direct way than it learns word mapping supervised by word co-occurrences.
+Apparently, mapping node to node vectors should be more direct than mapping 
+word to word vectors, because the relations between nodes are explicit(i.e., 
+link and link attributes), while relations between words are implicit(i.e., 
+word co-occurrences). In a social network example, the rating a movie received 
+from a user explicitly tells us how much the user likes that movie; the number 
+of messages a user sends to another user explicitly tells us how close they are 
+connected. In a corpus example, the co-occurrences of words [the, quick, brown, 
+fox, jumps, over] implicitly suggest these words may be related but do not tell 
+us what their relations are. This means the neural net should be able to learn 
+node mapping supervised by the link attributes in a more direct way than it 
+learns word mapping supervised by word co-occurrences.
 
 \subsection{Application scenario}
 
@@ -391,12 +455,16 @@ Apparently, mapping node to node vectors can only be easier than mapping word to
 This technique has the following strengths:
 \begin{enumerate}
 	\item low complexity: it is simple and scalable
-	\item high flexibility: it can learn from and predict rich node and link attributes
-	\item high efficiency: it is very streamlined online learning without any expensive graph operations(not even neighbor node lookup or random walk)
+	\item high flexibility: it can learn from and predict rich node and link 
+	attributes
+	\item high efficiency: it is very streamlined online learning without any 
+	expensive graph operations(not even neighbor node lookup or random walk)
 \end{enumerate}
 and the following weaknesses:
 \begin{enumerate}
-	\item unable to handle non-numerical attributes: e.g., a message from user A to user B (a link from A to B) or an article (a node) contain texts (string attributes), which this technique cannot directly handle
+	\item unable to handle non-numerical attributes: e.g., a message from user 
+	A to user B (a link from A to B) or an article (a node) contain texts 
+	(string attributes), which this technique cannot directly handle
 \end{enumerate}
 \begin{itemize}
 	\item node mapping: neural net approach for learning vector 
