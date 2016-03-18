@@ -67,128 +67,28 @@ In order to understand how a neural net can handle prediction tasks in graphs, w
 
 \subsection{Entity representations in different domains}
 In \autoref{tab:domains}, the entities listed in the lower rows have increasing representation complexities. Images and utterances(spectrograms) can be naturally represent as 2D numerical arrays, which makes them easy for neural net to process. Words are categorical variables and consequently harder, but they can be mapped to 1D numerical arrays (i.e. word vectors) by word2vec technique \cite{mikolov2013efficient} so neural nets can still process them.
-If we can map nodes to node vectors in a similar way, neural nets might be able to handle challenging prediction tasks in graph domain as well.
-Now the question is how to achieve this representation. Interestingly, it turns out neural net itself has the capability to do it.
 
-\subsection{Learning word vectors and node vectors}
-In word2vec, the mapping from words to vectors are not engineered using any domain knowledge, but learned by a shallow neural net from the relations between words manifested in word co-occurrences in a corpus. This learning is possible because every word is described/defined only by its relations with related words and there is no other information we can get from the word itself or from the corpus(here we ignore the information provided by the character sequence and treat words as atomic, because this phenomenon doesn't exist in graphs).
+\subsection{Learning word vectors}
+Interestingly, it turns out neural net itself has the capability to do the mapping.
+In word2vec, a neural net learns to map every word to a vector without any domain knowledge. In a corpus, every word is described/defined only by related words in its context, although relations between the words are implicit. Nonetheless, the neural net can learn from word co-occurrences and map words accordingly such that the relations between words are preserved in the vector space \cite{mikolov2013distributed}.
 
-\subsubsection{Sequence, word and context}
-\begin{itemize}
-	\item sequence = [guard, peace, and, justice, in, the, universe]
-	\item word = [justice]
-	\item context of radius 3 = [guard, peace, and, in, the, universe]
-\end{itemize}
-\subsubsection{Co-occurrences express relations and attributes}
+\subsection{Learning node vectors}
+If we compare language data and graph data, we can immediately realize they have many similarities, shown in \autoref{tab:wordVSnode}.
 \begin{table}[H]
 	\centering
-	\begin{tabularx}{\textwidth}{|c|X|c|} \hline
-		co-occurrence & relation & attribute \\ \hline
-		(guard, justice) & justice is protected because it's important and evil 
-		wants to destroy it & value, vulnerability \\ \hline
-		(peace, justice) & justice is morally good and desirable, like peace & 
-		virtue \\ \hline
-		... & ... & ... \\ \hline
+	\begin{tabularx}{\textwidth}{ |X|X|X| } \hline
+		aspect  & natural language processing & graph mining \\ \hline
+		dataset & corpus & graph \\ \hline
+		basic entities & words & nodes \\ \hline
+		entity collection & vocabulary & node set \\ \hline
+		relations & co-occurrences (implicit) & links (explicit) \\ \hline
+		representation & word vectors & node vectors \\ \hline
 	\end{tabularx}
-	\caption{Attributes and relations about word [justice]: the information of 
-	a word is implicitly expressed by words in its contexts.}
-	\label{tab:cooccurrences}
+	\caption{A comparison of language data and graph data from 
+		several aspects: these similarities suggest a neural net might be able to map nodes to node vectors just like mapping words to word vectors.}
+	\label{tab:wordVSnode}
 \end{table}
-\subsubsection{Learn a word from its contexts}
-\begin{itemize}
-	\item learn [Jedi]: a member of the mystical knightly order in the Star 
-	Wars films, trained to guard peace and justice in the universe (Google 
-	Dictionary)
-	\item learn every word supervised by the words in its contexts
-\end{itemize}
-
-\subsection{Implementation}
-
-\subsubsection{Skip-gram model}\begin{figure}[H]
-	\centering
-	\newcommand{\layersep}{2.5cm}
-	\newcommand{\vocabularySize}{8}
-	\newcommand{\mappingSize}{4}
-	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
-	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
-	\tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
-	\tikzstyle{input neuron}=[neuron, fill=green!50];
-	\tikzstyle{output neuron}=[neuron, fill=red!50];
-	\tikzstyle{hidden neuron}=[neuron, fill=blue!50];
-	\tikzstyle{annot} = [text width=4em, text centered]
-	
-	% Draw the input layer
-	\foreach \name / \y in {1,...,\vocabularySize}
-	% This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
-	\node[input neuron, pin=left:$ w_\y $] (I-\name) at (0,-\y) {};
-	
-	% Draw the hidden layer
-	\foreach \name / \y in {1,...,\mappingSize}
-	\path[yshift=-2cm]
-	node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
-	
-	% Draw the output layer
-	\foreach \name / \y in {1,...,\vocabularySize}
-	\node[output neuron, pin={[pin edge={->}]right:$ w_\y $}] (O-\name) at 
-	(2*\layersep,-\y) {};
-	
-	% Connect the input layer with the hidden layer
-	\foreach \source in {1,...,\vocabularySize}
-	\foreach \dest in {1,...,\mappingSize}
-	\path (I-\source) edge (H-\dest);
-	
-	% Connect the hidden layer with the output layer
-	\foreach \source in {1,...,\mappingSize}
-	\foreach \dest in {1,...,\vocabularySize}
-	\path (H-\source) edge (O-\dest);
-	
-	% Annotate the layers
-	\node[annot,above of=H-2] {mapping layer};
-	\node[annot,above of=I-2] {input layer};
-	\node[annot,above of=O-2] {output layer};
-	\end{tikzpicture}
-	
-	\caption{The skip-gram model with vocabulary size 8 and mapping size 4: 
-	learning a word vector supervised by its contexts}
-	\label{fig:skipGram}
-\end{figure}
-\begin{itemize}
-	\item linear units in the mapping layer: $ y_i = f(x_i) = w_i x_i $
-	\item softmax units in the output layer: $ y_i = f_i(x) = \frac{exp(w_i 
-	\cdot x)}{\sum_{i = 1}^{n}exp(w_i \cdot x)} $
-	\item cross entropy loss: $ loss = H(t, y) = - \sum_{i = 1}^{n} t_i 
-	log(y_i) $
-\end{itemize}
-
-\subsection{Learning outcome}
-\begin{enumerate}
-	\item word vectors stored in weights in mapping layer
-	\item word vector distance $ \approx $ word semantic similarity
-	\item word vector differences $ \approx $ word semantic relation
-\end{enumerate}
-\href{https://www.tensorflow.org/versions/r0.7/tutorials/word2vec/index.html}{word2vec
- visualization} by TensorFlow project
-
-\section{Node mapping}
-
-\subsection{The goal}
-\begin{itemize}
-	\item represent nodes with meaningful numerical vectors for neural nets
-\end{itemize}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{0.5\textwidth}{|c|c|X|} \hline
-		ID & node & node vector \\ \hline
-		1 & A & [2.3, 564, -9.5 ... 3] \\ \hline
-		2 & B & [76, -342.2, 0.3 ... 4.2] \\ \hline
-		3 & C & [-345, -834, 0.3 ... 34] \\ \hline
-		... & ... & ... \\ \hline
-		n & $ node_n $ & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
-	\end{tabularx}
-	\caption{Node vectors sorted by the node ID in a graph: each node is 
-	represented by a vector of size d.}
-	\label{tab:node}
-\end{table}
+Apparently, mapping node to node vectors can only be easier than mapping word to word vectors, because the relations between nodes are explicit(i.e., link and link attributes), while relations between words are implicit(i.e., word co-occurrences). In a social network example, the rating a movie received from a user explicitly tells us how much the user likes that movie; the number of messages a user sends to another user explicitly tells us how close they are connected. In a corpus example, the co-occurrences of words [the, quick, brown, fox, jumps, over] implicitly suggest these words may be related but do not tell us what their relations are. This means the neural net should be able to learn node mapping supervised by the link attributes in a more direct way than it learns word mapping supervised by word co-occurrences.
 
 \subsection{Application scenario}
 
@@ -228,23 +128,6 @@ In word2vec, the mapping from words to vectors are not engineered using any doma
 	\item input: X = node, node in nodes
 	\item output: Y = [y[0], y[1], y[2] ... y[n-1]], y[i] in [true, false]
 \end{enumerate}
-
-\subsection{Observations and the approach}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{\textwidth}{ |c|c|X| } \hline
-		aspect  & natural language processing & graph mining \\ \hline
-		dataset & corpus & graph \\ \hline
-		basic entities & words & nodes \\ \hline
-		entity collection & vocabulary & node set \\ \hline
-		relations & co-occurrences (implicit) & links (explicit) \\ \hline
-		entity sequences & sentences & random walks \\ \hline
-		representation & word vector & node vector \\ \hline
-	\end{tabularx}
-	\caption{A comparison of natural language processing and graph mining from 
-	several aspects: from word mapping to node mapping.}
-	\label{tab:wordVSnode}
-\end{table}
 
 \subsection{Implementation}
 
