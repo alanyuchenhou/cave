@@ -33,15 +33,15 @@
 \subsection{Background}
 We have seen the wide spread success of neural networks since 2010, as they are 
 becoming state-of-the-art models in a growing number of application domains of 
-machine learning, (e.g., speech recognition\cite{hannun2014deep}, image 
-recognition\cite{simonyan2014very}, and natural language 
-processing\cite{yao2013recurrent}).
+machine learning, (e.g., speech recognition \cite{hannun2014deep}, image 
+recognition \cite{simonyan2014very}, and natural language 
+processing \cite{yao2013recurrent}).
 These neural net models not only achieved higher prediction accuracy than 
 traditional models, but also require much less domain knowledge and engineering.
 In 2016, Google AlphaGo AI - powered by neural net and Monte Carlo tree search 
 - defeated go champion Lee Sedol, demonstrated how a statistical approach can 
 complement logical approaches in solving challenging 
-problems\cite{silver2016mastering}.
+problems \cite{silver2016mastering}.
 Specifically, in a game like go with simple rules but too many possible 
 configurations to explore, neural net models achieve good results with 
 reasonable computing resources, which are easily exhausted by algorithms solely 
@@ -53,9 +53,9 @@ wonder if we can apply them in prediction tasks in graph mining domain, and
 what kind of techniques are helpful in using their power.
 There are existing techniques with promising results already.
 Two earlier attempts were graph neural nets and relational neural 
-nets\cite{scarselli2009graph}, where neural nets are incorporated into a 
+nets \cite{scarselli2009graph}, where neural nets are incorporated into a 
 traditional iterative graph information propagation approach.
-A later attempt was deep walk\cite{perozzi2014deepwalk}, where a graph is 
+A later attempt was deep walk \cite{perozzi2014deepwalk}, where a graph is 
 reduced to a natural language corpus so that existing neural net models 
 designed for natural language processing can handle the graph.
 We find these techniques complex, indirect and unable to fully use rich graph 
@@ -112,7 +112,7 @@ representation complexities. Images and utterances(spectrograms) can be
 naturally represent as 2D numerical arrays, which makes them easy for neural 
 net to process. Words are categorical variables and consequently harder, but 
 they can be mapped to 1D numerical arrays (i.e. word vectors) by word2vec 
-technique \cite{mikolov2013efficient} so neural nets can still process them.
+technique so neural nets can still process them \cite{mikolov2013efficient}.
 
 \subsection{Learning word vectors}
 Interestingly, it turns out neural net itself has the capability to do the 
@@ -125,6 +125,7 @@ accordingly such that the relations between words are preserved in the vector
 space \cite{mikolov2013distributed}.
 
 \subsection{Learning node vectors}
+
 If we compare language data and graph data, we can immediately realize they 
 have many similarities, shown in \autoref{tab:wordVSnode}.
 \begin{table}[H]
@@ -154,245 +155,70 @@ us what their relations are. This means the neural net should be able to learn
 node mapping supervised by the link attributes in a more direct way than it 
 learns word mapping supervised by word co-occurrences.
 
-\subsection{Application scenario}
-
-\subsubsection{The dataset}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{0.5\textwidth}{|c|X| }  \hline
-		nodeID & labels \\ \hline
-		0 & [ture, false, false... true] \\ \hline
-		1 & [ture, true, false... false] \\ \hline
-		2 & [false, false, false... true] \\ \hline
-		... & ... \\ \hline
-		n & [ture, false, true... true] \\ \hline
-	\end{tabularx}
-	\caption{The node set: a node can have a number of labels.}
-\end{table}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{0.5\textwidth}{|X|X|}  \hline
-		sourceID & destinationID \\ \hline
-		0 & 4355 \\ \hline
-		0 & 987876 \\ \hline
-		2 & 324 \\ \hline
-		... & ... \\ \hline
-		n & x \\ \hline
-	\end{tabularx}
-	\caption{The link set: a link has no attributes}
-\end{table}
+\section{Application scenario}
+We demonstrate a usage example of node mapping in social network: making 
+recommendations to users.
+This is a simplified social network where users can send messages to other 
+users and give ratings to movies.
+The service provider is interested in recommending friends and movies for each 
+user, solely based on how much its users communicate to each other and how much 
+they like different movies.
+Formally, the graph is:
 \begin{itemize}
-	\item dataset: graph = (nodes, links)
-	\item link attribute: none
-	\item node attribute: labels(list of booleans)
+	\item a node set consisting of 2 types of nodes: users and movies
+	\item a link set consisting of 2 types of links: user-user links with 
+	numerical attribute called messages indicating the amount of messages the 
+	user has sent to the other 	user(e.g., total number of messages, words 
+	or characters),
+	and user-movie links with numerical attribute called rating indicating the 
+	rating the user has given to the movie(e.g., a number in range(0, 5))
 \end{itemize}
-
-\subsubsection{Prediction task: node attribute prediction}
-\begin{enumerate}
-	\item input: X = node, node in nodes
-	\item output: Y = [y[0], y[1], y[2] ... y[n-1]], y[i] in [true, false]
-\end{enumerate}
-
-\subsection{Implementation}
-
-\subsubsection{Node mapping stage}
+If we can build a model to predict the messages attribute of user-user links(or 
+the rating attribute of user-movie links), we can know how much a user would 
+like each of the users(movies) he has not connected to (rated) and recommend 
+those he would like the most.
+Formally, the prediction task is:
 \begin{itemize}
-	\item model: skip-gram model
-	\item node sequence generation: sampled random walks on the graph
-	\item weights update: weights in all layers
-	\item learning outcome: node vectors stored in weights in mapping layer
+	\item input: X = (node1, node2)
+	\item output: Y = link(node1, node2).attribute
 \end{itemize}
-\subsubsection{Label prediction stage}
-\begin{itemize}
-	\item model: adjust output layer size to label set size
-	\item weights update: weights in output layer only
-\end{itemize}
-\begin{figure}[H]
-	\centering
-	\newcommand{\layersep}{2.5cm}
-	\newcommand{\vocabularySize}{8}
-	\newcommand{\mappingSize}{4}
-	\newcommand{\labelSetSize}{2}
-	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
-	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
-	\tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
-	\tikzstyle{input neuron}=[neuron, fill=green!50];
-	\tikzstyle{output neuron}=[neuron, fill=red!50];
-	\tikzstyle{hidden neuron}=[neuron, fill=blue!50];
-	\tikzstyle{annot} = [text width=4em, text centered]
-	
-	% Draw the input layer
-	\foreach \name / \y in {1,...,\vocabularySize}
-	% This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
-	\node[input neuron, pin=left:$ node_\y $] (I-\name) at (0,-\y) {};
-	
-	% Draw the hidden layer
-	\foreach \name / \y in {1,...,\mappingSize}
-	\path[yshift=-2cm]
-	node[hidden neuron] (H-\name) at (\layersep,-\y) {};
-	
-	% Draw the output layer
-	\foreach \name / \y in {1,...,\labelSetSize}
-	\node[output neuron, pin={[pin edge={->}]right:$ label_\y $}] (O-\name) at 
-	(2*\layersep,-\y-3) {};
-	
-	% Connect the input layer with the hidden layer
-	\foreach \source in {1,...,\vocabularySize}
-	\foreach \dest in {1,...,\mappingSize}
-	\path (I-\source) edge (H-\dest);
-	
-	% Connect the hidden layer with the output layer
-	\foreach \source in {1,...,\mappingSize}
-	\foreach \dest in {1,...,\labelSetSize}
-	\path (H-\source) edge (O-\dest);
-	
-	% Annotate the layers
-	\node[annot,above of=H-2] {mapping layer};
-	\node[annot,above of=I-2] {input layer};
-	\node[annot,above of=O-2] {output layer};
-	\end{tikzpicture}
-	\caption{The label prediction model with node set size 8, mapping size 4 
-	and label set size 2: learning label prediction.}
-	\label{fig:label}
-\end{figure}
+Node mapping technique is created to perform this task. In the following, we 
+will demonstrate how to use this technique in rating prediction. We also expect 
+it (with moderate modifications) to work for messages prediction, but we 
+currently don't have proper dataset to verify that.
 
-\subsection{Strengths of this approach}
-
-\subsubsection{Representing nodes as node vectors}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{0.5\textwidth}{ |c|X|X| } \hline
-		aspect  & node & link \\ \hline
-		complexity & high & low \\ \hline
-		observability & low & high \\ \hline
-		example & user & activities \\ \hline
-	\end{tabularx}
-	\caption{A comparison of node and link with respect to their complexity and 
-	attribute observability: what one does tells us what kind of person he is.}
-	\label{tab:nodesVSlinks}
-\end{table}
-
-\subsubsection{Online learning}
-\begin{itemize}
-	\item low memory requirement
-	\item incremental model construction
-	\item suitable for streaming graph
-\end{itemize}
-
-\subsection{Weaknesses of this approach}
-
-\subsubsection{Node sequence generation}
-\begin{enumerate}
-	\item remote nodes in a deep walk is not strongly related to the root
-	\item skip-gram's indifference to important node ordering
-	\item power law node frequency distributions
-\end{enumerate}
-
-\subsubsection{Unable to use rich attributes in graph}
-\begin{itemize}
-	\item nodes and links have attributes
-	\item attributes can provide more information than topology
-\end{itemize}
-
-\begin{figure}[H]
-	\centering
-	\newcommand{\layersep}{8}
-	\newcommand{\vocabularySize}{3}
-	\newcommand{\mappingSize}{5}
-	\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
-	\tikzstyle{every pin edge}=[<-,shorten <=1pt]
-	\tikzstyle{neuron}=[circle, draw, minimum size=20]
-	\tikzstyle{input neuron}=[neuron];
-	\tikzstyle{output neuron}=[neuron];
-	\tikzstyle{hidden neuron}=[neuron];
-	\tikzstyle{annot} = [text width=4em, text centered]
-	
-	% Draw the input layer
-	\foreach \name / \y in {1,...,\vocabularySize}
-	\node[input neuron] (I-\name) at (0,-2*\y) {$ user_\name $};
-	
-	% Draw the hidden layer
-	\foreach \name / \y in {1,...,\mappingSize}
-	\path[yshift=2cm]
-	node[hidden neuron] (H-\name) at (\layersep,-2*\y) {$ movie_\name $};
-	
-	% Connect the input layer with the hidden layer
-	\foreach \source in {1,...,\vocabularySize}
-	\foreach \dest in {1,...,\mappingSize}
-	\path (I-\source) edge (H-\dest);
-	\end{tikzpicture}
-	
-	\caption{The weakness of solely relying on topology and ignoring other rich 
-	attributes: unable to discriminate nodes.}
-	\label{fig:weakness}
-\end{figure}
-
-\section{Node mapping for graphs with rich attributes}
-
-\subsection{Advanced features/strengths}
-\begin{enumerate}
-	\item comprehensive learning: exploiting rich node and link attributes
-	\item multi-task prediction: learn to predict any node or link attribute
-\end{enumerate}
-
-\subsection{Application scenario}
-
-\subsubsection{The dataset}
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{0.5\textwidth}{|X|X| }  \hline
-		userID & french \\ \hline
-		0 & false \\ \hline
-		1 & false \\ \hline
-		2 & true \\ \hline
-		... & ... \\ \hline
-		n & false \\ \hline
-	\end{tabularx}
-	\caption{The node set: a user has 1 boolean attribute - french}
-	\label{tab:user}
-\end{table}
+\subsection{The dataset: MovieLens 100K}
+We use MovieLens 100k dataset \cite{harper2015movielens} 
+\footnote{http://grouplens.org/datasets/movielens/100k/} to verify the 
+functionality of node mapping. This dataset contains 100,000 ratings from 1000 
+users on 1700 movies, released in 4/1998. The dataset is split into 2 parts: 
+testing set contains 20\% of the samples while training set contains the rest 
+80\%. In practice, we also take 20\% of the training set out and use it as 
+validation data.
 \begin{table}[H]
 	\centering
 	\begin{tabularx}{0.5\textwidth}{|X|X|X| }  \hline
 		userID & movieID & rating \\ \hline
 		0 & 4355 & 4 \\ \hline
-		0 & 987876 & 7 \\ \hline
+		0 & 987876 & 3 \\ \hline
 		2 & 324 & 2 \\ \hline
 		... & ... & ... \\ \hline
-		n & x & 9 \\ \hline
 	\end{tabularx}
-	\caption{The link set: a link has 1 numerical attribute - rating}
+	\caption{The Movie Lens dataset: a link has 1 numerical attribute - rating}
 	\label{tab:rating}
 \end{table}
+
+\subsection{Prediction task: rating prediction}
+The model will need to predict the ratings in the testing set: given any (user, 
+movie) pair, it needs to predict the rating given to the movie by the user:
 \begin{itemize}
-	\item dataset: graph = (\{users and movies\}, ratings)
-	\item movie attribute: none
-	\item user attribute: french(boolean)
-	\item link attribute: rating(numerical)
+	\item input: X = (user, movie)
+	\item output: Y = rating(user, movie)
 \end{itemize}
 
-\subsubsection{Prediction task: node attribute prediction}
-\begin{enumerate}
-	\item input: X = user, user in users
-	\item output: Y = french, french in [true, false]
-\end{enumerate}
+\section{Implementation}
 
-\subsubsection{Prediction task: link attribute prediction}
-\begin{enumerate}
-	\item input: X = (user, movie), user in users, movie in movies
-	\item output: Y = rating, rating in range(1, 10)
-\end{enumerate}
-
-\subsection{Observations and the approach}
-\begin{enumerate}
-	\item french: information about the user
-	\item rating: information about the user and the movie
-	\item learning: supervised by both attributes
-\end{enumerate}
-
-\subsection{Implementation}
-
-\subsubsection{Multi-task model}
+\subsection{Multi-task model}
 \begin{figure}[H]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
@@ -450,6 +276,53 @@ learns word mapping supervised by word co-occurrences.
 	$
 	\item squared error for linear regression: $ loss = l(t, y) = (t - y)^2 $
 \end{itemize}
+
+
+\section{Strengths of this approach}
+
+\subsection{Representing nodes as node vectors}
+This technique is a node-centric approach in terms of information flow, as 
+information about nodes is extracted from links connecting these nodes and then 
+stored in nodes.
+This fits many real world graphs well: usually a graph has complex entities 
+with unobservable attributes which we represent as nodes; it also has simple 
+interactions/relations between these entities with observable attributes which 
+we represent as links, as shown in \autoref{tab:nodesVSlinks}.
+In the above application scenario, this means who a user contacts and what 
+movies a user likes tells us what kind of person this user is.
+\begin{table}[H]
+	\centering
+	\begin{tabularx}{0.5\textwidth}{ |c|X|X| } \hline
+		aspect  & node & link \\ \hline
+		complexity & high & low \\ \hline
+		observability & low & high \\ \hline
+		example & user & activities \\ \hline
+	\end{tabularx}
+	\caption{A comparison of nodes and links with respect to their complexity 
+		and attribute observability: links tend to have low complexity and high 
+		attribute observability while nodes are the opposite. In a social 
+		network 
+		example, it's easy to observe simple user activities like sending 
+		messages 
+		other users, leaving comments on posts and give ratings to music, but 
+		it's 
+		hard to observe complex user attributes like personality, style or 
+		taste in 
+		music.}
+	\label{tab:nodesVSlinks}
+\end{table}
+
+\subsection{Online learning}
+This technique never requires the construction or storage of the graph and fits 
+streaming graph scenarios.
+The training samples in this approach are links in the graph.
+During each training step, the neural net extracts the information in the link 
+and uses it to update the node vector.
+After each training step, the sample can be discarded.
+Therefore, the learning is incremental and only requires samples of different 
+walks in the graph, not the construction or storage of the complete graph.
+In practice, it is sufficient to cache a finite number of latest links streamed 
+in inside the memory for learning using SGD with mini-batch.
 
 \section{Conclusions}
 This technique has the following strengths:
