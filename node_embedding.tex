@@ -75,12 +75,14 @@ neural net model, which learns to represent the graph in a meaningful way and
 to predict the target link attribute using the representation it learns.
 
 \section{Observations and approach}
+
+\subsection{Entities, representations and relations in different domains}
 In order to understand how a neural net can handle prediction tasks in graphs, 
 we take an overview on 3 types entities in these 3 domains and in graph mining. 
 \autoref{tab:domains} provides a summary of these entities, their 
 representations in neural nets and inter-entity relation examples in these 
 domains.
-\begin{table}[H]
+\begin{table}[h]
 	\centering
 	\begin{tabularx}{\textwidth}{ |c|c|c|X| }
 		\hline domain & entity & representation & relations to other entities 
@@ -105,12 +107,11 @@ domains.
 	are both numerical.}
 	\label{tab:domains}
 \end{table}
-
-\subsection{Entity representations in different domains}
-In \autoref{tab:domains}, the entities listed in the lower rows have increasing 
-representation complexities. Images and utterances(spectrograms) can be 
-naturally represent as 2D numerical arrays, which makes them easy for neural 
-net to process. Words are categorical variables and consequently harder, but 
+The entities listed in the lower rows have increasing 
+representation complexities.
+Images and utterances(spectrograms) can be naturally represent as 2D numerical 
+arrays, which makes them easy for neural net to process.
+Words are categorical variables and consequently harder, but 
 they can be mapped to 1D numerical arrays (i.e. word vectors) by word2vec 
 technique so neural nets can still process them \cite{mikolov2013efficient}.
 
@@ -128,7 +129,7 @@ space \cite{mikolov2013distributed}.
 
 If we compare language data and graph data, we can immediately realize they 
 have many similarities, shown in \autoref{tab:wordVSnode}.
-\begin{table}[H]
+\begin{table}[h]
 	\centering
 	\begin{tabularx}{\textwidth}{ |X|X|X| } \hline
 		aspect  & natural language processing & graph mining \\ \hline
@@ -143,6 +144,11 @@ have many similarities, shown in \autoref{tab:wordVSnode}.
 		to map nodes to node vectors just like mapping words to word vectors.}
 	\label{tab:wordVSnode}
 \end{table}
+Word and node vectors are similar to feature vectors. We didn't use the term 
+feature vector to avoid any implication of feature engineering with domain 
+knowledge. Typically, the attributes of words and nodes are not observable so 
+neural nets need to learn these vectors from the relations between words and 
+nodes.
 Apparently, mapping node to node vectors should be more direct than mapping 
 word to word vectors, because the relations between nodes are explicit(i.e., 
 link and link attributes), while relations between words are implicit(i.e., 
@@ -156,13 +162,15 @@ node mapping supervised by the link attributes in a more direct way than it
 learns word mapping supervised by word co-occurrences.
 
 \section{Application scenario}
+
+\subsection{Recommendations in a social network}
 We demonstrate a usage example of node mapping in social network: making 
 recommendations to users.
 This is a simplified social network where users can send messages to other 
 users and give ratings to movies.
 The service provider is interested in recommending friends and movies for each 
-user, solely based on how much its users communicate to each other and how much 
-they like different movies.
+user, solely based on how much he communicates to other users and how much 
+he likes different movies.
 Formally, the graph is:
 \begin{itemize}
 	\item a node set consisting of 2 types of nodes: users and movies
@@ -185,28 +193,38 @@ Formally, the prediction task is:
 Node mapping technique is created to perform this task. In the following, we 
 will demonstrate how to use this technique in rating prediction. We also expect 
 it (with moderate modifications) to work for messages prediction, but we 
-currently don't have proper dataset to verify that.
+currently haven't verified that experimentally.
 
-\subsection{The dataset: MovieLens 100K}
+\subsection{Dataset: MovieLens 100K}
 We use MovieLens 100k dataset \cite{harper2015movielens} 
 \footnote{http://grouplens.org/datasets/movielens/100k/} to verify the 
-functionality of node mapping. This dataset contains 100,000 ratings from 1000 
-users on 1700 movies, released in 4/1998. The dataset is split into 2 parts: 
-testing set contains 20\% of the samples while training set contains the rest 
-80\%. In practice, we also take 20\% of the training set out and use it as 
-validation data.
-\begin{table}[H]
+functionality of node mapping. This dataset has the following specs
+\begin{itemize}
+	\item number of users: 1000
+	\item number of movies: 1700
+	\item number of ratings: 100,000
+\end{itemize}
+and a few samples are shown in \autoref{tab:rating}.
+\begin{table}[h]
 	\centering
 	\begin{tabularx}{0.5\textwidth}{|X|X|X| }  \hline
-		userID & movieID & rating \\ \hline
-		0 & 4355 & 4 \\ \hline
-		0 & 987876 & 3 \\ \hline
-		2 & 324 & 2 \\ \hline
+		user ID & movie ID & rating \\ \hline
+		0 & 355 & 4 \\ \hline
+		0 & 876 & 3 \\ \hline
+		0 & 232 & 5 \\ \hline
+		1 & 324 & 2 \\ \hline
 		... & ... & ... \\ \hline
 	\end{tabularx}
-	\caption{The Movie Lens dataset: a link has 1 numerical attribute - rating}
+	\caption{The Movie Lens dataset: Every link has 1 numerical attribute - 
+	rating.}
 	\label{tab:rating}
 \end{table}
+The dataset is split into 3 sets as in normal machine learning experiments:
+\begin{itemize}
+	\item training set: 70\%
+	\item validation set: 10\%
+	\item test set: 20\%
+\end{itemize}
 
 \subsection{Prediction task: rating prediction}
 The model will need to predict the ratings in the testing set: given any (user, 
@@ -218,30 +236,27 @@ movie) pair, it needs to predict the rating given to the movie by the user:
 
 \section{Implementation}
 
-\subsection{Multi-task model}
-\begin{figure}[H]
+\subsection{Model: fully connected neural net}
+Node mapping technique builds a fully-connected neural net model, shown 
+in \autoref{fig:nodeMapping}.
+\begin{figure}[h]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
 	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
-	angle=110, minimum width=0cm, minimum height=1cm, text centered, 
+	angle=110, minimum width=1cm, minimum height=1cm, text centered, 
 	draw=black, fill=blue!30]
-	\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, 
+	\tikzstyle{process} = [rectangle, minimum width=1cm, minimum height=1cm, 
 	text centered, draw=black, fill=green!30]
 	\tikzstyle{arrow} = [thick,->,>=stealth]
 	\node (linearRegression) [io] {linear regression};
-	\node (logisticRegression) [io, right of=linearRegression, xshift=4cm] 
-	{logistic regression};
-	\node (relu1) [process, below of=logisticRegression, yshift=-2cm] 
-	{ReLU[d=16]};
 	\node (relu2) [process, below of=linearRegression] {ReLU[d=32]};
 	\node (relu3) [process, below of=relu2] {ReLU[d=32]};
-	\node (linear1) [process, below of=relu1] {linear[d=64]};
-	\node (linear2) [process, below of=relu3] {linear[d=64]};
-	\node (oneHot2) [io, below of=linear1] {one-hot[d=n]};
-	\node (oneHot1) [io, below of=linear2] {one-hot[d=m]};
+	\node (linear2) [process, below of=relu3, xshift=-3cm] {linear[d=64]};
+	\node (linear1) [process, below of=relu3, xshift=3cm] {linear[d=64]};
+	\node (oneHot2) [io, below of=linear1] {one-hot[d=1000]};
+	\node (oneHot1) [io, below of=linear2] {one-hot[d=1700]};
 	\node (rating) [above of=linearRegression] {rating};
-	\node (french) [above of=logisticRegression] {french};
-	\node (output) [left of=linearRegression, xshift=-2cm] {output layer};
+	\node (output) [left of=linearRegression, xshift=-5cm] {output layer};
 	\node (hidden2) [below of=output] {hidden layer};
 	\node (hidden1) [below of=hidden2] {hidden layer};
 	\node (mapping) [below of=hidden1] {mapping layer};
@@ -252,31 +267,48 @@ movie) pair, it needs to predict the rating given to the movie by the user:
 	\draw [arrow] (user) -- (oneHot2);
 	\draw [arrow] (oneHot2) -- (linear1);
 	\draw [arrow] (oneHot1) -- (linear2);
-	\draw [arrow] (linear1) -- (relu1);
 	\draw [arrow] (linear1) -- (relu3);
 	\draw [arrow] (linear2) -- (relu3);
 	\draw [arrow] (relu3) -- (relu2);
-	\draw [arrow] (relu1) -- (logisticRegression);
 	\draw [arrow] (relu2) -- (linearRegression);
 	\draw [arrow] (linearRegression) -- (rating);
-	\draw [arrow] (logisticRegression) -- (french);
 	\end{tikzpicture}	
-	\caption{The multi-task prediction model with movie set size m, user set 
-	size n, mapping size 64: learning rating and french attribute prediction.}
-	\label{fig:multiTask}
+	\caption{The 5-layer fully-connected neural net model for a dataset with 
+	1700 movies and 1000 users with node vector size 64: The d in the bracket 
+	refers to dimension, the 
+	layer's size (number of units in the layer). The text before the bracket 
+	refers to the activation function of the units in the layer(except for 
+	one-hot, which refers to the activations themselves).
+	Only layers and their connections are shown, while the units in each layer 
+	and their connections are not shown.}
+	\label{fig:nodeMapping}
 \end{figure}
+The model contains following layers:
 \begin{itemize}
-	\item mapping layer with linear units: $ y = f(x) = w x $
-	\item hidden layers with ReLU(rectified linear units): $ y = f(x) = max(0, 
-	w x) $
-	\item output layer with linear regression unit: $ y = f(x) = w x $
-	\item output layer with logistic regression unit: $ y = f(x) = \frac{1}{1 + 
-	exp(-w x)} $
-	\item hinge loss for logistic regression: $ loss = l(t, y) = max(0, 1 - ty) 
-	$
-	\item squared error for linear regression: $ loss = l(t, y) = (t - y)^2 $
+	\item an input layer with one-hot activations: it has 1 channel for movies 
+	and 1 channel for users;
+	the activations of units in this layer are driven by brute force(e.g., for 
+	the 42nd movie, the movie input layer will have 1 at the 42nd unit and 0 at 
+	other units)
+	\item a mapping layer with linear units: it has 2 channels to map each 
+	movie (and each user) node to a vector(hence the name node mapping);
+	the activations of units in this layer form the node vector;
+	it is the most critical layer as it gradually learns to map every node to 
+	the correct vector during training(learning information about users and 
+	movies from ratings);
+	\item several hidden layers(2 layers are shown in the figure) of 
+	ReLU(rectified linear unites):
+	they have non-linear activation functions to give the model sufficient 
+	complexity; 
+	they learn to process node vectors and produce more abstract and 
+	rating-relevant information (learning how different factors of each user 
+	and movie are related);
+	\item an output layer with a linear regression unit: learn to predict the 
+	rating based on processed information;
 \end{itemize}
-
+We design and understand the model this way in a high level.
+Generally, it's just hard for humans to understand how neural nets work in 
+detail, if it's possible at all.
 
 \section{Strengths of this approach}
 
