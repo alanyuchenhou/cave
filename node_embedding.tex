@@ -119,7 +119,27 @@ technique so neural nets can still process them \cite{mikolov2013efficient}.
 Interestingly, it turns out neural net itself has the capability to do the 
 mapping.
 In word2vec, a neural net learns to map every word to a vector without any 
-domain knowledge. In a corpus, every word is described/defined only by related 
+domain knowledge.
+\autoref{tab:word} shows how each word in a vocabulary is represented by a word 
+vector.
+\begin{table}[h]
+	\centering
+	\begin{tabularx}{0.5\textwidth}{|X|X|} \hline
+		word ID & word vector \\ \hline
+		1 & [2.3, 564, -9.5 ... 3] \\ \hline
+		2 & [76, -342.2, 0.3 ... 4.2] \\ \hline
+		3 & [-345, -834, 0.3 ... 34] \\ \hline
+		... & ... \\ \hline
+		n & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
+	\end{tabularx}
+	\caption{Word vector table in a vocabulary of size n and word vectors with 
+	size d: 
+	Each word has an ID and its spelling is now shown;
+	each vector is randomly initialized before learning and then gradually 
+	updated by the neural net during learning.}
+	\label{tab:word}
+\end{table}
+In a corpus, every word is described/defined only by related 
 words in its context, although relations between the words are implicit. 
 Nonetheless, the neural net can learn from word co-occurrences and map words 
 accordingly such that the relations between words are preserved in the vector 
@@ -207,7 +227,7 @@ functionality of node mapping. This dataset has the following specs
 and a few samples are shown in \autoref{tab:rating}.
 \begin{table}[h]
 	\centering
-	\begin{tabularx}{0.5\textwidth}{|X|X|X| }  \hline
+	\begin{tabularx}{0.5\textwidth}{ |X|X|X| }  \hline
 		user ID & movie ID & rating \\ \hline
 		0 & 355 & 4 \\ \hline
 		0 & 876 & 3 \\ \hline
@@ -235,11 +255,9 @@ movie) pair, it needs to predict the rating given to the movie by the user:
 \end{itemize}
 
 \section{Implementation}
-
-\subsection{Model: fully connected neural net}
 Node mapping technique builds a fully-connected neural net model, shown 
 in \autoref{fig:nodeMapping}.
-\begin{figure}[h]
+\begin{figure}[H]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
 	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
@@ -249,8 +267,8 @@ in \autoref{fig:nodeMapping}.
 	text centered, draw=black, fill=green!30]
 	\tikzstyle{arrow} = [thick,->,>=stealth]
 	\node (linearRegression) [io] {linear regression};
-	\node (relu2) [process, below of=linearRegression] {ReLU[d=32]};
-	\node (relu3) [process, below of=relu2] {ReLU[d=32]};
+	\node (relu2) [process, below of=linearRegression] {ReLU[d=64]};
+	\node (relu3) [process, below of=relu2] {ReLU[d=64]};
 	\node (linear2) [process, below of=relu3, xshift=-3cm] {linear[d=64]};
 	\node (linear1) [process, below of=relu3, xshift=3cm] {linear[d=64]};
 	\node (oneHot2) [io, below of=linear1] {one-hot[d=1000]};
@@ -274,11 +292,13 @@ in \autoref{fig:nodeMapping}.
 	\draw [arrow] (linearRegression) -- (rating);
 	\end{tikzpicture}	
 	\caption{The 5-layer fully-connected neural net model for a dataset with 
-	1700 movies and 1000 users with node vector size 64: The d in the bracket 
-	refers to dimension, the 
-	layer's size (number of units in the layer). The text before the bracket 
-	refers to the activation function of the units in the layer(except for 
-	one-hot, which refers to the activations themselves).
+	1700 movies and 1000 users with layer size 64: The d in the bracket 
+	refers to dimension, the layer's size (number of units in the layer).
+	We keep all layers the same size for simplicity, although layers of 
+	different sizes may produce better results.
+	The text before the bracket refers to the activation function of the units 
+	in the layer(except for one-hot, which refers to the activations 
+	themselves).
 	Only layers and their connections are shown, while the units in each layer 
 	and their connections are not shown.}
 	\label{fig:nodeMapping}
@@ -292,7 +312,8 @@ The model contains following layers:
 	other units)
 	\item a mapping layer with linear units: it has 2 channels to map each 
 	movie (and each user) node to a vector(hence the name node mapping);
-	the activations of units in this layer form the node vector;
+	the activations of units of these 2 channels form the 2 node vectors(i.e., 
+	movie vector and user vector);
 	it is the most critical layer as it gradually learns to map every node to 
 	the correct vector during training(learning information about users and 
 	movies from ratings);
@@ -306,12 +327,98 @@ The model contains following layers:
 	\item an output layer with a linear regression unit: learn to predict the 
 	rating based on processed information;
 \end{itemize}
-We design and understand the model this way in a high level.
-Generally, it's just hard for humans to understand how neural nets work in 
-detail, if it's possible at all.
+We have an open source implementation available for interested readers and we 
+are open to collaborations \footnote{https://github.com/yuchenhou/elephant}.
+We build an estimator with the above neural net model and popular training 
+techniques for neural net including SGD(stochastic gradient descent) and its 
+variant Adagrad(advanced gradient descent), mini-batch, and dropout.
+The code is in Python and TensorFlow \cite{tensorflow2015-whitepaper} 
+is the main machine learning package.
+One thing to notice is that the actual implementation of the input layer is a 
+little more complex than the conceptual one-hot logic: it handles nodes like 
+words.
+Word is treated as a categorical variable with n discrete 
+values(categories) in a vocabulary of size n, as shown in \autoref{tab:word}.
+Every time we feed a word(a node) to the estimator, we actually feed the word 
+ID to it. The estimator uses the ID to index the word vector table, retrieve 
+the word vector and directly activate the mapping layer using this vector. 
+During learning, these vectors are updated the same way weights are updated.
+In other words, in the actual implementation, the 2 channels in the input layer 
+are movie and user tables: the inputs are the movie and user IDs; the outputs 
+are movie and user vectors, directly fed to the mapping layer.
+
+\section{Experiments}
+
+\subsection{Process}
+The estimator learns for several epochs.
+During each epoch, the it updates its model by fitting the training set, and 
+then evaluates the progress by performing prediction using the validation set.
+It logs the average training error and validation error for each epoch and 
+stops learning when the validation error starts increasing to reduce 
+over-fitting.
+After learning, it evaluates the its model by performing prediction using the 
+testing set.
+We use MAE(mean absolute error) as the metric for training, validation and 
+testing errors.
+\autoref{fig:trainnig} shows an example learning process.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\linewidth]{training}
+	\caption{An example learning process of 11 epochs(starting from epoch 0): 
+	The estimator stopped learning at epoch 10 when validation error started 
+	increasing.}
+	\label{fig:trainnig}
+\end{figure}
+
+\subsection{Prediction accuracy}
+The estimator's prediction error for the specific dataset observed in the 
+experiments is in range [0.69, 0.72], depending on the hyper parameters of the 
+estimator.
+This is consistently lower than the state-of-the-art prediction error 0.740 
+achieved by collaborative filtering and category experts methods on this 
+dataset \cite{hwang2016efficient}.
+Also, the estimator is very robust against hyper parameter changes, as shown in 
+\autoref{tab:robust}.
+\begin{table}[h]
+	\centering
+	\begin{tabularx}{\textwidth}{ |c|c|c|c|c|X| } \hline
+		optimizer  & learning rate & dropout(keep probability) & layer size & 
+		number of layers & 
+		testing error \\ \hline
+		SGD & 0.01 & 0.9 & 64 & 2 & 0.7009 \\ \hline
+		SGD & 0.01 & 0.9 & 64 & 1 & 0.7129 \\ \hline
+		SGD & 0.01 & 0.9 & 64 & 4 & 0.7151 \\ \hline
+		SGD & 0.01 & 0.9 & 32 & 2 & 0.7120 \\ \hline
+		SGD & 0.01 & 0.9 & 128 & 2 & 0.7177 \\ \hline
+		SGD & 0.01 & 0.8 & 64 & 2 & 0.7007 \\ \hline
+		SGD & 0.01 & 0.6 & 64 & 2 & 0.6956 \\ \hline
+		SGD & 0.1 & 0.6 & 64 & 2 & 0.7019 \\ \hline
+		SGD & 0.05 & 0.6 & 64 & 2 & 0.6985 \\ \hline
+		Adagrad & 0.05 & 0.6 & 64 & 2 & 0.7143 \\ \hline
+		Adagrad & 0.01 & 0.6 & 64 & 2 & 0.7109 \\ \hline
+		Adagrad & 0.1 & 0.6 & 64 & 2 & 0.7114 \\ \hline
+		Adagrad & 0.1 & 0.8 & 64 & 2 & 0.7058 \\ \hline
+		Adagrad & 0.1 & 0.9 & 64 & 2 & 0.6925 \\ \hline
+		Adagrad & 0.1 & 0.9 & 32 & 2 & 0.6965 \\ \hline
+		Adagrad & 0.1 & 0.9 & 128 & 2 & 0.7026 \\ \hline
+		Adagrad & 0.1 & 0.9 & 32 & 1 & 0.7032 \\ \hline
+		Adagrad & 0.1 & 0.9 & 32 & 4 & 0.7008 \\ \hline
+	\end{tabularx}
+	\caption{High robustness of the estimator against hyper parameter changes: 
+	the estimator maintains very low testing error for a wide range of 
+	parameter configurations.}
+	\label{tab:robust}
+\end{table}
 
 \section{Strengths of this approach}
-
+This technique has the following strengths:
+\begin{enumerate}
+	\item low complexity: it is simple and scalable
+	\item high flexibility: it can learn from and predict rich node and link 
+	attributes
+	\item high efficiency: it is very streamlined online learning without any 
+	expensive graph operations(not even neighbor node lookup or random walk)
+\end{enumerate}
 \subsection{Representing nodes as node vectors}
 This technique is a node-centric approach in terms of information flow, as 
 information about nodes is extracted from links connecting these nodes and then 
@@ -322,7 +429,7 @@ interactions/relations between these entities with observable attributes which
 we represent as links, as shown in \autoref{tab:nodesVSlinks}.
 In the above application scenario, this means who a user contacts and what 
 movies a user likes tells us what kind of person this user is.
-\begin{table}[H]
+\begin{table}[h]
 	\centering
 	\begin{tabularx}{0.5\textwidth}{ |c|X|X| } \hline
 		aspect  & node & link \\ \hline
@@ -331,16 +438,15 @@ movies a user likes tells us what kind of person this user is.
 		example & user & activities \\ \hline
 	\end{tabularx}
 	\caption{A comparison of nodes and links with respect to their complexity 
-		and attribute observability: links tend to have low complexity and high 
-		attribute observability while nodes are the opposite. In a social 
-		network 
-		example, it's easy to observe simple user activities like sending 
-		messages 
-		other users, leaving comments on posts and give ratings to music, but 
-		it's 
-		hard to observe complex user attributes like personality, style or 
-		taste in 
-		music.}
+		and attribute observability:
+		links tend to have low complexity and high attribute observability 
+		while nodes are the opposite.
+		In a social network example,
+		it's easy to observe simple user activities like sending messages other 
+		users,
+		leaving comments on posts and give ratings to music,
+		but it's hard to observe complex user attributes like personality, 
+		style or taste in movies.}
 	\label{tab:nodesVSlinks}
 \end{table}
 
@@ -356,37 +462,22 @@ walks in the graph, not the construction or storage of the complete graph.
 In practice, it is sufficient to cache a finite number of latest links streamed 
 in inside the memory for learning using SGD with mini-batch.
 
-\section{Conclusions}
-This technique has the following strengths:
-\begin{enumerate}
-	\item low complexity: it is simple and scalable
-	\item high flexibility: it can learn from and predict rich node and link 
-	attributes
-	\item high efficiency: it is very streamlined online learning without any 
-	expensive graph operations(not even neighbor node lookup or random walk)
-\end{enumerate}
-and the following weaknesses:
+\section{Future work}
 \begin{enumerate}
 	\item unable to handle non-numerical attributes: e.g., a message from user 
 	A to user B (a link from A to B) or an article (a node) contain texts 
 	(string attributes), which this technique cannot directly handle
 \end{enumerate}
-\begin{itemize}
-	\item node mapping: neural net approach for learning vector 
-	representations of nodes
-	\item online learning: good for streaming graph
-	\item node mapping for graphs with rich attributes: low complexity, 
-	comprehensive learning and multi-task prediction
-\end{itemize}
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=\linewidth]{Thank-you-word-cloud}
-	\caption{ 
-	\href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{Thank 
-	you word cloud}(Aquegg / Wikimedia Commons / Attribution-Share Alike 4.0 
-	International)}
-	\label{fig:Thank-you-word-cloud}
-\end{figure}
+
+\section{Conclusions}
+Node mapping is a efficient technique for link attribute prediction using 
+neural net models.
+It can achieve state-of-the-art prediction accuracy using reasonable amount of 
+computing resources.
+For recommendation tasks in social networks, this technique provides a 
+promising neural net approach:
+understand complex users from their simple activities, map users to 
+vectors and use the vectors to predict their activities.
 
 \bibliographystyle{acm}
 \bibliography{references}
