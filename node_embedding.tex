@@ -15,32 +15,32 @@
 \maketitle
 
 \begin{abstract}
-	We present node mapping, a technique created for link attribute prediction 
-	tasks, powered by neural networks.
-	This technique builds a neural net model, which learns to map every node in 
-	a graph to a node vector of real numbers and learns to predict the target 
-	link attribute using these node vectors.
-	Every node vector contains information about the node related to the
-	prediction task.
-	The main idea is to convert nodes (categorical variables) to vectors 
-	(numerical variables), as neural nets can directly handle only numerical 
-	variables.
+	We present node mapping, a machine learning technique created for link 
+	attribute prediction tasks in a graph.
+	Using this technique, the estimator builds a neural net model, learns to 
+	map every node in the graph to a node vector of real numbers, and learns to 
+	predict the target link attribute using these node vectors.
+	The main idea is to extract information about nodes from links and use this 
+	information to predict unknown links.
+	We demonstrate the usage and high accuracy of this technique in a movie 
+	rating prediction task.
 \end{abstract}
 
 \section{Introduction}
 
 \subsection{Background}
-We have seen the wide spread success of neural networks since 2010, as they are 
-becoming state-of-the-art models in a growing number of application domains of 
-machine learning, (e.g., speech recognition \cite{hannun2014deep}, image 
-recognition \cite{simonyan2014very}, and natural language 
-processing \cite{yao2013recurrent}).
-These neural net models not only achieved higher prediction accuracy than 
+Both academia and industry have seen pervasive adoption of deep learning 
+techniques powered by artificial neural network models since early 2010s, when 
+they began to outperform other machine learning techniques in various 
+application domains (e.g., speech recognition \cite{hannun2014deep}, image 
+recognition \cite{simonyan2014very}, and natural language processing 
+\cite{yao2013recurrent}).
+These neural net models can not only achieve higher prediction accuracy than 
 traditional models, but also require much less domain knowledge and engineering.
-In 2016, Google AlphaGo AI - powered by neural net and Monte Carlo tree search 
-- defeated go champion Lee Sedol, demonstrated how a statistical approach can 
-complement logical approaches in solving challenging 
-problems \cite{silver2016mastering}.
+Moreover, neural net models have participated in more general artificial 
+intelligence design by complementing search techniques, demonstrated by
+Google AlphaGo AI when it defeated go champion Lee Sedol in 2016 
+\cite{silver2016mastering}.
 Specifically, in a game like go with simple rules but too many possible 
 configurations to explore, neural net models achieve good results with 
 reasonable computing resources, which are easily exhausted by algorithms solely 
@@ -57,21 +57,23 @@ traditional iterative graph information propagation approach.
 A later attempt was deep walk \cite{perozzi2014deepwalk}, where a graph is 
 reduced to a natural language corpus so that existing neural net models 
 designed for natural language processing can handle the graph.
-We find these techniques complex, indirect and unable to fully use rich graph 
-information in real applications, e.g. making recommendations for social 
-network users based on user activities like messaging friends, commenting 
-articles, and rating movies.
-However, these attempts all include an essential step of applying neural net in 
+These attempts all have an essential idea of applying neural net in 
 graphs: converting graph to numerical variables.
-This step is essential in other application domains as well, because neural 
+This idea is essential in other application domains as well, because neural 
 nets cannot directly handle non-numerical variables.
+We initiated our research hoping to create a simpler, more direct technique 
+that can take advantage of rich structured graph information.
+We are particularly interested in application scenarios like making 
+recommendations for social network users based on user activities including 
+messaging friends, commenting articles, and rating movies.
 
 \subsection{Goal}
 We want to create a technique to predict link attributes in a graph using a 
-neural net model. The graph can have any topology and its links can have any 
-number of numerical(including boolean) attributes. The technique should build a 
-neural net model, which learns to represent the graph in a meaningful way and 
-to predict the target link attribute using the representation it learns.
+neural net model.
+The graph can have any topology and its links can have any numerical attributes.
+The estimator should use a neural net model to learn to represent the graph in 
+a meaningful way and to learn to predict the target link attribute using the 
+representation it learns.
 
 \section{Observations and approach}
 
@@ -110,8 +112,7 @@ The entities listed in the lower rows have increasing
 representation complexities.
 Images and utterances(spectrograms) can be naturally represent as 2D numerical 
 arrays, which makes them easy for neural net to process.
-Words are categorical variables and consequently harder, but 
-they can be mapped to 1D numerical arrays (i.e. word vectors) by word2vec 
+Words can be mapped to 1D numerical arrays (i.e. word vectors) by word2vec 
 technique so neural nets can still process them \cite{mikolov2013efficient}.
 
 \subsection{Learning word vectors}
@@ -454,8 +455,8 @@ Also, the estimator is very robust against parameter changes, as shown in
 
 \subsection{Information mining: node-centered}
 This technique takes a node-centered approach suitable for recommendation tasks 
-in social networks, as information about nodes is extracted from links 
-connecting these nodes.
+in social networks, as the estimator extracts information about nodes from 
+links.
 In a social network, this means who a user contacts and what 
 movies a user likes tells us what kind of person he is and helps us make 
 recommendations for him. 
@@ -497,7 +498,7 @@ naturally handles streaming graph:
 In order to generalize this node mapping technique to perform a wider range of 
 prediction tasks related to making recommendations for users in a social 
 network, we are considering to work on the following new features:
-\begin{enumerate}
+\begin{itemize}
 	\item handle links connecting 2 nodes of the same type: e.g., given user A 
 	and B, predict the amount of messages A send to B
 	\item handle links with string attributes: e.g., given a text message from 
@@ -509,7 +510,7 @@ network, we are considering to work on the following new features:
 	\item handle links with logical meanings: e.g., given a user has written an 
 	article with observable contents (a link from user to article with a write 
 	attribute), the estimator should learn about the user from this activity
-\end{enumerate}
+\end{itemize}
 We are open to collaborations so don't hesitate to contact us if you are 
 interested in our work \footnote{https://github.com/yuchenhou/elephant}.
 
