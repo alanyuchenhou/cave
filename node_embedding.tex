@@ -383,16 +383,17 @@ The code is in Python and the main machine learning package is TensorFlow
 
 \subsection{Learning process}
 The estimator learns for several epochs.
-During each epoch, the it updates its model by fitting the training set, and 
-then evaluates the progress by performing prediction using the validation set.
-It logs the average training error and validation error for each epoch and 
-stops learning when the validation error starts increasing to reduce 
+During each epoch, it updates its model by fitting the training set, and 
+then evaluates the learning progress by performing prediction using the 
+validation set.
+It logs the average training error and average validation error for each epoch 
+and stops learning when the validation error starts increasing to reduce 
 over-fitting.
-After learning, it evaluates the its model by performing prediction using the 
+After learning, it evaluates its model by performing prediction using the 
 testing set.
-We use MAE(mean absolute error) as the metric for training, validation and 
+It uses MAE(mean absolute error) as the metric for training, validation and 
 testing errors.
-\autoref{fig:trainnig} shows an example learning process.
+\autoref{fig:trainnig} shows an example learning process with error traces.
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.5\linewidth]{training}
@@ -403,14 +404,13 @@ testing errors.
 \end{figure}
 
 \subsection{Prediction accuracy}
-The estimator's prediction error for the specific dataset observed in the 
-experiments is in range [0.69, 0.72], depending on the parameters of the 
-estimator.
-This is consistently lower than the state-of-the-art prediction error 0.740 
-achieved by collaborative filtering and category experts methods on this 
-dataset \cite{hwang2016efficient}.
-Also, the estimator is very robust against parameter changes, as shown in 
-\autoref{tab:robust}.
+The lowest testing error the estimator can achieve is 0.696.
+This is better than the state-of-the-art testing error 0.740 achieved by 
+collaborative filtering and category experts methods on this dataset 
+\cite{hwang2016efficient}.
+\autoref{tab:robust} shows that the estimator is also very robust against 
+parameter changes.
+.
 \begin{table}[h]
 	\centering
 	\begin{tabularx}{\textwidth}{ |c|c|c|c|c|X| } \hline
@@ -437,20 +437,21 @@ Also, the estimator is very robust against parameter changes, as shown in
 		Adagrad & 0.1 & 0.9 & 32 & 4 & 0.7008 \\ \hline
 	\end{tabularx}
 	\caption{High robustness of the estimator against parameter changes: 
-	the estimator maintains very low testing error for a wide range of 
-	configurations.}
+	The estimator maintains testing errors in range [0.69, 0.72] for a wide 
+	range of parameters.}
 	\label{tab:robust}
 \end{table}
 
 \section{Strengths}
 
 \subsection{Information mining: node-centered}
-This technique takes a node-centered approach suitable for recommendation tasks 
-in social networks, as the estimator extracts information about nodes from 
-links.
-In a social network, this means who a user contacts and what 
-movies a user likes tells us what kind of person he is and helps us make 
-recommendations for him. 
+This technique takes a node-centered approach as the estimator extracts 
+information about nodes from links.
+In a social network, this leverages the fact that who a user contacts and what 
+movies a user likes tell us what kind of person he is and helps us make 
+recommendations for him.
+It effectively learns complex and unobservable user attributes(node attributes) 
+from simple and observable user activities(link attributes). 
 \autoref{tab:nodesVSlinks} compares nodes and links with respect to their 
 complexity and observability.
 \begin{table}[h]
@@ -462,12 +463,11 @@ complexity and observability.
 		example & user & activities \\ \hline
 	\end{tabularx}
 	\caption{A comparison of nodes and links with respect to their complexity 
-		and attribute observability:
+		and attribute observability in a social network:
 		Links tend to have low complexity and high observability while nodes 
 		are the opposite.
-		In a social network example,
-		it's easy to observe simple user activities like sending messages other 
-		users and give ratings to music,
+		For example, it's easy to observe simple user activities like sending 
+		messages to other users and give ratings to music,
 		but it's hard to observe complex user attributes like personality, 
 		style or taste in movies.}
 	\label{tab:nodesVSlinks}
@@ -475,46 +475,46 @@ complexity and observability.
 
 \subsection{Online learning}
 The learning process is online (when the estimator learns for 1 epoch) so it 
-naturally handles streaming graph:
+naturally handles streaming graphs:
 \begin{itemize}
-	\item it can handle new nodes by inserting new entries into the mapping 
+	\item it can handle a new node by inserting a new vector into the mapping 
 	table
 	\item it doesn't need to handle new links as it uses every link once and 
 	then discard the link
-	\item it doesn't construct graph or perform any complex graph operations 
-	like neighbor nodes lookup
+	\item it doesn't construct the graph or perform any complex graph 
+	operations like neighbor nodes lookup
 \end{itemize}
 
 \section{Future work}
 In order to generalize this node mapping technique to perform a wider range of 
 prediction tasks related to making recommendations for users in a social 
-network, we are considering to work on the following new features:
+network, we can consider to work on the following new features:
 \begin{itemize}
 	\item handle links connecting 2 nodes of the same type: e.g., given user A 
 	and B, predict the amount of messages A send to B
 	\item handle links with string attributes: e.g., given a text message from 
 	user A to user B (a link from A to B with a string attribute), the 
-	estimator should learn about the users from the content of the message
+	estimator should learn something about the users from the message content
 	\item handle nodes with string attributes: e.g., given an article (a node 
-	with a string attribute), the estimator should learn about the article from 
-	the content of the article
-	\item handle links with logical meanings: e.g., given a user has written an 
-	article with observable contents (a link from user to article with a write 
-	attribute), the estimator should learn about the user from this activity
+	with a string attribute), the estimator should learn something about the 
+	article from the article content
+	\item handle links with logical implications: e.g., given a user has 
+	written an article (a link from user to article with a write attribute), 
+	the estimator should learn something about the user from this activity
 \end{itemize}
 We are open to collaborations so don't hesitate to contact us if you are 
-interested in our work \footnote{https://github.com/yuchenhou/elephant}.
+interested in our work.
 
 \section{Conclusions}
-Node mapping is a efficient technique for link attribute prediction using 
-neural net models. The estimator learns both to represent each node with a 
-vector, and to predict the target link attribute using these vectors.
+Node mapping is an effective technique to predict link attributes in a graph 
+using a neural net model.
+The estimator learns both to represent each node with a vector, and to predict 
+the target link attribute using these vectors.
 It achieves better rating prediction accuracy than the state-of-the-art 
 collaborative filtering and category experts methods.
-For recommendation tasks in social networks, this technique provides a 
-promising neural net approach:
-understand complex users from their simple activities, map users to 
-vectors and use the vectors to predict their activities.
+For recommendation tasks in social networks, this technique coincides with the 
+idea of understanding complex users from their simple activities, and using 
+that understanding to predict their future activities.
 
 \bibliographystyle{acm}
 \bibliography{references}
