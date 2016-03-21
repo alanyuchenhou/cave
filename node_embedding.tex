@@ -172,9 +172,9 @@ supervised by word co-occurrences.
 
 \section{Application scenario}
 
-\subsection{Recommendations in a social network}
-We demonstrate a usage example of node mapping in social network: making 
-recommendations to users.
+\subsection{Scenario: recommendations in a social network}
+We first demonstrate an application scenario node mapping technique is designed 
+to handle: making recommendations to users in social network.
 This is a simplified social network where users can send messages to other 
 users and give ratings to movies.
 The service provider is interested in recommending friends and movies for each 
@@ -185,29 +185,30 @@ Formally, the graph is:
 	\item a node set consisting of 2 types of nodes: users and movies
 	\item a link set consisting of 2 types of links: user-user links with 
 	numerical attribute called messages indicating the amount of messages the 
-	user has sent to the other 	user(e.g., total number of messages, words 
-	or characters),
+	user has sent to the other user(e.g., total number of messages, words 
+	or characters in the past 12 months),
 	and user-movie links with numerical attribute called rating indicating the 
 	rating the user has given to the movie(e.g., a number in range(0, 5))
 \end{itemize}
-If we can build a model to predict the messages attribute of user-user links(or 
-the rating attribute of user-movie links), we can know how much a user would 
-like each of the users(movies) he has not connected to (rated) and recommend 
-those he would like the most.
+If we can build an estimator to predict the messages attribute of user-user 
+links (or the rating attribute of user-movie links), we can know how much a 
+user would like each of the users (movies) he has not connected to (rated) and 
+recommend those he would like the most to him.
 Formally, the prediction task is:
 \begin{itemize}
 	\item input: X = (node1, node2)
 	\item output: Y = link(node1, node2).attribute
 \end{itemize}
-Node mapping technique is created to perform this task. In the following, we 
-will demonstrate how to use this technique in rating prediction. We also expect 
-it (with moderate modifications) to work for messages prediction, but we 
-currently haven't verified that experimentally.
+In the following, we will demonstrate how to use this technique in rating 
+prediction.
+We also expect it (with moderate modifications) to work for messages 
+prediction, but we currently haven't verified that experimentally.
 
 \subsection{Dataset: MovieLens 100K}
-We use MovieLens 100k dataset \cite{harper2015movielens} 
-\footnote{http://grouplens.org/datasets/movielens/100k/} to verify the 
-functionality of node mapping. This dataset has the following specs
+We evaluate the prediction accuracy of this technique using MovieLens 100k 
+dataset \cite{harper2015movielens} 
+\footnote{http://grouplens.org/datasets/movielens/100k/}. This dataset has the 
+following specs:
 \begin{itemize}
 	\item number of users: 1000
 	\item number of movies: 1700
@@ -246,8 +247,8 @@ movie) pair, it needs to predict the rating given to the movie by the user:
 \section{Implementation}
 
 \subsection{Conceptual model: fully-connected neural net}
-Node mapping technique builds a fully-connected neural net model, shown 
-in \autoref{fig:conceptural}.
+The estimator includes a fully-connected neural net model, shown in 
+\autoref{fig:conceptural}.
 \begin{figure}[h]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
@@ -279,15 +280,15 @@ in \autoref{fig:conceptural}.
 	\draw [arrow] (relu3) -- (linearRegression);
 	\draw [arrow] (linearRegression) -- (rating);
 	\end{tikzpicture}
-	\caption{The conceptual fully-connected neural net model for a dataset with 
-		1700 movies and 1000 users with layer size 64:
+	\caption{The conceptual fully-connected neural net model for a dataset
+		with 1700 movies and 1000 users:
 		The d in the bracket refers to dimension, the layer's size (number of 
 		units in the layer).
 		We keep all layers the same size for simplicity, although layers of 
 		different sizes may produce better results.
 		The text before the bracket refers to the activation function of the 
 		units in the layer(except for one-hot, which refers to the activations 
-		themselves).
+		in the input layer).
 		Only layers and their connections are shown, while the units in each 
 		layer and their connections are not shown.}
 	\label{fig:conceptural}
@@ -296,36 +297,37 @@ The model contains following layers:
 \begin{itemize}
 	\item an input layer with one-hot activations: it has 1 channel for movies 
 	and 1 channel for users;
-	the activations of units in this layer are driven by brute force(e.g., for 
-	the 42nd movie, the movie input layer will have 1 at the 42nd unit and 0 at 
-	other units)
+	this layer is directly activated by the testing program (e.g., to feed the 
+	1200th movie, the testing program sets 1 at the 1200th unit and 0 at other 	
+	units in the movie channel)
 	\item a mapping layer with linear units: it has 2 channels to map each 
-	movie (and each user) node to a vector(hence the name node mapping);
-	the activations of units of these 2 channels form the 2 node vectors(i.e., 
-	movie vector and user vector);
+	movie (and each user) to a vector;
+	the activations of these 2 channels form the 2 node vectors(i.e., the movie 
+	vector and the user vector);
 	it is the most critical layer as it gradually learns to map every node to 
-	the correct vector during training(learning information about users and 
-	movies from ratings);
+	the correct vector during training;
 	\item several hidden layers(only 1 layer is shown in the figure) of 
 	ReLU(rectified linear unites):
 	they have non-linear activation functions to give the model sufficient 
 	complexity; 
-	they learn to process node vectors and produce more abstract and 
-	rating-relevant information (learning how different factors of each user 
-	and movie are related);
-	\item an output layer with a linear regression unit: learn to predict the 
-	rating based on processed information;
+	they learn to process node vectors and produce more abstract 
+	rating-relevant information;
+	\item an output layer with a linear regression unit: it learns to predict 
+	the rating based on processed information;
 \end{itemize}
 
 \subsection{Actual model: fully connected neural net and mapping tables}
-\autoref{fig:actural} shows the actual implementation with 2 modifications:
+In practice, it's not efficient or scalable to use a one-hot input layer, 
+especially if the graph contains many nodes.
+\autoref{fig:actural} shows the actual model used in action with 2 
+modifications from the conceptual model:
 \begin{itemize}
-	\item The input layer becomes a 2 mapping tables: they map node IDs to node 
-	vectors, just like the word to vector mapping table shown in 
-	\autoref{tab:word}
+	\item The input layer becomes a 2 mapping tables: 1 for movie nodes and 1 
+	for user nodes;
+	their inputs are node IDs and their outputs are node vectors, just like the 
+	word to vector mapping table shown in \autoref{tab:word}
 	\item The mapping layer becomes a 2-channel input layer: it is directly 
-	activated by the output of the mapping table while its activations are 
-	still those 2 node vectors
+	activated by the outputs of the mapping tables
 \end{itemize}
 \begin{figure}[h]
 	\centering
@@ -371,7 +373,7 @@ The model contains following layers:
 \end{figure}
 We have an open source implementation available for interested readers and we 
 are open to collaborations \footnote{https://github.com/yuchenhou/elephant}.
-We build an estimator with the above neural net model and popular training 
+We build an estimator with the above neural net model and popular learning 
 techniques for neural net including SGD(stochastic gradient descent) and its 
 variant Adagrad(advanced gradient descent), mini-batch, and dropout.
 The code is in Python and the main machine learning package is TensorFlow 
