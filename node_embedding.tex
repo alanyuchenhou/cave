@@ -15,13 +15,14 @@
 \maketitle
 
 \begin{abstract}
-	We present node mapping, a machine learning technique created for link 
-	attribute prediction tasks in a graph.
+	We present node mapping, a machine learning technique created for numerical 
+	link attribute prediction tasks in a graph.
 	Using this technique, the estimator builds a neural net model, learns to 
-	map every node in the graph to a node vector of real numbers, and learns to 
-	predict the target link attribute using these node vectors.
+	represent every node in the graph as a node vector of real numbers(mapping 
+	nodes to vectors), and learns to predict the target link attribute using 
+	these node vectors.
 	The main idea is to extract information about nodes from links and use this 
-	information to predict unknown links.
+	information to predict unknown link attributes.
 	We demonstrate the usage and high accuracy of this technique in a movie 
 	rating prediction task.
 \end{abstract}
@@ -70,57 +71,48 @@ messaging friends, commenting articles, and rating movies.
 \subsection{Goal}
 We want to create a technique to predict link attributes in a graph using a 
 neural net model.
-The graph can have any topology and its links can have any numerical attributes.
-The estimator should use a neural net model to learn to represent the graph in 
-a meaningful way and to learn to predict the target link attribute using the 
-representation it learns.
+The graph can have any topology and its links can have a numerical attribute.
+The estimator should learn to represent the graph in a meaningful way and to 
+learn to predict the target link attribute using the representation it learns.
 
 \section{Observations and approach}
 
 \subsection{Entities, representations and relations in different domains}
-In order to understand how a neural net can handle prediction tasks in graphs, 
-we take an overview on 3 types entities in these 3 domains and in graph mining. 
-\autoref{tab:domains} provides a summary of these entities, their 
-representations in neural nets and inter-entity relation examples in these 
-domains.
+In order to find out how a neural net can predict link attributes, we first 
+review how it handles entities in different domains.
+\autoref{tab:domains} provides a summary of various types of entities, their 
+numerical representations and inter-entity relations in different domains.
 \begin{table}[h]
 	\centering
-	\begin{tabularx}{\textwidth}{ |c|c|c|X| }
-		\hline domain & entity & representation & relations to other entities 
-		\\ 
-		\hline image recognition & image & 2D light intensity array & NA \\ 
-		\hline speech recognition & utterance/spectrogram & 2D sound intensity 
-		array & NA \\ 
-		\hline natural language & word & word vector & relations to other words 
-		\\ 
-		\hline graph & movie & node vector & directed by director, etc \\ 
-		\hline graph & user & node vector & rate movies, etc \\
+	\begin{tabularx}{\textwidth}{ |c|c|c|X| } \hline
+		domain & entity & representation & relations to other entities \\ \hline
+		image recognition & image & 2D light intensity array & NA \\ \hline 
+		speech recognition & utterance/spectrogram & 2D sound intensity array & 
+		NA \\ \hline
+		natural language & word & word vector & relations to other words \\ 
 		\hline
+		graph & movie & node vector & directed by director, etc \\ \hline
+		graph & user & node vector & rate movies, etc \\ \hline
 	\end{tabularx}
-	\caption{A summary of various types of entities, their numerical 
-	representations and inter-entity relations in different domains: images and 
-	utterances can be directly represented by 2D numerical arrays, but have no 
-	strong relations to other images or utterances; words and various types of 
-	nodes in graphs can represented by 1D numerical arrays(which will be 
-	introduced below), and have strong relations to other words and nodes. 
-	Notice that the representations for all the entities are numerical arrays, 
-	because neural nets rely on neurons' activations and communications, which 
-	are both numerical.}
+	\caption{A summary of various types of entities, their numerical
+		representations and inter-entity relations in different domains:
+		Images and utterances can be directly represented by 2D numerical 
+		arrays, but have no strong relations to other images or utterances. 
+		words and various types of nodes in graphs can represented by vectors 
+		(1D numerical arrays) and have strong relations to other words and 
+		nodes.}
 	\label{tab:domains}
-\end{table}
-The entities listed in the lower rows have increasing 
-representation complexities.
-Images and utterances(spectrograms) can be naturally represent as 2D numerical 
-arrays, which makes them easy for neural net to process.
-Words can be mapped to 1D numerical arrays (i.e. word vectors) by word2vec 
-technique so neural nets can still process them \cite{mikolov2013efficient}.
+\end{table} 
+Notice that the representations for all the entities are numerical arrays, 
+because neural nets rely on neurons' activations and communications, which 
+are both numerical.
 
-\subsection{Learning word vectors}
-Interestingly, it turns out neural net itself has the capability to do the 
-mapping.
-In word2vec, a neural net learns to map every word to a vector without any 
-domain knowledge.
-\autoref{tab:word} shows how each word in a vocabulary is represented by a word 
+\subsection{Mapping word to vectors}
+Words can be mapped to vectors by word2vec technique 
+\cite{mikolov2013efficient}.
+In word2vec, a neural net learns to map every word in a vocabulary to a vector 
+without any domain knowledge.
+\autoref{tab:word} shows a mapping table that maps each word ID to the word 
 vector.
 \begin{table}[h]
 	\centering
@@ -132,23 +124,23 @@ vector.
 		... & ... \\ \hline
 		n & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
 	\end{tabularx}
-	\caption{Word to vector mapping table in a vocabulary of size n and word 
-	vectors with size d: 
-	Each word has an ID and its spelling is now shown;
-	each vector is randomly initialized before learning and then gradually 
+	\caption{Word to vector mapping table for a vocabulary of size n with word 
+	vectors of size d:
+	Each word has its ID and its characters don't matter (possibly Chinese or 
+	Hindi).
+	Each vector is randomly initialized before learning and then gradually 
 	updated by the neural net during learning.}
 	\label{tab:word}
 \end{table}
-In a corpus, every word is described/defined only by related 
-words in its context, although relations between the words are implicit. 
-Nonetheless, the neural net can learn from word co-occurrences and map words 
-accordingly such that the relations between words are preserved in the vector 
-space \cite{mikolov2013distributed}.
+In a corpus, every word is described/defined only by related words in its 
+context, although relations between the words are implicit. 
+Nonetheless, the neural net can learn from word co-occurrences (i.e., 
+relations) and map words to vectors accordingly such that the relations between 
+words are preserved in the vector space \cite{mikolov2013distributed}.
 
-\subsection{Learning node vectors}
-
-If we compare language data and graph data, we can immediately realize they 
-have many similarities, shown in \autoref{tab:wordVSnode}.
+\subsection{Mapping node to vectors}
+If we compare language data and graph data, we can see they have many 
+similarities, shown in \autoref{tab:wordVSnode}.
 \begin{table}[h]
 	\centering
 	\begin{tabularx}{\textwidth}{ |X|X|X| } \hline
@@ -164,22 +156,19 @@ have many similarities, shown in \autoref{tab:wordVSnode}.
 		to map nodes to node vectors just like mapping words to word vectors.}
 	\label{tab:wordVSnode}
 \end{table}
-Word and node vectors are similar to feature vectors. We didn't use the term 
-feature vector to avoid any implication of feature engineering with domain 
-knowledge. Typically, the attributes of words and nodes are not observable so 
-neural nets need to learn these vectors from the relations between words and 
-nodes.
-Apparently, mapping node to node vectors should be more direct than mapping 
-word to word vectors, because the relations between nodes are explicit(i.e., 
-link and link attributes), while relations between words are implicit(i.e., 
-word co-occurrences). In a social network example, the rating a movie received 
-from a user explicitly tells us how much the user likes that movie; the number 
-of messages a user sends to another user explicitly tells us how close they are 
-connected. In a corpus example, the co-occurrences of words [the, quick, brown, 
+Apparently, mapping node to vectors should be more direct than mapping word to 
+vectors, because the relations between nodes are explicit(i.e., link and link 
+attributes), while relations between words are implicit(i.e., word 
+co-occurrences).
+In a social network example, the rating a movie received from a user explicitly 
+tells us how much the user likes that movie; the number of messages a user 
+sends to another user explicitly tells us how close they are connected.
+In a language corpus example, the co-occurrences of words [the, quick, brown, 
 fox, jumps, over] implicitly suggest these words may be related but do not tell 
-us what their relations are. This means the neural net should be able to learn 
-node mapping supervised by the link attributes in a more direct way than it 
-learns word mapping supervised by word co-occurrences.
+us what their relations are.
+This suggests that a neural net should be able to learn node mapping supervised 
+by the link attributes in a more direct way than it learns word mapping 
+supervised by word co-occurrences.
 
 \section{Application scenario}
 
@@ -390,7 +379,7 @@ The code is in Python and the main machine learning package is TensorFlow
 
 \section{Experiments}
 
-\subsection{Process}
+\subsection{Learning process}
 The estimator learns for several epochs.
 During each epoch, the it updates its model by fitting the training set, and 
 then evaluates the progress by performing prediction using the validation set.
@@ -516,7 +505,8 @@ interested in our work \footnote{https://github.com/yuchenhou/elephant}.
 
 \section{Conclusions}
 Node mapping is a efficient technique for link attribute prediction using 
-neural net models.
+neural net models. The estimator learns both to represent each node with a 
+vector, and to predict the target link attribute using these vectors.
 It achieves better rating prediction accuracy than the state-of-the-art 
 collaborative filtering and category experts methods.
 For recommendation tasks in social networks, this technique provides a 
