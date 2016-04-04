@@ -4,6 +4,8 @@
 \usepackage{fullpage}
 \usepackage{tabularx}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
 \usepackage{cite}
@@ -174,27 +176,33 @@ rating given to the movie by the user:
 	\item output: Y = rating(user, movie)
 \end{itemize}
 This is a common prediction task for recommender systems,
-and one of the latest achievement in this area is the category experts approach,
-which can outperform classical collaborative filtering approaches 
-\cite{hwang2016efficient}.
-We will evaluate the node mapping approach in the same task to see how accurate 
-its prediction can be compared to these latest approaches.
+and one of the popular techniques used by these systems is collaborative 
+filtering \cite{polatidis2016multi}.
+We will compare node mapping against collaborative filtering in this same 
+task to see how well our new technique works.
 
-\subsection{Dataset and experiment}
-We use the same dataset and experiment used in \cite{hwang2016efficient}. The 
-dataset is the MovieLens 100k dataset 
-\cite{harper2015movielens}  
-\footnote{http://grouplens.org/datasets/movielens/100k/}, which has the 
-following specs:
-\begin{itemize}
-	\item number of users: 1,000
-	\item number of movies: 1,700
-	\item number of ratings: 100,000
-\end{itemize}
-\autoref{tab:rating} shows some of its samples.
+\subsection{Datasets}
+\autoref{tab:dataset} shows the specs of 2 MovieLens datasets 
+\cite{harper2015movielens} \footnote{http://grouplens.org/datasets/movielens} 
+used as benchmarks for multiple variants of collaborative filtering techniques 
+in 2 recent publications \cite{hwang2016efficient} \cite{polatidis2016multi}.
 \begin{table}[h]
 	\centering
-	\caption{The Movie Lens dataset: Every link has 1 numerical attribute - 
+	\caption{The dataset specs: MovieLens 100K and MovieLens 1M datasets.}
+	\begin{tabularx}{\textwidth}{ |X|c|c|c|c| }  \hline
+		\textbf{Dataset} & \textbf{Number of users} & \textbf{Number of movies} 
+		& \textbf{Number of ratings} & \textbf{References} \\ \hline
+		MovieLens 100K & 1,000 & 1,700 & 100,000 & \cite{hwang2016efficient} \\ 
+		\hline
+		MovieLens 1M & 6,000 & 4,000 & 1,000,000 & \cite{polatidis2016multi} \\ 
+		\hline
+	\end{tabularx}
+	\label{tab:dataset}
+\end{table}
+\autoref{tab:rating} shows a few data samples.
+\begin{table}[h]
+	\centering
+	\caption{The dataset samples: Every link has 1 numerical attribute - 
 		rating. The rating values in this table are hypothetical.}
 	\begin{tabularx}{0.5\textwidth}{ |X|X|X| }  \hline
 		\textbf{User ID} & \textbf{Movie ID} & \textbf{Rating} \\ \hline
@@ -206,9 +214,12 @@ following specs:
 	\end{tabularx}
 	\label{tab:rating}
 \end{table}
-The experiment splits the dataset into 2 parts: 20\% into test set and 80\% 
-into training set; the prediction accuracy metric is MAE (mean absolute error).
-Our estimator also takes 10\% of the training set out as the validation set.
+The prediction accuracy metric used is MAE (mean absolute error).
+Each dataset is split into 2 parts: 20\% into test set and 80\% 
+into training set.
+We will conduct the same experiments in \cite{hwang2016efficient} and  
+\cite{polatidis2016multi} and compare the results.
+Our estimator uses 10\% of the training set as the validation set.
 
 \section{Implementation}
 
@@ -369,7 +380,7 @@ techniques:
 
 \section{Experiments}
 
-\subsection{Learning process}
+\subsection{Experiment process}
 The estimator learns for several epochs.
 During each epoch, it updates its model by fitting the training set, and 
 then evaluates the learning progress by performing prediction using the 
@@ -377,6 +388,17 @@ validation set.
 It logs the average training error and average validation error for each epoch 
 and stops learning when the validation error starts increasing to reduce 
 over-fitting.
+The following Python code snippet shows the above process:
+\begin{lstlisting}
+validation_errors = [sys.float_info.max, sys.float_info.max]
+while validation_error[-2] >= validation_error[-1]:
+	estimator.fit(x_train, y_train)
+	training_error = MAE(y_train, estimator.predict(x_train))
+	validation_error = MAE(y_validation, estimator.predict(x_validation))
+	print('\t'.join(map(str, [training_error, validation_error])), file=log)
+	validation_errors.append(validation_error)
+test_error = MAE(y_test, estimator.predict(x_test))
+\end{lstlisting}
 This early stopping technique can work well in case both validation error and 
 testing error monotonically decrease to their minimum at the same epoch.
 We have not explored more complex early stopping technique to handle other 
@@ -386,25 +408,48 @@ using the testing set.
 \autoref{fig:trainnig} shows an example learning process with error traces.
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.5\linewidth]{training}
-	\caption{An example learning process of 11 epochs (starting from epoch 0): 
+	\begin{subfigure}{0.4\textwidth}
+		\includegraphics[width=\textwidth]{movieLens100K}
+		\caption{MovieLens 100K}
+		\label{fig:movieLens100K}
+	\end{subfigure}
+	\begin{subfigure}{0.4\textwidth}
+		\includegraphics[width=\textwidth]{movieLens1M}
+		\caption{MovieLens 1M}
+		\label{fig:movieLens1M}
+	\end{subfigure}
+	%\includegraphics[width=0.5\linewidth]{training}
+	\caption{2 example learning process of 11 epochs (starting from epoch 0): 
 	The estimator stopped learning at epoch 10 when validation error started 
-	increasing. The testing error is 0.714.}
+	increasing. The testing error is 0.711.}
 	\label{fig:trainnig}
 \end{figure}
 
 \subsection{Prediction accuracy}
-The lowest testing error the estimator can achieve is 0.692.
-This is better than the state-of-the-art testing error 0.740 achieved by 
-collaborative filtering and category experts methods on this dataset 
-\cite{hwang2016efficient}.
+
+\autoref{tab:accuracy} shows that node mapping outperforms the all variants of 
+collaborative filtering demonstrated in \cite{hwang2016efficient} and  
+\cite{polatidis2016multi}.
+\begin{table}[h]
+	\centering
+	\caption{The comparison of prediction accuracy: node mapping has lower 
+	errors than best collaborative filtering in both experiments.}
+	\begin{tabularx}{\textwidth}{ |X|c|c| }  \hline
+		\textbf{Dataset} & \textbf{Collaborative filtering lowest MAE} & 
+		\textbf{Node 
+		mapping MAE} \\ \hline
+		MovieLens 100K & 0.74 & 0.692 \\ \hline
+		MovieLens 1M & 0.79 & 0.655 \\ \hline
+	\end{tabularx}
+	\label{tab:accuracy}
+\end{table}
 \autoref{tab:robust} shows that the estimator is also very robust against 
 parameter changes.
 \begin{table}[h]
 	\centering
 	\caption{High robustness of the estimator against parameter changes: 
 		The estimator maintains testing errors in range [0.69, 0.72] for a wide 
-		range of parameters.}
+		range of parameters. These experiments are on MovieLens 100K dataset.}
 	\begin{tabularx}{\textwidth}{ |X|c|c|c|c| }  \hline
 		 \textbf{Learning rate} & \textbf{Keep probability} & \textbf{Layer 
 		 size} & \textbf{Number of hidden layers} & \textbf{Testing error} \\ 
