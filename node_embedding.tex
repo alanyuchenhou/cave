@@ -19,12 +19,12 @@
 \begin{abstract}
 	We present node mapping, a machine learning technique created for numerical 
 	link attribute prediction tasks in a graph.
-	Using this technique, the estimator builds a neural net model, learns to 
+	In this technique, the estimator uses a neural net model to learn to 
 	represent every node in the graph as a node vector of real numbers (mapping 
-	nodes to vectors), and learns to predict the target link attribute using 
+	nodes to vectors), and to learn to predict the target link attribute using 
 	these node vectors.
-	The main idea is to extract information about nodes from links and use this 
-	information to predict unknown link attributes.
+	The main idea is to extract information about nodes from links and to use 
+	this information to predict unknown link attributes.
 	We demonstrate the usage and high accuracy of this technique in a movie 
 	rating prediction task.
 \end{abstract}
@@ -33,33 +33,36 @@
 
 \subsection{Background}
 Both academia and industry have seen pervasive adoption of deep learning 
-techniques powered by artificial neural network models since early 2010s, when 
-they began to outperform other machine learning techniques in various 
+techniques powered by artificial neural network models since early 2010s,
+when they began to outperform other machine learning techniques in various 
 application domains (e.g., speech recognition \cite{hannun2014deep}, image 
 recognition \cite{simonyan2014very}, and natural language processing 
 \cite{yao2013recurrent}).
 These neural net models can not only achieve higher prediction accuracy than 
-traditional models, but also require much less domain knowledge and engineering.
+traditional models,
+but also require much less domain knowledge and engineering.
 Moreover, neural net models have participated in more general artificial 
-intelligence design by complementing search techniques, demonstrated by
-Google AlphaGo AI when it defeated go champion Lee Sedol in 2016 
-\cite{silver2016mastering}.
+intelligence design by complementing search techniques, 
+demonstrated by Google AlphaGo AI when it defeated go champion Lee Sedol in 
+2016 \cite{silver2016mastering}.
 Specifically, in a game like go with simple rules but too many possible 
-configurations to explore, neural net models achieve good results with 
-reasonable computing resources, which are easily exhausted by algorithms solely 
-powered by search.
+configurations to explore,
+neural net models achieve good results with reasonable computing resources, 
+which are easily exhausted by algorithms solely powered by search.
 
 \subsection{Motivation}
-As neural nets have demonstrated their power in many domains, we naturally 
-wonder if we can apply them in prediction tasks in graph mining domains, and 
-what kind of techniques are helpful in using their power.
+As neural nets have demonstrated their power in many domains,
+we naturally wonder if we can apply them in prediction tasks in graph mining 
+domains, 
+and what kind of techniques are helpful in using their power.
 There are existing techniques with promising results already.
 Two earlier attempts were graph neural nets and relational neural 
-nets \cite{scarselli2009graph}, where neural nets are incorporated into a 
-traditional iterative graph information propagation approach.
-A later attempt was deep walk \cite{perozzi2014deepwalk}, where a graph is 
-reduced to a natural language corpus so that existing neural net models 
-designed for natural language processing can handle the graph.
+nets \cite{scarselli2009graph}, 
+where neural nets are incorporated into a traditional iterative graph 
+information propagation approach.
+A later attempt was deep walk \cite{perozzi2014deepwalk}, 
+where a graph is reduced to a natural language corpus so that existing neural 
+net models designed for natural language processing can handle the graph.
 We initiated our research hoping to create a simpler, more direct technique 
 that can take advantage of rich information in graphs.
 We are particularly interested in application scenarios like making 
@@ -85,10 +88,10 @@ numerical representations and inter-entity relations in different domains.
 	\caption{A summary of various types of entities, their numerical
 		representations and inter-entity relations in different domains:
 		Images and utterances can be directly represented by 2D numerical 
-		arrays, but have no strong relations to other images or utterances. 
-		Words and various types of nodes in graphs can represented by vectors 
-		(1D numerical arrays) and have strong relations to other words and 
-		nodes.}
+		arrays, 
+		but their relations to other images or utterances are not well known. 
+		Words and nodes in graphs can represented by vectors (1D numerical 
+		arrays) and their relations to other words and nodes are well known.}
 	\begin{tabularx}{\textwidth}{ |c|c|c|X| } \hline
 		\textbf{Domain} & \textbf{Entity} & \textbf{Representation} & 
 		\textbf{Relations to other entities} \\ \hline
@@ -101,7 +104,7 @@ numerical representations and inter-entity relations in different domains.
 	\end{tabularx}
 	\label{tab:domains}
 \end{table}
-Notice that the representations for all the entities are numerical arrays, 
+The representations for all the entities are numerical arrays, 
 because neural nets rely on neurons' activations and communications, which 
 are both numerical.
 
@@ -127,50 +130,55 @@ vector.
 	\label{tab:word}
 \end{table}
 In a corpus, every word is described/defined only by related words in its 
-context, although relations between the words are implicit. 
-Nonetheless, the neural net can learn from word co-occurrences (i.e., 
-relations) and map words to vectors accordingly such that the relations between 
-words are preserved in the vector space \cite{mikolov2013distributed}.
+contexts, by implicit relations between words in word co-occurrences.
+Nonetheless, the neural net can learn from word co-occurrences and map words to 
+vectors accordingly,
+such that the relations between words are preserved in the word vector space 
+\cite{mikolov2013distributed}.
 
 \subsection{Mapping nodes to vectors}
-If we compare language data and graph data, we can see they have many 
-similarities, shown in \autoref{tab:domains}.
+\autoref{tab:domains} also shows the similarities between language data and 
+graph data.
 These similarities suggest a neural net should be able to map nodes to node 
 vectors just like mapping words to word vectors.
 Moreover, the relations between nodes are explicit (i.e., links),
 while relations between words are implicit (i.e., word co-occurrences).
 In a social network example, the rating a movie received from a user explicitly 
-tells us how much the user likes that movie; the number of messages a user 
-sends to another user explicitly tells us how close they are connected.
+tells us how much the user likes that movie;
+the amount of messages a user sends to another user explicitly tells us how 
+much the user like to talk to the other user.
 In a language corpus example, the co-occurrences of words [the, quick, brown, 
-fox, jumps, over] implicitly suggest these words may be related but do not tell 
-us what their relations are.
-This suggests that a neural net should be able to learn node mappings 
-supervised by the link attributes more directly than it learns word mappings 
-supervised by word co-occurrences.
+fox, jumps, over] implicitly tell us these words are related but do not tell us 
+what their relations are.
+This observation suggests that a neural net should be able to learn node 
+mappings supervised by the link attributes more directly than it learns word 
+mappings supervised by word co-occurrences.
 
 \section{Application scenario}
 
 \subsection{Scenario: movie recommendations}
-We first demonstrate a simplified application scenario on a bipartite graph: 
+We first demonstrate a simple application scenario on a bipartite graph: 
 movie recommendations.
 This is a simplified social network where users can only give ratings to movies 
 (or like/dislike posts, etc.).
 The service provider is interested in recommending movies for each user, solely 
 based on the ratings he has given to different movies.
+
+\subsection{Graph: users rating movies}
 Formally, the graph is:
 \begin{itemize}
 	\item a node set consisting of 2 types of nodes: users and movies
 	\item a link set consisting of 1 type of links: user-movie links with 
-	numerical attribute - the rating a user has given to a movie
+	a numerical attribute - the rating a user has given to a movie
 \end{itemize}
-If we can build an estimator to predict the rating attribute of user-movie 
-links, we can know how much a user would like each of the movies he has not 
+If we can build an estimator to predict the rating attributes of unknown 
+user-movie links, 
+we can know how much a user would like each of the movies he has not 
 rated and recommend those he would like the most to him.
 
 \subsection{Prediction task: movie rating prediction}
 Formally, the prediction task is, given any (user, movie) pair, predict the 
-rating given to the movie by the user:
+rating the user would give to the movie:
 \begin{itemize}
 	\item input: X = (user, movie)
 	\item output: Y = rating(user, movie)
@@ -182,10 +190,10 @@ We will compare node mapping against collaborative filtering in this same
 task to see how well our new technique works.
 
 \subsection{Datasets}
-\autoref{tab:dataset} shows the specs of 2 MovieLens datasets 
-\cite{harper2015movielens} \footnote{http://grouplens.org/datasets/movielens} 
-used as benchmarks for multiple variants of collaborative filtering techniques 
-in 2 recent publications \cite{hwang2016efficient} \cite{polatidis2016multi}.
+There are 2 recent publications where a large number of collaborative filtering 
+variants are benchmarked \cite{hwang2016efficient} \cite{polatidis2016multi}. 
+\autoref{tab:dataset} shows the specs of 2 datasets used
+\cite{harper2015movielens} \footnote{http://grouplens.org/datasets/movielens}.
 \begin{table}[h]
 	\centering
 	\caption{The dataset specs: MovieLens 100K and MovieLens 1M datasets.}
@@ -224,7 +232,7 @@ Our estimator uses 10\% of the training set as the validation set.
 \section{Implementation}
 
 \subsection{Conceptual model: fully-connected neural net}
-The estimator includes a fully-connected neural net model, shown in 
+The estimator uses a fully-connected neural net model, shown in 
 \autoref{fig:conceptural}.
 \begin{figure}[h]
 	\centering
@@ -276,7 +284,7 @@ The model contains the following layers:
 	and 1 channel for users;
 	this layer is directly activated by the testing program (e.g., to feed the 
 	1200th movie, the testing program sets 1 at the 1200th unit and 0 at other 	
-	units in the movie channel)
+	units in the movie channel);
 	\item a mapping layer with linear units: it has 2 channels to map each 
 	movie (and each user) to a vector;
 	the activations of these 2 channels form the 2 node vectors (i.e., the 
@@ -399,13 +407,13 @@ while validation_error[-2] >= validation_error[-1]:
 	validation_errors.append(validation_error)
 test_error = MAE(y_test, estimator.predict(x_test))
 \end{lstlisting}
-This early stopping technique can work well in case both validation error and 
-testing error monotonically decrease to their minimum at the same epoch.
+This early stopping technique can work well in case validation error 
+monotonically decrease to its minimum.
 We have not explored more complex early stopping technique to handle other 
 cases.
 After learning, the estimator evaluates its model by performing prediction 
 using the testing set.
-\autoref{fig:trainnig} shows an example learning process with error traces.
+\autoref{fig:trainnig} shows 2 example learning processes with error traces.
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.4\textwidth}
@@ -418,16 +426,15 @@ using the testing set.
 		\caption{MovieLens 1M}
 		\label{fig:movieLens1M}
 	\end{subfigure}
-	%\includegraphics[width=0.5\linewidth]{training}
-	\caption{2 example learning process of 11 epochs (starting from epoch 0): 
-	The estimator stopped learning at epoch 10 when validation error started 
-	increasing. The testing error is 0.711.}
+	\caption{2 example learning processes on different datasets:
+	The estimator stops learning when validation errors started increasing at 
+	the last epochs. 
+	The testing errors are 0.711 for MovieLens 100K and 0.655 for MovieLens 1M.}
 	\label{fig:trainnig}
 \end{figure}
 
-\subsection{Prediction accuracy}
-
-\autoref{tab:accuracy} shows that node mapping outperforms the all variants of 
+\subsection{Experiment results: prediction accuracy and estimator robustness}
+\autoref{tab:accuracy} shows that node mapping outperforms all variants of 
 collaborative filtering demonstrated in \cite{hwang2016efficient} and  
 \cite{polatidis2016multi}.
 \begin{table}[h]
@@ -435,9 +442,8 @@ collaborative filtering demonstrated in \cite{hwang2016efficient} and
 	\caption{The comparison of prediction accuracy: node mapping has lower 
 	errors than best collaborative filtering in both experiments.}
 	\begin{tabularx}{\textwidth}{ |X|c|c| }  \hline
-		\textbf{Dataset} & \textbf{Collaborative filtering lowest MAE} & 
-		\textbf{Node 
-		mapping MAE} \\ \hline
+		\textbf{Dataset} & \textbf{Collaborative filtering MAE} & 
+		\textbf{Node mapping lowest MAE} \\ \hline
 		MovieLens 100K & 0.74 & 0.692 \\ \hline
 		MovieLens 1M & 0.79 & 0.655 \\ \hline
 	\end{tabularx}
@@ -469,7 +475,8 @@ parameter changes.
 
 \subsection{Computing resources}
 We run our experiments on a stock Dell Optiplex 780 and each run(learning and 
-prediction for a specific parameter setting) takes around 1 to 2 minutes.
+prediction for a specific parameter setting) takes around 1 minute on MovieLens 
+100K dataset and 8 minutes on MovieLens 1M dataset.
 
 \section{Strengths}
 
@@ -477,7 +484,7 @@ prediction for a specific parameter setting) takes around 1 to 2 minutes.
 This technique takes a node-centered approach as the estimator extracts 
 information about nodes from links.
 In a social network, this leverages the fact that who a user contacts and what 
-movies a user likes tell us what kind of person he is and helps us make 
+movies a user likes tell us what kind of person he is and help us make 
 recommendations for him.
 It effectively learns complex and unobservable user attributes (node 
 attributes) from simple and observable user activities (link attributes). 
@@ -490,7 +497,7 @@ complexity and observability.
 		Links tend to have low complexity and high observability while nodes 
 		are the opposite.
 		For example, it is easy to observe simple user activities like sending 
-		messages to other users and give ratings to music,
+		messages to other users and giving ratings to movies,
 		but it is hard to observe complex user attributes like personality, 
 		style or taste in movies.}
 	\begin{tabularx}{0.5\textwidth}{ |X|X|X| } \hline
@@ -515,13 +522,15 @@ streaming graphs:
 	operations like neighbor nodes lookup
 \end{itemize}
 We have not explored more sophisticated techniques for streaming graphs like 
-caching a finite set of new links/nodes and learn for multiple epochs on that 
-set.
+caching a finite set of new links/nodes and learning for multiple epochs on 
+that set.
 
 \section{Future work}
 In order to generalize this node mapping technique to perform a wider range of 
 prediction tasks related to making recommendations for users in a social 
-network, we can consider to work on the following new features:
+network,
+we can consider to work on the following new features for better 
+recommendations including friends, groups and posts to users:
 \begin{itemize}
 	\item handle links connecting 2 nodes of the same type: e.g., given user A 
 	and B, predict the amount of messages A sends to B
@@ -547,8 +556,8 @@ Node mapping is an effective technique to predict link attributes in a graph
 using a neural net model.
 The estimator learns both to represent each node with a vector, and to predict 
 the target link attribute using these vectors.
-It achieves better rating prediction accuracy than the state-of-the-art 
-collaborative filtering and category experts methods.
+It achieves better rating prediction accuracy than collaborative filtering and 
+many of its variants.
 For recommendation tasks in social networks, this technique coincides with the 
 idea of understanding complex users from their simple activities, and using 
 that understanding to predict their future activities.
