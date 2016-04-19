@@ -13,7 +13,7 @@
 \usepackage{float}
 \begin{document}
 \lstset{language=python, tabsize=4}
-\title{Node mapping}
+\title{Node mapping: a neural network approach to graph mining}
 \maketitle
 
 \begin{abstract}
@@ -83,6 +83,9 @@ In order to find out how a neural net can predict link attributes, we first
 review how it handles entities in different domains.
 \autoref{tab:domains} provides a summary of various types of entities, their 
 numerical representations and inter-entity relations in different domains.
+The representations for all the entities are numerical arrays, 
+because neural nets rely on neurons' activations and communications, which 
+are both numerical.
 \begin{table}[h]
 	\centering
 	\caption{A summary of various types of entities, their numerical
@@ -104,15 +107,18 @@ numerical representations and inter-entity relations in different domains.
 	\end{tabularx}
 	\label{tab:domains}
 \end{table}
-The representations for all the entities are numerical arrays, 
-because neural nets rely on neurons' activations and communications, which 
-are both numerical.
 
 \subsection{Mapping words to vectors}
 The famous word2vec technique uses a neural net to learn to map every word in a 
 vocabulary to a vector without any domain knowledge \cite{mikolov2013efficient}.
 \autoref{tab:word} shows a mapping table that maps each word ID to the word 
 vector.
+In a corpus, every word is described/defined only by related words in its 
+contexts, by implicit relations between words in word co-occurrences.
+Nonetheless, the neural net can learn from word co-occurrences and map words to 
+vectors accordingly,
+such that the relations between words are preserved in the word vector space 
+\cite{mikolov2013distributed}.
 \begin{table}[h]
 	\centering
 	\caption{Word to vector mapping table for a vocabulary of size n with word 
@@ -129,12 +135,6 @@ vector.
 	\end{tabularx}
 	\label{tab:word}
 \end{table}
-In a corpus, every word is described/defined only by related words in its 
-contexts, by implicit relations between words in word co-occurrences.
-Nonetheless, the neural net can learn from word co-occurrences and map words to 
-vectors accordingly,
-such that the relations between words are preserved in the word vector space 
-\cite{mikolov2013distributed}.
 
 \subsection{Mapping nodes to vectors}
 \autoref{tab:domains} also shows the similarities between language data and 
@@ -146,7 +146,7 @@ while relations between words are implicit (i.e., word co-occurrences).
 In a social network example, the rating a movie received from a user explicitly 
 tells us how much the user likes that movie;
 the amount of messages a user sends to another user explicitly tells us how 
-much the user like to talk to the other user.
+much the user likes to talk to the other user.
 In a language corpus example, the co-occurrences of words [the, quick, brown, 
 fox, jumps, over] implicitly tell us these words are related but do not tell us 
 what their relations are.
@@ -174,7 +174,7 @@ Formally, the graph is:
 If we can build an estimator to predict the rating attributes of unknown 
 user-movie links, 
 we can know how much a user would like each of the movies he has not 
-rated and recommend those he would like the most to him.
+rated and recommend those he would like the most.
 
 \subsection{Prediction task: movie rating prediction}
 Formally, the prediction task is, given any (user, movie) pair, predict the 
@@ -190,10 +190,20 @@ We will compare node mapping against collaborative filtering in this same
 task to see how well our new technique works.
 
 \subsection{Datasets}
-There are 2 recent publications where a large number of collaborative filtering 
-variants are benchmarked \cite{hwang2016efficient} \cite{polatidis2016multi}. 
+There are two recent publications where a large number of collaborative 
+filtering variants are benchmarked \cite{hwang2016efficient} 
+\cite{polatidis2016multi}. 
 \autoref{tab:dataset} shows the specs of 2 datasets used
 \cite{harper2015movielens} \footnote{http://grouplens.org/datasets/movielens}.
+\autoref{tab:rating} shows a few data samples.
+The prediction accuracy metric used is MAE (mean absolute error).
+Each dataset is split into 2 parts: 20\% into test set and 80\% 
+into training set.
+We will conduct the same experiments as in \cite{hwang2016efficient} and  
+\cite{polatidis2016multi} and compare the results.
+Our estimator sets aside 10\% of the training set as the validation set.
+Using larger or smaller validation set doesn't improve the prediction accuracy 
+in our experiments.
 \begin{table}[h]
 	\centering
 	\caption{The dataset specs: MovieLens 100K and MovieLens 1M datasets.}
@@ -207,7 +217,6 @@ variants are benchmarked \cite{hwang2016efficient} \cite{polatidis2016multi}.
 	\end{tabularx}
 	\label{tab:dataset}
 \end{table}
-\autoref{tab:rating} shows a few data samples.
 \begin{table}[h]
 	\centering
 	\caption{The dataset samples: Every link has 1 numerical attribute - 
@@ -222,18 +231,13 @@ variants are benchmarked \cite{hwang2016efficient} \cite{polatidis2016multi}.
 	\end{tabularx}
 	\label{tab:rating}
 \end{table}
-The prediction accuracy metric used is MAE (mean absolute error).
-Each dataset is split into 2 parts: 20\% into test set and 80\% 
-into training set.
-We will conduct the same experiments in \cite{hwang2016efficient} and  
-\cite{polatidis2016multi} and compare the results.
-Our estimator uses 10\% of the training set as the validation set.
 
-\section{Implementation}
+\section{Solution: neural recommender model}
 
-\subsection{Conceptual model: fully-connected neural net}
-The estimator uses a fully-connected neural net model, shown in 
-\autoref{fig:conceptural}.
+\subsection{Conceptual model}
+Using node mapping technique, we can provide a solution to the recommender 
+problem: we create an estimator with a neural net model called neural 
+recommender model, shown in \autoref{fig:conceptural}.
 \begin{figure}[h]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
@@ -265,17 +269,17 @@ The estimator uses a fully-connected neural net model, shown in
 	\draw [arrow] (relu3) -- (linearRegression);
 	\draw [arrow] (linearRegression) -- (rating);
 	\end{tikzpicture}
-	\caption{The conceptual fully-connected neural net model for a dataset
-		with 1700 movies and 1000 users:
-		The d in the bracket refers to dimension, the layer's size (number of 
-		units in the layer).
-		We keep all layers the same size for simplicity, although layers of 
-		different sizes may produce better results.
-		The text before the bracket refers to the activation function of the 
-		units in the layer (except for one-hot, which refers to the activations 
-		in the input layer).
-		Only layers and their connections are shown, while the units in each 
-		layer and their connections are not shown.}
+	\caption{The conceptual neural recommender model for a dataset with 1700 
+	movies and 1000 users:
+	The d in the bracket refers to dimension, the layer's size (number of 
+	units in the layer).
+	We keep all layers the same size for simplicity, although layers of 
+	different sizes may produce better results.
+	The text before the bracket refers to the activation function of the 
+	units in the layer (except for one-hot, which refers to the activations 
+	in the input layer).
+	Only layers and their connections are shown, while the units in each 
+	layer and their connections are not shown.}
 	\label{fig:conceptural}
 \end{figure}
 The model contains the following layers:
@@ -291,8 +295,9 @@ The model contains the following layers:
 	movie vector and the user vector);
 	it is the most critical layer as it gradually learns to map every node to 
 	the correct vector during training;
-	\item several hidden layers (only 1 layer is shown in the figure) of 
-	ReLU (rectified linear unites):
+	\item several hidden layers (1 layer is shown in the figure; multiple 
+	numbers of layers and layer sizes are experimented) of ReLU 
+	(rectified linear unites):
 	they have non-linear activation functions to give the model sufficient 
 	complexity; 
 	they learn to process node vectors and produce more abstract 
@@ -300,28 +305,28 @@ The model contains the following layers:
 	\item an output layer with a linear regression unit: it learns to predict 
 	the rating based on processed information;
 \end{itemize}
-We fully take into account of the characteristics of social networks when 
-designing this model. In a social network, user activities - not user profiles 
-- provide the most information about users, so we design it to learn node 
-vectors supervised by link attributes.
-We have also considered other alternative models, but we find 
-them hard to scale. For example, we can represent a user as the vector of movie 
-ratings he has given, but this approach will not scale if we have an increasing 
-number of movies - we can not simply increase the size of the node vectors to 
-fit 
-in more ratings because that requires constantly changing the topology of the 
-model and retraining.
+We fully take into account the characteristics of social networks when 
+designing this model.
+In a social network, user activities - not user profiles - provide the most 
+information about users, so we design the model to learn node vectors 
+supervised by link attributes.
+We have considered alternative models, but we find them hard to scale.
+For example, we can represent a user as the vector of movie ratings he has 
+given, 
+but this approach will not scale if we have an increasing number of movies.
+For example, a new user will require an update to the network topology (at 
+least at the input layer) and retraining.
 
-\subsection{Actual model: fully connected neural net and mapping tables}
+\subsection{Actual model}
 In practice, the estimator uses more efficient mapping tables instead of a 
 one-hot input layer to handle a graph with increasing number of nodes.
-\autoref{fig:actural} shows the actual model with 2 modifications from the 
+\autoref{fig:actural} shows the actual model with two modifications from the 
 conceptual model:
 \begin{itemize}
 	\item The input layer becomes 2 mapping tables: 1 for movie nodes and 1 
 	for user nodes;
 	their inputs are node IDs and their outputs are node vectors, just like the 
-	word to vector mapping table shown in \autoref{tab:word}
+	word to vector mapping table referenced in \autoref{tab:word}
 	\item The mapping layer becomes a 2-channel input layer: it is directly 
 	activated by the outputs of the mapping tables
 \end{itemize}
@@ -358,7 +363,7 @@ conceptual model:
 	\draw [arrow] (relu3) -- (linearRegression);
 	\draw [arrow] (linearRegression) -- (rating);
 	\end{tikzpicture}
-	\caption{The actual implementation with 2 modifications:
+	\caption{The actual model with two modifications:
 		We factor the node to vector mapping process out of the neural net into 
 		2 node to vector mapping tables.
 		We feed every node (a movie or user) to the estimator by feeding the 
@@ -372,13 +377,12 @@ conceptual model:
 The estimator uses the above neural net model and a number of popular learning 
 techniques:
 \begin{itemize}
-	\item backpropagation: back propagation of the error gradients from output 
-	layer back to each earlier layer till the input layer 
-	\cite{rumelhart1988learning}
+	\item backpropagation: propagation of the error gradients from output layer 
+	back to each earlier layer \cite{rumelhart1988learning}
 	\item SGD (stochastic gradient descent): the optimization that minimizes 
 	the error (descending against the error gradient in weight space) for a 
 	random sample in each step \cite{lecun2012efficient}
-	\item mini-batch: the modification to SGD to accelerate and smoothen the 
+	\item mini-batch: the modification to SGD to accelerate and smooth the 
 	descent by minimizing the error for a small random portion of samples in 
 	each step \cite{mairal2010online}
 	\item dropout (specified by keep probability): the technique to reduce unit 
@@ -390,30 +394,19 @@ techniques:
 
 \subsection{Experiment process}
 The estimator learns for several epochs.
-During each epoch, it updates its model by fitting the training set, and 
-then evaluates the learning progress by performing prediction using the 
+During each epoch, the estimator updates its model by fitting the training set, 
+and then evaluates the learning progress by performing prediction using the 
 validation set.
 It logs the average training error and average validation error for each epoch 
 and stops learning when the validation error starts increasing to reduce 
 over-fitting.
-The following Python code snippet shows the above process:
-\begin{lstlisting}
-validation_errors = [sys.float_info.max, sys.float_info.max]
-while validation_error[-2] >= validation_error[-1]:
-	estimator.fit(x_train, y_train)
-	training_error = MAE(y_train, estimator.predict(x_train))
-	validation_error = MAE(y_validation, estimator.predict(x_validation))
-	print('\t'.join(map(str, [training_error, validation_error])), file=log)
-	validation_errors.append(validation_error)
-test_error = MAE(y_test, estimator.predict(x_test))
-\end{lstlisting}
-This early stopping technique can work well in case validation error 
+This early stopping technique can work well when the validation error 
 monotonically decrease to its minimum.
-We have not explored more complex early stopping technique to handle other 
+We have not explored more complex early stopping techniques to handle other 
 cases.
 After learning, the estimator evaluates its model by performing prediction 
 using the testing set.
-\autoref{fig:trainnig} shows 2 example learning processes with error traces.
+\autoref{fig:trainnig} shows two example learning processes with error traces.
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.4\textwidth}
@@ -426,7 +419,7 @@ using the testing set.
 		\caption{MovieLens 1M}
 		\label{fig:movieLens1M}
 	\end{subfigure}
-	\caption{2 example learning processes on different datasets:
+	\caption{Two example learning processes on different datasets:
 	The estimator stops learning when validation errors started increasing at 
 	the last epochs. 
 	The testing errors are 0.711 for MovieLens 100K and 0.655 for MovieLens 1M.}
@@ -434,16 +427,16 @@ using the testing set.
 \end{figure}
 
 \subsection{Experiment results: prediction accuracy and estimator robustness}
-\autoref{tab:accuracy} shows that node mapping outperforms all variants of 
-collaborative filtering demonstrated in \cite{hwang2016efficient} and  
-\cite{polatidis2016multi}.
+\autoref{tab:accuracy} shows that neural recommender model outperforms all 
+variants of collaborative filtering demonstrated in \cite{hwang2016efficient} 
+and \cite{polatidis2016multi}.
 \begin{table}[h]
 	\centering
-	\caption{The comparison of prediction accuracy: node mapping has lower 
-	errors than best collaborative filtering in both experiments.}
+	\caption{The comparison of prediction accuracy: neural recommender model 
+	has lower errors than best collaborative filtering in both experiments.}
 	\begin{tabularx}{\textwidth}{ |X|c|c| }  \hline
 		\textbf{Dataset} & \textbf{Collaborative filtering MAE} & 
-		\textbf{Node mapping lowest MAE} \\ \hline
+		\textbf{Neural recommender model MAE} \\ \hline
 		MovieLens 100K & 0.74 & 0.692 \\ \hline
 		MovieLens 1M & 0.79 & 0.655 \\ \hline
 	\end{tabularx}
@@ -474,9 +467,9 @@ parameter changes.
 \end{table}
 
 \subsection{Computing resources}
-We run our experiments on a stock Dell Optiplex 780 and each run(learning and 
-prediction for a specific parameter setting) takes around 1 minute on MovieLens 
-100K dataset and 8 minutes on MovieLens 1M dataset.
+We ran our experiments on a Dell Optiplex 780 with Intel Core 2 Duo CPU and 
+each run (learning and prediction) takes around 1 to 8 minutes, 4 to 16 epochs, 
+depending on the dataset and parameters.
 
 \section{Strengths}
 
@@ -500,17 +493,17 @@ complexity and observability.
 		messages to other users and giving ratings to movies,
 		but it is hard to observe complex user attributes like personality, 
 		style or taste in movies.}
-	\begin{tabularx}{0.5\textwidth}{ |X|X|X| } \hline
+	\begin{tabularx}{0.5\textwidth}{ |X|c|c| } \hline
 		\textbf{Aspect} & \textbf{Node} & \textbf{Link} \\ \hline
 		complexity & high & low \\ \hline
 		observability & low & high \\ \hline
-		example & user & activities \\ \hline
+		example & user & rates, likes, messages \\ \hline
 	\end{tabularx}
 	\label{tab:nodesVSlinks}
 \end{table}
 
 \subsection{Online learning for streaming graphs}
-The learning is online when the estimator learns for only 1 epoch. In 
+The learning is online when the estimator learns for only one epoch. In 
 this case, its prediction accuracy will be lower, but it naturally handles 
 streaming graphs:
 \begin{itemize}
@@ -532,8 +525,8 @@ network,
 we can consider to work on the following new features for better 
 recommendations including friends, groups and posts to users:
 \begin{itemize}
-	\item handle links connecting 2 nodes of the same type: e.g., given user A 
-	and B, predict the amount of messages A sends to B
+	\item handle links connecting two nodes of the same type: e.g., given user 
+	A and B, predict the amount of messages A sends to B
 	\item handle links with string attributes: e.g., given a text message from 
 	user A to user B (a link from A to B with a string attribute), the 
 	estimator should learn something about the users from the message content
