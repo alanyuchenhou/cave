@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[twocolumn]{article}
 \usepackage{listings}
 \usepackage{amsmath}
 \usepackage{fullpage}
@@ -93,17 +93,15 @@ are both numerical.
 		Images and utterances can be directly represented by 2D numerical 
 		arrays, 
 		but their relations to other images or utterances are not well known. 
-		Words and nodes in graphs can represented by vectors (1D numerical 
-		arrays) and their relations to other words and nodes are well known.}
-	\begin{tabularx}{\textwidth}{ |c|c|c|X| } \hline
-		\textbf{Domain} & \textbf{Entity} & \textbf{Representation} & 
-		\textbf{Relations to other entities} \\ \hline
-		image recognition & image & 2D light intensity array & NA \\ \hline
-		speech recognition & utterance/spectrogram & 2D sound intensity array & 
-		NA \\ \hline
-		natural language & word & word vector & word co-occurrences (implicit) 
-		\\ \hline
-		graph & node & node vector & links (explicit) \\ \hline
+		Words in natural languages and nodes in graphs can represented by 
+		vectors (1D numerical arrays) and their relations to other words and 
+		nodes are well known.}
+	\begin{tabularx}{0.5\textwidth}{|X|c|c| }  \hline
+ \textbf{Entity} & \textbf{Representation} & \textbf{Relations} \\ \hline
+	 image & 2D intensity array & NA \\ \hline
+	 utterance & 2D intensity array & NA \\ \hline
+	 word & word vector & co-occurrences \\ \hline
+	 node & node vector & links \\ \hline
 	\end{tabularx}
 	\label{tab:domains}
 \end{table}
@@ -206,14 +204,13 @@ Using larger or smaller validation set doesn't improve the prediction accuracy
 in our experiments.
 \begin{table}[h]
 	\centering
-	\caption{The dataset specs: MovieLens 100K and MovieLens 1M datasets.}
-	\begin{tabularx}{\textwidth}{ |X|c|c|c|c| }  \hline
-		\textbf{Dataset} & \textbf{Number of users} & \textbf{Number of movies} 
-		& \textbf{Number of ratings} & \textbf{References} \\ \hline
-		MovieLens 100K & 1,000 & 1,700 & 100,000 & \cite{hwang2016efficient} \\ 
-		\hline
-		MovieLens 1M & 6,000 & 4,000 & 1,000,000 & \cite{polatidis2016multi} \\ 
-		\hline
+	\caption{The dataset specs: MovieLens 100K \cite{hwang2016efficient} and 
+	MovieLens 1M \cite{polatidis2016multi} datasets.}
+	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline
+		\textbf{Dataset} & \textbf{users} & \textbf{movies} & \textbf{ratings} 
+		\\ \hline
+		MovieLens 100K & 1,000 & 1,700 & 100,000 \\ \hline
+		MovieLens 1M & 6,000 & 4,000 & 1,000,000 \\ \hline
 	\end{tabularx}
 	\label{tab:dataset}
 \end{table}
@@ -238,7 +235,7 @@ in our experiments.
 Using node mapping technique, we can provide a solution to the recommender 
 problem: we create an estimator with a neural net model called neural 
 recommender model, shown in \autoref{fig:conceptural}.
-\begin{figure}[h]
+\begin{figure*}[h]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
 	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
@@ -281,7 +278,7 @@ recommender model, shown in \autoref{fig:conceptural}.
 	Only layers and their connections are shown, while the units in each 
 	layer and their connections are not shown.}
 	\label{fig:conceptural}
-\end{figure}
+\end{figure*}
 The model contains the following layers:
 \begin{itemize}
 	\item an input layer with one-hot activations: it has 1 channel for movies 
@@ -330,7 +327,7 @@ conceptual model:
 	\item The mapping layer becomes a 2-channel input layer: it is directly 
 	activated by the outputs of the mapping tables
 \end{itemize}
-\begin{figure}[h]
+\begin{figure*}[h]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
 	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
@@ -371,7 +368,7 @@ conceptual model:
 		During learning, the estimator updates the vectors in the tables the 
 		same way it updates weights in the conceptual model.}
 	\label{fig:actural}
-\end{figure}
+\end{figure*}
 
 \subsection{Learning techniques}
 The estimator uses the above neural net model and a number of popular learning 
@@ -420,7 +417,7 @@ using the testing set.
 		\label{fig:movieLens1M}
 	\end{subfigure}
 	\caption{Two example learning processes on different datasets:
-	The estimator stops learning when validation errors started increasing at 
+	The estimator stops learning when validation errors start increasing at 
 	the last epochs. 
 	The testing errors are 0.711 for MovieLens 100K and 0.655 for MovieLens 1M.}
 	\label{fig:trainnig}
@@ -430,21 +427,21 @@ using the testing set.
 \autoref{tab:accuracy} shows that neural recommender model outperforms all 
 variants of collaborative filtering demonstrated in \cite{hwang2016efficient} 
 and \cite{polatidis2016multi}.
+\autoref{tab:robust} shows that the estimator is also very robust against 
+parameter changes.
 \begin{table}[h]
 	\centering
-	\caption{The comparison of prediction accuracy: neural recommender model 
-	has lower errors than best collaborative filtering in both experiments.}
-	\begin{tabularx}{\textwidth}{ |X|c|c| }  \hline
-		\textbf{Dataset} & \textbf{Collaborative filtering MAE} & 
-		\textbf{Neural recommender model MAE} \\ \hline
+	\caption{The comparison of prediction accuracy:
+		neural recommender model (NR) has lower errors than collaborative 
+		filtering (CF) in both experiments.}
+	\begin{tabularx}{0.5\textwidth}{ |X|c|c| }  \hline
+		\textbf{Dataset} & \textbf{CF MAE} & \textbf{NR MAE} \\ \hline
 		MovieLens 100K & 0.74 & 0.692 \\ \hline
 		MovieLens 1M & 0.79 & 0.655 \\ \hline
 	\end{tabularx}
 	\label{tab:accuracy}
 \end{table}
-\autoref{tab:robust} shows that the estimator is also very robust against 
-parameter changes.
-\begin{table}[h]
+\begin{table*}[h]
 	\centering
 	\caption{High robustness of the estimator against parameter changes: 
 		The estimator maintains testing errors in range [0.69, 0.72] for a wide 
@@ -464,7 +461,7 @@ parameter changes.
 		 0.1 & 0.9 & 32 & 4 & 0.7008 \\ \hline
 	\end{tabularx}
 	\label{tab:robust}
-\end{table}
+\end{table*}
 
 \subsection{Computing resources}
 We ran our experiments on a Dell Optiplex 780 with Intel Core 2 Duo CPU and 
