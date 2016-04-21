@@ -206,8 +206,8 @@ in our experiments.
 	\cite{hwang2016efficient} and 
 	MovieLens 1M dataset used in \cite{polatidis2016multi}.}
 	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline
-		\textbf{Dataset} & \textbf{user \#} & \textbf{movie \#} & 		
-		\textbf{rating \#} 
+		\textbf{Dataset} & \textbf{User \#} & \textbf{Movie \#} & 		
+		\textbf{Rating \#} 
 		\\ \hline
 		MovieLens100K & 1,000 & 1,700 & 100,000 \\ \hline
 		MovieLens1M & 6,000 & 4,000 & 1,000,000 \\ \hline
@@ -426,18 +426,19 @@ using the testing set.
 \subsection{Experiment results}
 \autoref{tab:accuracy} shows that neural recommender model outperforms all 
 variants of collaborative filtering demonstrated in \cite{hwang2016efficient} 
-and \cite{polatidis2016multi}.
+and \cite{polatidis2016multi} with up to 20\% higher prediction accuracy.
 \autoref{tab:robust} shows that the estimator is also very robust against 
 parameter changes.
 \begin{table}[h]
 	\centering
-	\caption{The comparison of prediction accuracy:
+	\caption{The comparison of prediction accuracy (measured by MAE):
 		neural recommender model (NR) has lower errors than collaborative 
 		filtering (CF) in both experiments.}
-	\begin{tabularx}{0.5\textwidth}{ |X|c|c| }  \hline
-		\textbf{Dataset} & \textbf{CF MAE} & \textbf{NR MAE} \\ \hline
-		MovieLens 100K & 0.74 & 0.692 \\ \hline
-		MovieLens 1M & 0.79 & 0.655 \\ \hline
+	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c| }  \hline
+		\textbf{Dataset} & \textbf{CF} & \textbf{NR} & \textbf{Accuracy gain} 
+		\\ \hline
+		MovieLens 100K & 0.74 & 0.692 & 7\% \\ \hline
+		MovieLens 1M & 0.79 & 0.655 & 20\% \\ \hline
 	\end{tabularx}
 	\label{tab:accuracy}
 \end{table}
