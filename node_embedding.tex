@@ -13,27 +13,32 @@
 \usepackage{float}
 \begin{document}
 \lstset{language=python, tabsize=4}
-\title{Node mapping: a neural network approach to graph mining}
+\title{Node mapping: graph mining with neural networks}
 \maketitle
 
 \begin{abstract}
-	We present node mapping, a machine learning technique created for numerical 
-	link attribute prediction tasks in a graph.
-	In this technique, the estimator uses a neural net model to learn to 
-	represent every node in the graph as a node vector of real numbers (mapping 
-	nodes to vectors), and to learn to predict the target link attribute using 
-	these node vectors.
-	The main idea is to extract information about nodes from links and to use 
-	this information to predict unknown link attributes.
-	We demonstrate the usage and high accuracy of this technique in a movie 
-	rating prediction task.
+	The application of neural networks is very successful in various domains 
+	including image recognition, speech recognition and natural language 
+	processing.
+	However, its application in graph mining is not well studied.
+	Here we present node mapping, a graph mining technique powered by neural 
+	networks.
+	This technique extracts knowledge of nodes from known links and uses this 
+	knowledge to predict unknown links.
+	We demonstrate the power of this technique in a famous social network 
+	application scenario: recommender systems.
+	Our experiments show that node mapping technique can provide a 
+	solution with up to 20\% higher prediction accuracy than solutions provided 
+	by collaborative filtering techniques.
+	We anticipate this new technique to provide new solutions to more graph 
+	applications.
 \end{abstract}
 
 \section{Introduction}
 
 \subsection{Background}
 Both academia and industry have seen pervasive adoption of deep learning 
-techniques powered by artificial neural network models since early 2010s,
+techniques powered by neural network models since early 2010s,
 when they began to outperform other machine learning techniques in various 
 application domains (e.g., speech recognition \cite{hannun2014deep}, image 
 recognition \cite{simonyan2014very}, and natural language processing 
@@ -78,7 +83,7 @@ learn to predict the target link attribute using the representation it learns.
 
 \section{Observations and approach}
 
-\subsection{Entities, representations and relations in different domains}
+\subsection{Entities and representations}
 In order to find out how a neural net can predict link attributes, we first 
 review how it handles entities in different domains.
 \autoref{tab:domains} provides a summary of various types of entities, their 
@@ -106,7 +111,7 @@ are both numerical.
 	\label{tab:domains}
 \end{table}
 
-\subsection{Mapping words to vectors}
+\subsection{Mapping words to word vectors}
 The famous word2vec technique uses a neural net to learn to map every word in a 
 vocabulary to a vector without any domain knowledge \cite{mikolov2013efficient}.
 \autoref{tab:word} shows a mapping table that maps each word ID to the word 
@@ -134,7 +139,7 @@ such that the relations between words are preserved in the word vector space
 	\label{tab:word}
 \end{table}
 
-\subsection{Mapping nodes to vectors}
+\subsection{Mapping nodes to node vectors}
 \autoref{tab:domains} also shows the similarities between language data and 
 graph data.
 These similarities suggest a neural net should be able to map nodes to node 
@@ -154,40 +159,33 @@ mappings supervised by word co-occurrences.
 
 \section{Application scenario}
 
-\subsection{Scenario: movie recommendations}
-We first demonstrate a simple application scenario on a bipartite graph: 
-movie recommendations.
-This is a simplified social network where users can only give ratings to movies 
-(or like/dislike posts, etc.).
-The service provider is interested in recommending movies for each user, solely 
-based on the ratings he has given to different movies.
+\subsection{Description}
+We demonstrate the usage of node mapping technique in a famous social network 
+application scenario: recommender systems.
+This is a simplified social network where users give ratings to movies (or to 
+like/dislike posts, etc.).
+For each user, we know the ratings he has given to several movies; we want to 
+predict the ratings he would give to other movies.
 
-\subsection{Graph: users rating movies}
-Formally, the graph is:
+\subsection{Definition}
+Formally, we have a bipartite graph:
 \begin{itemize}
-	\item a node set consisting of 2 types of nodes: users and movies
-	\item a link set consisting of 1 type of links: user-movie links with 
-	a numerical attribute - the rating a user has given to a movie
+	\item a node set consisting of 2 types of nodes: users and movies - nodes 
+	have no attributes
+	\item a link set consisting of 1 type of links: user-movie links between 
+	every (user, movie) pair - every link has one numerical attribute called 
+	rating, which can be known or unknown
 \end{itemize}
-If we can build an estimator to predict the rating attributes of unknown 
-user-movie links, 
-we can know how much a user would like each of the movies he has not 
-rated and recommend those he would like the most.
-
-\subsection{Prediction task: movie rating prediction}
 Formally, the prediction task is, given any (user, movie) pair, predict the 
 rating the user would give to the movie:
 \begin{itemize}
 	\item input: X = (user, movie)
 	\item output: Y = rating(user, movie)
 \end{itemize}
-This is a common prediction task for recommender systems,
-and one of the popular techniques used by these systems is collaborative 
-filtering \cite{polatidis2016multi}.
-We will compare node mapping against collaborative filtering in this same 
-task to see how well our new technique works.
 
-\subsection{Datasets}
+\subsection{Baseline solution}
+We choose the famous collaborative filtering method as the baseline solution 
+\cite{polatidis2016multi}.
 There are two recent publications where a large number of collaborative 
 filtering variants are benchmarked \cite{hwang2016efficient} 
 \cite{polatidis2016multi}. 
@@ -197,20 +195,22 @@ filtering variants are benchmarked \cite{hwang2016efficient}
 The prediction accuracy metric used is MAE (mean absolute error).
 Each dataset is split into 2 parts: 20\% into test set and 80\% 
 into training set.
-We will conduct the same experiments as in \cite{hwang2016efficient} and  
-\cite{polatidis2016multi} and compare the results.
+To evaluate our solution, we conduct the same experiments and compare the 
+results.
 Our estimator sets aside 10\% of the training set as the validation set.
 Using larger or smaller validation set doesn't improve the prediction accuracy 
 in our experiments.
 \begin{table}[h]
 	\centering
-	\caption{The dataset specs: MovieLens 100K \cite{hwang2016efficient} and 
-	MovieLens 1M \cite{polatidis2016multi} datasets.}
+	\caption{The dataset specs: MovieLens 100K dataset used in 
+	\cite{hwang2016efficient} and 
+	MovieLens 1M dataset used in \cite{polatidis2016multi}.}
 	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline
-		\textbf{Dataset} & \textbf{users} & \textbf{movies} & \textbf{ratings} 
+		\textbf{Dataset} & \textbf{user \#} & \textbf{movie \#} & 		
+		\textbf{rating \#} 
 		\\ \hline
-		MovieLens 100K & 1,000 & 1,700 & 100,000 \\ \hline
-		MovieLens 1M & 6,000 & 4,000 & 1,000,000 \\ \hline
+		MovieLens100K & 1,000 & 1,700 & 100,000 \\ \hline
+		MovieLens1M & 6,000 & 4,000 & 1,000,000 \\ \hline
 	\end{tabularx}
 	\label{tab:dataset}
 \end{table}
@@ -229,12 +229,12 @@ in our experiments.
 	\label{tab:rating}
 \end{table}
 
-\section{Solution: neural recommender model}
+\section{Solution}
 
 \subsection{Conceptual model}
-Using node mapping technique, we can provide a solution to the recommender 
-problem: we create an estimator with a neural net model called neural 
-recommender model, shown in \autoref{fig:conceptural}.
+Using node mapping technique, we provide a new solution to recommender systems: 
+an estimator with a neural net model called neural recommender model, shown in 
+\autoref{fig:conceptural}.
 \begin{figure*}[h]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
@@ -423,7 +423,7 @@ using the testing set.
 	\label{fig:trainnig}
 \end{figure}
 
-\subsection{Experiment results: prediction accuracy and estimator robustness}
+\subsection{Experiment results}
 \autoref{tab:accuracy} shows that neural recommender model outperforms all 
 variants of collaborative filtering demonstrated in \cite{hwang2016efficient} 
 and \cite{polatidis2016multi}.
@@ -470,7 +470,7 @@ depending on the dataset and parameters.
 
 \section{Strengths}
 
-\subsection{Information mining: node-centered}
+\subsection{Node-centered learning}
 This technique takes a node-centered approach as the estimator extracts 
 information about nodes from links.
 In a social network, this leverages the fact that who a user contacts and what 
@@ -499,7 +499,7 @@ complexity and observability.
 	\label{tab:nodesVSlinks}
 \end{table}
 
-\subsection{Online learning for streaming graphs}
+\subsection{Online learning}
 The learning is online when the estimator learns for only one epoch. In 
 this case, its prediction accuracy will be lower, but it naturally handles 
 streaming graphs:
