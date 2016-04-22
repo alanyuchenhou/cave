@@ -13,25 +13,25 @@
 \usepackage{float}
 \begin{document}
 \lstset{language=python, tabsize=4}
-\title{Node mapping: graph mining with neural networks}
+\title{Node mapping: link attribute prediction with neural networks}
 \maketitle
 
 \begin{abstract}
-	The application of neural networks is very successful in various domains 
+	The applications of neural networks are very successful in various domains 
 	including image recognition, speech recognition and natural language 
 	processing.
 	However, its application in graph mining is not well studied.
-	Here we present node mapping, a graph mining technique powered by neural 
-	networks.
+	Here we present node mapping, a technique created for link attribute 
+	prediction powered by neural networks.
 	This technique extracts knowledge of nodes from known links and uses this 
 	knowledge to predict unknown links.
 	We demonstrate the power of this technique in a famous social network 
 	application scenario: recommender systems.
-	Our experiments show that node mapping technique can provide a 
-	solution with up to 20\% higher prediction accuracy than solutions provided 
-	by collaborative filtering techniques.
-	We anticipate this new technique to provide new solutions to more graph 
-	applications.
+	Our experiments show that node mapping technique can provide a new
+	recommendation solution that outperforms collaborative filtering 
+	technique by up to 17\% in terms of prediction accuracy.
+	We anticipate this new technique to provide effective solutions to more 
+	prediction tasks in different graph applications.
 \end{abstract}
 
 \section{Introduction}
@@ -48,7 +48,7 @@ traditional models,
 but also require much less domain knowledge and engineering.
 Moreover, neural net models have participated in more general artificial 
 intelligence design by complementing search techniques, 
-demonstrated by Google AlphaGo AI when it defeated go champion Lee Sedol in 
+demonstrated by Google AlphaGo AI which defeated go champion Lee Sedol in 
 2016 \cite{silver2016mastering}.
 Specifically, in a game like go with simple rules but too many possible 
 configurations to explore,
@@ -57,8 +57,7 @@ which are easily exhausted by algorithms solely powered by search.
 
 \subsection{Motivation}
 As neural nets have demonstrated their power in many domains,
-we naturally wonder if we can apply them in prediction tasks in graph mining 
-domains, 
+we naturally wonder if we can apply them in prediction tasks in graph mining,
 and what kind of techniques are helpful in using their power.
 There are existing techniques with promising results already.
 Two earlier attempts were graph neural nets and relational neural 
@@ -77,7 +76,8 @@ messaging friends, commenting articles, and rating movies.
 \subsection{Goal}
 We want to create a technique to predict link attributes in a graph using a 
 neural net model.
-The graph can have any topology and every link can have a numerical attribute.
+For simplicity, we assume the nodes have no attributes and every link has a 
+numerical attribute.
 The estimator should learn to represent the graph in a meaningful way and to 
 learn to predict the target link attribute using the representation it learns.
 
@@ -95,12 +95,12 @@ are both numerical.
 	\centering
 	\caption{A summary of various types of entities, their numerical
 		representations and inter-entity relations in different domains:
-		Images and utterances can be directly represented by 2D numerical 
-		arrays, 
-		but their relations to other images or utterances are not well known. 
+		Images in image recognition and utterances in speech recognition can be 
+		directly represented by 2D numerical arrays, 
+		but their relations to other images or utterances are not well studied. 
 		Words in natural languages and nodes in graphs can represented by 
 		vectors (1D numerical arrays) and their relations to other words and 
-		nodes are well known.}
+		nodes are well studied.}
 	\begin{tabularx}{0.5\textwidth}{|X|c|c| }  \hline
  \textbf{Entity} & \textbf{Representation} & \textbf{Relations} \\ \hline
 	 image & 2D intensity array & NA \\ \hline
@@ -140,8 +140,8 @@ such that the relations between words are preserved in the word vector space
 \end{table}
 
 \subsection{Mapping nodes to node vectors}
-\autoref{tab:domains} also shows the similarities between language data and 
-graph data.
+\autoref{tab:domains} also shows the similarities between words in natural 
+languages and nodes in graphs.
 These similarities suggest a neural net should be able to map nodes to node 
 vectors just like mapping words to word vectors.
 Moreover, the relations between nodes are explicit (i.e., links),
@@ -160,7 +160,7 @@ mappings supervised by word co-occurrences.
 \section{Application scenario}
 
 \subsection{Description}
-We demonstrate the usage of node mapping technique in a famous social network 
+We demonstrate the power of node mapping technique in a famous social network 
 application scenario: recommender systems.
 This is a simplified social network where users give ratings to movies (or to 
 like/dislike posts, etc.).
@@ -183,31 +183,30 @@ rating the user would give to the movie:
 	\item output: Y = rating(user, movie)
 \end{itemize}
 
-\subsection{Baseline solution}
-We choose the famous collaborative filtering method as the baseline solution 
-\cite{polatidis2016multi}.
+\subsection{Baseline solution and experiments}
+We choose the famous collaborative filtering technique to provide the baseline 
+solution \cite{polatidis2016multi}.
 There are two recent publications where a large number of collaborative 
 filtering variants are benchmarked \cite{hwang2016efficient} 
-\cite{polatidis2016multi}. 
-\autoref{tab:dataset} shows the specs of 2 datasets used
-\cite{harper2015movielens} \footnote{http://grouplens.org/datasets/movielens}.
-\autoref{tab:rating} shows a few data samples.
+\cite{polatidis2016multi} in experiments.
+These experiments use two MovieLens datasets \cite{harper2015movielens} 
+\footnote{http://grouplens.org/datasets/movielens},
+with specs summarized in \autoref{tab:dataset} and samples shown in 
+\autoref{tab:rating}.
 The prediction accuracy metric used is MAE (mean absolute error).
-Each dataset is split into 2 parts: 20\% into test set and 80\% 
-into training set.
-To evaluate our solution, we conduct the same experiments and compare the 
-results.
-Our estimator sets aside 10\% of the training set as the validation set.
-Using larger or smaller validation set doesn't improve the prediction accuracy 
-in our experiments.
+Each dataset is split into 2 parts: 20\% into test set and 80\% into training 
+set.
+In the following sections, we will provide a new solution using node mapping 
+technique, benchmark the solution in the same experiments and compare the 
+prediction accuracy of the new solution to the baseline solution.
 \begin{table}[h]
 	\centering
 	\caption{The dataset specs: MovieLens 100K dataset used in 
 	\cite{hwang2016efficient} and 
 	MovieLens 1M dataset used in \cite{polatidis2016multi}.}
 	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline
-		\textbf{Dataset} & \textbf{User \#} & \textbf{Movie \#} & 		
-		\textbf{Rating \#} 
+		\textbf{Dataset} & \textbf{User\#} & \textbf{Movie\#} & 		
+		\textbf{Rating\#} 
 		\\ \hline
 		MovieLens100K & 1,000 & 1,700 & 100,000 \\ \hline
 		MovieLens1M & 6,000 & 4,000 & 1,000,000 \\ \hline
@@ -287,16 +286,16 @@ The model contains the following layers:
 	1200th movie, the testing program sets 1 at the 1200th unit and 0 at other 	
 	units in the movie channel);
 	\item a mapping layer with linear units: it has 2 channels to map each 
-	movie (and each user) to a vector;
+	movie and each user to a vector;
 	the activations of these 2 channels form the 2 node vectors (i.e., the 
 	movie vector and the user vector);
 	it is the most critical layer as it gradually learns to map every node to 
 	the correct vector during training;
-	\item several hidden layers (1 layer is shown in the figure; multiple 
-	numbers of layers and layer sizes are experimented) of ReLU 
+	\item several fully connected hidden layers (1 layer is shown in the figure;
+	multiple numbers of layers and layer sizes are experimented) of ReLU 
 	(rectified linear unites):
 	they have non-linear activation functions to give the model sufficient 
-	complexity; 
+	complexity;
 	they learn to process node vectors and produce more abstract 
 	rating-relevant information;
 	\item an output layer with a linear regression unit: it learns to predict 
@@ -315,17 +314,17 @@ For example, a new user will require an update to the network topology (at
 least at the input layer) and retraining.
 
 \subsection{Actual model}
-In practice, the estimator uses more efficient mapping tables instead of a 
+In practice, the model uses more efficient mapping tables instead of a 
 one-hot input layer to handle a graph with increasing number of nodes.
 \autoref{fig:actural} shows the actual model with two modifications from the 
 conceptual model:
 \begin{itemize}
-	\item The input layer becomes 2 mapping tables: 1 for movie nodes and 1 
-	for user nodes;
+	\item The input layer is replaced by 2 mapping tables: 1 for movie nodes 
+	and 1 for user nodes;
 	their inputs are node IDs and their outputs are node vectors, just like the 
 	word to vector mapping table referenced in \autoref{tab:word}
-	\item The mapping layer becomes a 2-channel input layer: it is directly 
-	activated by the outputs of the mapping tables
+	\item The mapping layer is replaced by a 2-channel input layer: it is 
+	directly activated by the outputs of the mapping tables
 \end{itemize}
 \begin{figure*}[h]
 	\centering
@@ -390,6 +389,9 @@ techniques:
 \section{Experiments}
 
 \subsection{Experiment process}
+Our estimator sets aside 10\% of the training set as the validation set.
+Using larger or smaller validation set doesn't improve the prediction accuracy 
+in our experiments.
 The estimator learns for several epochs.
 During each epoch, the estimator updates its model by fitting the training set, 
 and then evaluates the learning progress by performing prediction using the 
@@ -424,30 +426,31 @@ using the testing set.
 \end{figure}
 
 \subsection{Experiment results}
-\autoref{tab:accuracy} shows that neural recommender model outperforms all 
-variants of collaborative filtering demonstrated in \cite{hwang2016efficient} 
-and \cite{polatidis2016multi} with up to 20\% higher prediction accuracy.
-\autoref{tab:robust} shows that the estimator is also very robust against 
-parameter changes.
+In our experiments, neural recommender model achieves 7\% to 17\% lower 
+prediction errors than best solutions provided by collaborative filtering and 
+its variants benchmarked in \cite{hwang2016efficient} and 
+\cite{polatidis2016multi}, shown in \autoref{tab:accuracy}.
+Neural recommender model is also very robust against 
+parameter changes, shown in \autoref{tab:robust}.
 \begin{table}[h]
 	\centering
-	\caption{The comparison of prediction accuracy (measured by MAE):
-		neural recommender model (NR) has lower errors than collaborative 
-		filtering (CF) in both experiments.}
+	\caption{The comparison of prediction errors (measured by MAE):
+		the errors of neural recommender model (NR) are 7\% to 17\% lower than 
+		those of collaborative filtering (CF).}
 	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c| }  \hline
-		\textbf{Dataset} & \textbf{CF} & \textbf{NR} & \textbf{Accuracy gain} 
+		\textbf{Dataset} & \textbf{CF} & \textbf{NR} & \textbf{reduction} 
 		\\ \hline
 		MovieLens 100K & 0.74 & 0.692 & 7\% \\ \hline
-		MovieLens 1M & 0.79 & 0.655 & 20\% \\ \hline
+		MovieLens 1M & 0.79 & 0.655 & 17\% \\ \hline
 	\end{tabularx}
 	\label{tab:accuracy}
 \end{table}
 \begin{table*}[h]
 	\centering
-	\caption{High robustness of the estimator against parameter changes: 
+	\caption{High robustness of the estimator against parameter changes:
 		The estimator maintains testing errors in range [0.69, 0.72] for a wide 
 		range of parameters. These experiments are on MovieLens 100K dataset.}
-	\begin{tabularx}{\textwidth}{ |X|c|c|c|c| }  \hline
+	\begin{tabularx}{\textwidth}{ |X|c|c|c|c| } \hline
 		 \textbf{Learning rate} & \textbf{Keep probability} & \textbf{Layer 
 		 size} & \textbf{Number of hidden layers} & \textbf{Testing error} \\ 
 		 \hline
@@ -472,11 +475,11 @@ depending on the dataset and parameters.
 \section{Strengths}
 
 \subsection{Node-centered learning}
-This technique takes a node-centered approach as the estimator extracts 
-information about nodes from links.
+The node mapping technique takes a node-centered approach as the estimator 
+extracts knowledge of nodes from links.
 In a social network, this leverages the fact that who a user contacts and what 
-movies a user likes tell us what kind of person he is and help us make 
-recommendations for him.
+movies a user likes tell us what kind of person he is and help us predict his 
+behavior.
 It effectively learns complex and unobservable user attributes (node 
 attributes) from simple and observable user activities (link attributes). 
 \autoref{tab:nodesVSlinks} compares nodes and links with respect to their 
@@ -517,42 +520,44 @@ caching a finite set of new links/nodes and learning for multiple epochs on
 that set.
 
 \section{Future work}
-In order to generalize this node mapping technique to perform a wider range of 
-prediction tasks related to making recommendations for users in a social 
-network,
-we can consider to work on the following new features for better 
-recommendations including friends, groups and posts to users:
+We are interested in using this node mapping technique to provide solutions to 
+more prediction tasks in graph applications. Many of these tasks fall into the 
+category of recommendation in a social network, e.g., recommending friends or 
+posts to users.
+Specifically, we consider to study how to use this technique to handle the 
+following scenarios:
 \begin{itemize}
 	\item handle links connecting two nodes of the same type: e.g., given user 
 	A and B, predict the amount of messages A sends to B
 	\item handle links with string attributes: e.g., given a text message from 
 	user A to user B (a link from A to B with a string attribute), the 
-	estimator should learn something about the users from the message content
-	\item handle nodes with string attributes: e.g., given an article (a node 
-	with a string attribute), the estimator should learn something about the 
-	article from the article content
+	estimator should extract knowledge of the users from the message content
 	\item handle links with logical implications: e.g., given a user has 
 	written an article (a link from user to article with a write attribute), 
-	the estimator should learn something about the user and the article from 
+	the estimator should extract knowledge of the user and the article from 
 	this activity
+	\item handle nodes with rich attributes: e.g., given an article (a node 
+	with a string attribute) or an image (a node with an image attribute), the 
+	estimator should extract knowledge of the node from the article or image 
+	content and integrate this knowledge to that extracted from links
 \end{itemize}
 We have an open source implementation available for interested readers  
 \footnote{https://github.com/yuchenhou/elephant}.
 The code is in Python and the main machine learning packages are TensorFlow 
 \cite{abadi2016tensorflow} \footnote{https://github.com/tensorflow/tensorflow} 
 and SkFlow \footnote{https://github.com/tensorflow/skflow}.
-Do not hesitate to contact us if you are interested in collaboration.
+Do not hesitate to contact us if you are interested in our work.
 
 \section{Conclusions}
 Node mapping is an effective technique to predict link attributes in a graph 
 using a neural net model.
-The estimator learns both to represent each node with a vector, and to predict 
+The estimator learns both to maps each node to a vector, and to predict 
 the target link attribute using these vectors.
-It achieves better rating prediction accuracy than collaborative filtering and 
-many of its variants.
-For recommendation tasks in social networks, this technique coincides with the 
-idea of understanding complex users from their simple activities, and using 
-that understanding to predict their future activities.
+It provides a recommender systems solution that achieves better rating 
+prediction accuracy than collaborative filtering and many of its variants.
+For recommendation tasks in social networks, this technique realizes the idea 
+of understanding complex users from their simple activities, and using that 
+understanding to predict their future activities.
 
 \section*{Acknowledgements}
 Yuan Tang \footnote{https://github.com/terrytangyuan} and Illia Polosukhin 
