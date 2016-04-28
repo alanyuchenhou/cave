@@ -11,9 +11,16 @@
 \usepackage{cite}
 \usepackage{hyperref}
 \usepackage{float}
+\usepackage{authblk}
+
 \begin{document}
 \lstset{language=python, tabsize=4}
-\title{Node mapping: link attribute prediction with neural networks}
+\title{Node mapping: Link attribute prediction with neural networks}
+\author[1]{Yuchen Hou \thanks{yuchen.hou@wsu.edu}}
+\author[1]{Lawrence B. Holder \thanks{holder@wsu.edu}}
+\affil[1]{School of Electrical Engineering and Computer Science\\
+	Washington State University\\
+	Pullman, WA 99164}
 \maketitle
 
 \begin{abstract}
@@ -27,7 +34,7 @@
 	knowledge to predict unknown links.
 	We demonstrate the power of this technique in a famous social network 
 	application scenario: recommender systems.
-	Our experiments show that node mapping technique can provide a new
+	Our experiments show that the node mapping technique can provide a new
 	recommendation solution that outperforms collaborative filtering 
 	technique by up to 17\% in terms of prediction accuracy.
 	We anticipate this new technique to provide effective solutions to more 
@@ -48,9 +55,9 @@ traditional models,
 but also require much less domain knowledge and engineering.
 Moreover, neural net models have participated in more general artificial 
 intelligence design by complementing search techniques, 
-demonstrated by Google AlphaGo AI which defeated go champion Lee Sedol in 
+demonstrated by Google AlphaGo AI which defeated Go champion Lee Sedol in 
 2016 \cite{silver2016mastering}.
-Specifically, in a game like go with simple rules but too many possible 
+Specifically, in a game like Go with simple rules but too many possible 
 configurations to explore,
 neural net models achieve good results with reasonable computing resources, 
 which are easily exhausted by algorithms solely powered by search.
@@ -98,7 +105,7 @@ are both numerical.
 		Images in image recognition and utterances in speech recognition can be 
 		directly represented by 2D numerical arrays, 
 		but their relations to other images or utterances are not well studied. 
-		Words in natural languages and nodes in graphs can represented by 
+		Words in natural languages and nodes in graphs can be represented by 
 		vectors (1D numerical arrays) and their relations to other words and 
 		nodes are well studied.}
 	\begin{tabularx}{0.5\textwidth}{|X|c|c| }  \hline
@@ -160,8 +167,8 @@ mappings supervised by word co-occurrences.
 \section{Application scenario}
 
 \subsection{Description}
-We demonstrate the power of node mapping technique in a famous social network 
-application scenario: recommender systems.
+We demonstrate the power of the node mapping technique in a famous social 
+network application scenario: recommender systems.
 This is a simplified social network where users give ratings to movies (or to 
 like/dislike posts, etc.).
 For each user, we know the ratings he has given to several movies; we want to 
@@ -191,13 +198,14 @@ filtering variants are benchmarked \cite{hwang2016efficient}
 \cite{polatidis2016multi} in experiments.
 These experiments use two MovieLens datasets \cite{harper2015movielens} 
 \footnote{http://grouplens.org/datasets/movielens},
-with specs summarized in \autoref{tab:dataset} and samples shown in 
+with specifications summarized in \autoref{tab:dataset} and samples shown in 
 \autoref{tab:rating}.
 The prediction accuracy metric used is MAE (mean absolute error).
-Each dataset is split into 2 parts: 20\% into test set and 80\% into training 
-set.
-In the following sections, we will provide a new solution using node mapping 
-technique, benchmark the solution in the same experiments and compare the 
+Each dataset is split into 2 parts: 20\% into the test set and 80\% into the 
+training set.
+In the following sections, we will provide a new solution using the node 
+mapping technique, benchmark the solution in the same experiments and compare 
+the 
 prediction accuracy of the new solution to the baseline solution.
 \begin{table}[h]
 	\centering
@@ -231,7 +239,8 @@ prediction accuracy of the new solution to the baseline solution.
 \section{Solution}
 
 \subsection{Conceptual model}
-Using node mapping technique, we provide a new solution to recommender systems: 
+Using the node mapping technique, we provide a new solution to recommender 
+systems: 
 an estimator with a neural net model called neural recommender model, shown in 
 \autoref{fig:conceptural}.
 \begin{figure*}[h]
@@ -292,8 +301,8 @@ The model contains the following layers:
 	it is the most critical layer as it gradually learns to map every node to 
 	the correct vector during training;
 	\item several fully connected hidden layers (1 layer is shown in the figure;
-	multiple numbers of layers and layer sizes are experimented) of ReLU 
-	(rectified linear unites):
+	multiple numbers of layers and layer sizes are considered in the 
+	experiments) of ReLU (rectified linear units):
 	they have non-linear activation functions to give the model sufficient 
 	complexity;
 	they learn to process node vectors and produce more abstract 
@@ -390,7 +399,8 @@ techniques:
 
 \subsection{Experiment process}
 Our estimator sets aside 10\% of the training set as the validation set.
-Using larger or smaller validation set doesn't improve the prediction accuracy 
+Using a larger or smaller validation set does not improve the prediction 
+accuracy 
 in our experiments.
 The estimator learns for several epochs.
 During each epoch, the estimator updates its model by fitting the training set, 
@@ -401,8 +411,8 @@ and stops learning when the validation error starts increasing to reduce
 over-fitting.
 This early stopping technique can work well when the validation error 
 monotonically decrease to its minimum.
-We have not explored more complex early stopping techniques to handle other 
-cases.
+We have not explored more sophisticated early stopping techniques to handle 
+other cases.
 After learning, the estimator evaluates its model by performing prediction 
 using the testing set.
 \autoref{fig:trainnig} shows two example learning processes with error traces.
@@ -426,11 +436,11 @@ using the testing set.
 \end{figure}
 
 \subsection{Experiment results}
-In our experiments, neural recommender model achieves 7\% to 17\% lower 
-prediction errors than best solutions provided by collaborative filtering and 
-its variants benchmarked in \cite{hwang2016efficient} and 
+In our experiments, the neural recommender model achieves 7\% to 17\% lower 
+prediction errors than the best solutions provided by collaborative filtering 
+and its variants benchmarked in \cite{hwang2016efficient} and 
 \cite{polatidis2016multi}, shown in \autoref{tab:accuracy}.
-Neural recommender model is also very robust against 
+The neural recommender model is also very robust against 
 parameter changes, shown in \autoref{tab:robust}.
 \begin{table}[h]
 	\centering
@@ -440,8 +450,8 @@ parameter changes, shown in \autoref{tab:robust}.
 	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c| }  \hline
 		\textbf{Dataset} & \textbf{CF} & \textbf{NR} & \textbf{reduction} 
 		\\ \hline
-		MovieLens 100K & 0.74 & 0.692 & 7\% \\ \hline
-		MovieLens 1M & 0.79 & 0.655 & 17\% \\ \hline
+		MovieLens 100K & 0.74 & 0.69 & 7\% \\ \hline
+		MovieLens 1M & 0.79 & 0.65 & 17\% \\ \hline
 	\end{tabularx}
 	\label{tab:accuracy}
 \end{table}
@@ -468,9 +478,19 @@ parameter changes, shown in \autoref{tab:robust}.
 \end{table*}
 
 \subsection{Computing resources}
-We ran our experiments on a Dell Optiplex 780 with Intel Core 2 Duo CPU and 
-each run (learning and prediction) takes around 1 to 8 minutes, 4 to 16 epochs, 
+We ran our experiments on a Dell Optiplex 780 machine with following 
+configurations:
+\begin{itemize}
+	\item Python implementation: CPython 3.4
+	\item OS: Ubuntu 15.10 64-bit
+	\item Processor: Intel Core 2 Duo CPU E8400 @ 3GHz
+	\item Memory: 4GB
+\end{itemize}
+Each run (learning and prediction) takes around 1 to 8 minutes, 4 to 16 epochs, 
 depending on the dataset and parameters.
+Our implementation exploits thread level parallelism, but we have not explored 
+data level parallelism (i.e., GPU) or process level parallelism (e.g., remote 
+procedure call).
 
 \section{Strengths}
 
@@ -527,8 +547,9 @@ posts to users.
 Specifically, we consider to study how to use this technique to handle the 
 following scenarios:
 \begin{itemize}
-	\item handle links connecting two nodes of the same type: e.g., given user 
-	A and B, predict the amount of messages A sends to B
+	\item handle graphs with arbitrary topologies: e.g., given a social 
+	network where users send messages each other, the estimator should 
+	predict the amount of messages from one user to another
 	\item handle links with string attributes: e.g., given a text message from 
 	user A to user B (a link from A to B with a string attribute), the 
 	estimator should extract knowledge of the users from the message content
@@ -551,7 +572,7 @@ Do not hesitate to contact us if you are interested in our work.
 \section{Conclusions}
 Node mapping is an effective technique to predict link attributes in a graph 
 using a neural net model.
-The estimator learns both to maps each node to a vector, and to predict 
+The estimator learns both to map each node to a vector, and to predict 
 the target link attribute using these vectors.
 It provides a recommender systems solution that achieves better rating 
 prediction accuracy than collaborative filtering and many of its variants.
@@ -562,7 +583,9 @@ understanding to predict their future activities.
 \section*{Acknowledgements}
 Yuan Tang \footnote{https://github.com/terrytangyuan} and Illia Polosukhin 
 \footnote{https://github.com/ilblackdragon} provided technical support for 
-SkFlow during our experiments.
+SkFlow and TensorFlow during our experiments.
+This material is based on work supported by the National Science Foundation 
+under Grant No. 1318913.
 
 \bibliographystyle{plain}
 \bibliography{references}
