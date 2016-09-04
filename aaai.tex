@@ -1,4 +1,5 @@
 \documentclass[twocolumn]{article}
+\usepackage[table]{xcolor}
 \usepackage{listings}
 \usepackage{amsmath}
 \usepackage{fullpage}
@@ -11,16 +12,17 @@
 \usepackage{cite}
 \usepackage{hyperref}
 \usepackage{float}
-\usepackage{authblk}
+%\usepackage{authblk}
 
 \begin{document}
 \lstset{language=python, tabsize=4}
-\title{Node mapping: Link attribute prediction with neural networks}
-\author[1]{Yuchen Hou \thanks{yuchen.hou@wsu.edu}}
-\author[1]{Lawrence B. Holder \thanks{holder@wsu.edu}}
-\affil[1]{School of Electrical Engineering and Computer Science\\
-	Washington State University\\
-	Pullman, WA 99164}
+\title{Collaborative rating prediction with artificial neural networks}
+
+%\author[1]{Yuchen Hou \thanks{yuchen.hou@wsu.edu}}
+%\author[1]{Lawrence B. Holder \thanks{holder@wsu.edu}}
+%\affil[1]{School of Electrical Engineering and Computer Science\\
+%	Washington State University\\
+%	Pullman, WA 99164}
 \maketitle
 
 \begin{abstract}
@@ -42,60 +44,236 @@
 \end{abstract}
 
 \section{Introduction}
+The expression deep learning existed as early as 1986 in machine learning 
+community \cite{dechter1986learning}, though not so well known for many years.
+But now, deep learning techniques using neural network models are rapidly 
+gaining traction in many application domains 
+such as:
+\begin{itemize}
+	\item speech recognition \cite{hannun2014deep}
+	\item image recognition \cite{simonyan2014very}
+	\item natural language processing \cite{yao2013recurrent}
+	\item graph mining \cite{grovernode2vec}
+	\item drug discovery \cite{dahl2014multi}
+	\item recommendation systems \cite{barkan2016item2vec}
+\end{itemize}
+Two reasons for its adoptions in these domains are its higher prediction 
+accuracy and less engineering compared to other machine learning techniques.
+Among these domains, research in recommendation systems has been very active  
+due to its extremely high value in industries such as search, e-commerce, 
+travel and social \cite{buettner2016predicting}.
+Recommendation systems are classified into two groups according to the way they 
+extract information about items: content based filtering and collaborative 
+filtering \cite{ricci2011introduction}.
+Collaborative filtering extract information from the relations between users 
+and items, while content based filtering extracts information from the contents 
+of items.
+Collaborative filtering has multiple forms including producing a list of items 
+a user would like, and predicting the ratings a user would give to a list of 
+items \cite{su2009survey}.
+The focus of this paper is the rating prediction form of collaborative 
+filtering, which we call collaborative rating prediction.
+The contribution of this paper is a deep learning application in 
+collaborative rating prediction, which we believe is the first of its kind.
 
-\subsection{Background}
-Both academia and industry have seen pervasive adoption of deep learning 
-techniques powered by neural network models since early 2010s,
-when they began to outperform other machine learning techniques in various 
-application domains (e.g., speech recognition \cite{hannun2014deep}, image 
-recognition \cite{simonyan2014very}, and natural language processing 
-\cite{yao2013recurrent}).
-These neural net models can not only achieve higher prediction accuracy than 
-traditional models,
-but also require much less domain knowledge and engineering.
-Moreover, neural net models have participated in more general artificial 
-intelligence design by complementing search techniques, 
-demonstrated by Google AlphaGo AI which defeated Go champion Lee Sedol in 
-2016 \cite{silver2016mastering}.
-Specifically, in a game like Go with simple rules but too many possible 
-configurations to explore,
-neural net models achieve good results with reasonable computing resources, 
-which are easily exhausted by algorithms solely powered by search.
+\section{Related work}
+In this section,
+we review a few existing deep learning applications in both content based 
+filtering and collaborative filtering.
+We also clarify how our work differs from these related work.
 
-\subsection{Motivation}
-As neural nets have demonstrated their power in many domains,
-we naturally wonder if we can apply them in prediction tasks in graph mining,
-and what kind of techniques are helpful in using their power.
-There are existing techniques with promising results already.
-Two earlier attempts were graph neural nets and relational neural 
-nets \cite{scarselli2009graph}, 
-where neural nets are incorporated into a traditional iterative graph 
-information propagation approach.
-A later attempt was deep walk \cite{perozzi2014deepwalk}, 
-where a graph is reduced to a natural language corpus so that existing neural 
-net models designed for natural language processing can handle the graph.
-We initiated our research hoping to create a simpler, more direct technique 
-that can take advantage of rich information in graphs.
-We are particularly interested in application scenarios like making 
-recommendations for social network users based on user activities including 
-messaging friends, commenting articles, and rating movies.
+\subsection{Content based applications}
+Applications in this group extract information of an item from its content, 
+i.e., the input of the neural network is a vector produced from the item's 
+content (e.g., the audio of the song, the text of an article):
+\begin{itemize}
+	\item One example is a music recommendation system \cite{van2013deep}. 
+	It is a tag prediction system implemented with a convolutional neural net: 
+	the input is the spectrogram vector of the audio of a song, and the output 
+	is the set of tags of the song (e.g., genre, instrumentation, tempo, mood).
+	\item Another example is a multi-view recommendation system 
+	\cite{elkahky2015multi}. 
+	It is a rating prediction system implemented with a fully connected neural 
+	net: the input is the letter tri-gram vector of the text description of a 
+	news article, app or movie, and the output is the rating.
+\end{itemize}
+Obviously, these applications are very similar to image recognition and speech 
+recognition.
+Our work differs from them in that our technique does not access the contents 
+of items.
 
-\subsection{Goal}
-We want to create a technique to predict link attributes in a graph using a 
-neural net model.
-For simplicity, we assume the nodes have no attributes and every link has a 
-numerical attribute.
-The estimator should learn to represent the graph in a meaningful way and to 
-learn to predict the target link attribute using the representation it learns.
+\subsection{Collaborative applications}
+Applications in this group extract information of an item from its relations 
+with other items, and the input of the neural net is a vector learned by the 
+neural net itself from the relations between items.
+All these applications treat a list of items as a sentence of words 
+(effectively reducing their problems to a natural language processing problem)  
+and then apply the famous skip-gram model used in word2vec 
+\cite{mikolov2013efficient}:
+\begin{itemize}
+	\item An item similarity prediction example is item2vec 
+	\cite{barkan2016item2vec} where purchase orders (lists of items) are 
+	treated as sentences.
+	\item Similar examples exist in graph mining, like deep walk 
+	\cite{perozzi2014deepwalk} and node2vec \cite{grovernode2vec}, where a 
+	graph is sampled into walks (lists of nodes), and treated as sentences.
+\end{itemize}
+One drawback of these applications is that they fail to take advantage of 
+the highly organized, regular and repeated structure in their relational data: 
+relations between users and items (i.e., a user gives numerical rating to an 
+item) and relations between nodes (i.e., a source node connects to a 
+destination node though a labeled link).
+This nice structure is not exploited in natural language processing because it 
+does not exist (i.e., for a neural net, words can simply show up in a sequence 
+from a day-to-day conversation, in many flexible and unpredictable ways, with 
+little structure or regularity).
+Although syntax and semantics exist in natural languages, we have not seen any 
+current neural network models taking advantage of these structures.
+Our work differs from the above applications in that our technique uses a 
+neural net model designed to take advantage of the structure in the relational 
+data and it is also able to predict a numerical attribute - the rating value.
+
+\section{Problem}
+The problem we consider in this paper is collaborative rating prediction 
+problem.
+In this section, we look at an example of the problem and then its definition.
+
+\subsection{Problem example}
+This is a collaborative rating prediction problem example: 
+a set of 6 users give numerical ratings to a set of 3 items.
+For each user, only a subset of his ratings are known; 
+and we want to predict the unknown ratings.
+This example is demonstrated in \autoref{tab:ratings}.
+\begin{table}[h]
+	\centering
+	\caption{A collaborative rating prediction problem example.
+		In this example, a set of 6 users give ratings to a set of 3 items: 
+		for User[0], ratings to all 3 items are known; 
+		for User[1], ratings to Item[1] and Item[2] are known, 
+		but the rating to Item[0] is unknown; and so on.
+		Every unknown rating is marked as a question mark.
+		The task is to predict the unknown ratings.
+	}
+	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline \rowcolor{blue!50}
+		& Item[0] & Item[1] & Item[2] \\ \hline
+		User[0] & 3 & 5 & 2 \\ \hline
+		User[1] & ? & 5 & 2 \\ \hline
+		User[2] & 4 & 4 & 5 \\ \hline
+		User[3] & 2 & 4 & ? \\ \hline
+		User[4] & 5 & 5 & 4 \\ \hline
+		User[5] & 4 & ? & 4 \\ \hline
+	\end{tabularx}
+	\label{tab:ratings}
+\end{table}
+
+\subsection{Problem definition}
+Formally, a collaborative rating prediction problem is defined as follows:
+\begin{itemize}
+	\item given: a 2-D array R[m][n], 
+	where R[i][j] is the rating User[i] gives to Item[j],
+	$ i \in [0, m-1] $, j $ \in [0, n-1] $, and a number of elements in Rating 
+	are unknown
+	\item task: predict all unknown elements in R
+\end{itemize}
+Moreover, we define a user as the array of ratings he gives to all items:
+\begin{align*}
+	User[i] = R[i]
+\end{align*}
+
+\section{Baseline solutions}
+Among many algorithms to collaborative rating prediction problem,
+a prevalent one is the neighborhood-based collaborative filtering algorithm 
+\cite{su2009survey}.
+This algorithm also has several variants,
+which we will use as baseline solutions.
+
+\subsection{Algorithm}
+The neighborhood-based collaborative filtering algorithm calculates each 
+unknown R[i][j] as 
+follows \cite{su2009survey}:
+\begin{align*}
+R[i][j] = c \sum_{k = 0}^{m-1} S(i, k) R[k][j]
+\end{align*}
+where S(i, k) is the similarity of User[i] and User[k] to be defined by each 
+variant,
+unknown R[k][j]'s are omitted and c is a normalizing factor:
+\begin{align*}
+	c = \frac{1}{\sum_{l = 0}^{m - 1} |S(i, k)|}
+\end{align*}
+It is easy to understand the predicted rating User[i] gives to Item[j] as the 
+sum of ratings all users give to Item[j],
+weighted by how similar each user is to the target user.
+The algorithm can use only a number of users with highest similarities to the 
+target user in the calculation, instead of using all users.
+
+\subsection{Variants}
+Each variant of the algorithm has a unique definition of the similarity 
+function of User[i] and User[k]:
+\begin{itemize}
+	\item The cosing similarity is defined as \cite{sarwar2000analysis}:
+	\begin{align*}
+		&S_{cos}(x, y) \\
+		&= \frac{R[x] \cdot R[y]}{||R[x]|| \cdot ||R[y]||} \\
+		&= \frac{\sum_{i \in I_{xy}}R[x][i]R[y][i]}{\sqrt{\sum_{i \in 
+		I_x}R[x][i]^2} \sqrt{\sum_{i \in I_y}R[y][i]^2}}
+	\end{align*}
+	where $ I_{x} $ is the set of items rated by User[x],
+	and $ I_{y} $ is the set of items rated by User[y], 
+	and $ I_{xy} $ is the set of items rated by both User[x] and User[y]. 
+	\item The Pearson correlation coefficient (PCC) similarity is defined as 
+	\cite{resnick1994grouplens}:
+	\begin{align*}
+		&S_{PCC}(x, y) \\
+		&= \frac{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})(R[y][i] - 
+		\overline{R[y]})}{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})^2 
+		\sum_{i 
+		\in I_{xy}}(R[y][i] - \overline{R[y]})^2 }
+	\end{align*}
+	where $ \overline{R[x]} $ is the average rating User[x] gives to all items.
+	PCC measures the linear correlation of two users.
+	\item The weighted PCC (WPCC) similarity is defined as 
+	\cite{herlocker1999algorithmic}:
+	\begin{align*}
+		S_{WPCC}(x, y) = 
+		\begin{cases}
+			\frac{|I_{xy}|}{T} S_{PCC}(x, y) & |I_{xy}| < T \\
+			S_{PCC}(x, y) & otherwise
+		\end{cases}
+	\end{align*}
+	where T is a threshold of number of items. 
+	WPCC of two users differs from PCC only when the number of items rated by 
+	both users (co-rated items) is less than the threshold. 
+	When the difference occurs, less number of co-rated items results in less 
+	similarity in the two users.
+	\item The sigmoid PCC (SPCC) similarity is defined as 
+	\cite{jamali2009trustwalker}:
+	\begin{align*}
+		S_{SPCC} (x, y) = \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
+	\end{align*}
+	SPCC is very similar to WPCC in the sense two users have lower similarity 
+	if they have a smaller number of co-rated items.
+	\item The multi-level PCC (MPCC) similarity \cite{polatidis2016multi} . 
+	This one is also very similar to the previous ones but much more complex, 
+	so we skip its description here.
+\end{itemize}
 
 \section{Observations and approach}
+Although the various applications in related work section can not solve the 
+collaborative rating prediction problem,
+they all have an interesting key process: vector representations of entities.
+As deep learning techniques become more powerful and standardized, this key 
+process seems to be the most significant part in a domain specific deep 
+learning application.
+In an informal way, that is like to say: in order to apply deep learning to a 
+specific task, just represent the data at hand as vectors of numbers,
+feed them to the neural net, and then deep learning will take care of 
+everything else.
 
 \subsection{Entities and representations}
-In order to find out how a neural net can predict link attributes, we first 
-review how it handles entities in different domains.
-\autoref{tab:domains} provides a summary of various types of entities, their 
-numerical representations and inter-entity relations in different domains.
-The representations for all the entities are numerical arrays, 
+First of all, we summarize how a neural net represents various types of 
+entities in different domains with different relations, as shown in 
+\autoref{tab:domains}.
+It is clear that representations for all the entities are numerical arrays, 
 because neural nets rely on neurons' activations and communications, which 
 are both numerical.
 \begin{table}[h]
@@ -104,23 +282,29 @@ are both numerical.
 		representations and inter-entity relations in different domains:
 		Images in image recognition and utterances in speech recognition can be 
 		directly represented by 2D numerical arrays, 
-		but their relations to other images or utterances are not well studied. 
-		Words in natural languages and nodes in graphs can be represented by 
-		vectors (1D numerical arrays) and their relations to other words and 
-		nodes are well studied.}
-	\begin{tabularx}{0.5\textwidth}{|X|c|c| }  \hline
- \textbf{Entity} & \textbf{Representation} & \textbf{Relations} \\ \hline
-	 image & 2D intensity array & NA \\ \hline
-	 utterance & 2D intensity array & NA \\ \hline
-	 word & word vector & co-occurrences \\ \hline
-	 node & node vector & links \\ \hline
+		but their relations to other images or utterances are not commonly 
+		used. 
+		Words in natural languages, items in recommendation systems, and nodes 
+		in graphs can be represented by vectors (1D numerical arrays) and their 
+		relations to other words, items and nodes are commonly used to learn 
+		these vectors.}
+	\begin{tabularx}{0.5\textwidth}{|X|c|c| } \hline \rowcolor{blue!50}
+		Entity & Representation & Relations \\ \hline
+		image & 2D intensity array & NA \\ \hline
+		utterance & 2D intensity array & NA \\ \hline
+		word & word vector & co-occurrences \\ \hline
+		item & item vector & co-purchases \\ \hline
+		node & node vector & connections \\ \hline
 	\end{tabularx}
 	\label{tab:domains}
 \end{table}
 
-\subsection{Mapping words to word vectors}
-The famous word2vec technique uses a neural net to learn to map every word in a 
-vocabulary to a vector without any domain knowledge \cite{mikolov2013efficient}.
+\subsection{Entities to vectors}
+The famous word2vec technique is the first of its kind in using a neural net to 
+learn to map every entity (word in this case) in a vocabulary to a vector 
+without any domain knowledge \cite{mikolov2013efficient}.
+The subsequent techniques item2vec and node2vec use the identical skip-gram 
+model to map items and nodes to vectors.
 \autoref{tab:word} shows a mapping table that maps each word ID to the word 
 vector.
 In a corpus, every word is described/defined only by related words in its 
@@ -129,14 +313,15 @@ Nonetheless, the neural net can learn from word co-occurrences and map words to
 vectors accordingly,
 such that the relations between words are preserved in the word vector space 
 \cite{mikolov2013distributed}.
+The same arguments apply to relations between items and nodes.
 \begin{table}[h]
 	\centering
-	\caption{Word to vector mapping table for a vocabulary of size n with word 
-		vectors of size d:
-		Each word has an ID (words in any language works, e.g., Egyptian).
+	\caption{Entity (word/item/node) to vector mapping table for a set of n
+		entities with entity vectors of size d:
+		Each entity has an ID.
 		The values of vectors in this table are hypothetical.}
-	\begin{tabularx}{0.5\textwidth}{|X|X|} \hline
-		\textbf{Word ID} & \textbf{Word vector} \\ \hline
+	\begin{tabularx}{0.5\textwidth}{|c|X|} \hline \rowcolor{blue!50}
+		Entity ID & Entity (word/item/node) vector \\ \hline
 		1 & [2.3, 564, -9.5 ... 3] \\ \hline
 		2 & [76, -342.2, 0.3 ... 4.2] \\ \hline
 		3 & [-345, -834, 0.3 ... 34] \\ \hline
@@ -146,97 +331,30 @@ such that the relations between words are preserved in the word vector space
 	\label{tab:word}
 \end{table}
 
-\subsection{Mapping nodes to node vectors}
-\autoref{tab:domains} also shows the similarities between words in natural 
-languages and nodes in graphs.
-These similarities suggest a neural net should be able to map nodes to node 
-vectors just like mapping words to word vectors.
-Moreover, the relations between nodes are explicit (i.e., links),
-while relations between words are implicit (i.e., word co-occurrences).
-In a social network example, the rating a movie received from a user explicitly 
-tells us how much the user likes that movie;
-the amount of messages a user sends to another user explicitly tells us how 
-much the user likes to talk to the other user.
-In a language corpus example, the co-occurrences of words [the, quick, brown, 
-fox, jumps, over] implicitly tell us these words are related but do not tell us 
-what their relations are.
-This observation suggests that a neural net should be able to learn node 
-mappings supervised by the link attributes more directly than it learns word 
-mappings supervised by word co-occurrences.
-
-\section{Application scenario}
-
-\subsection{Description}
-We demonstrate the power of the node mapping technique in a famous social 
-network application scenario: recommender systems.
-This is a simplified social network where users give ratings to movies (or to 
-like/dislike posts, etc.).
-For each user, we know the ratings he has given to several movies; we want to 
-predict the ratings he would give to other movies.
-
-\subsection{Definition}
-Formally, we have a bipartite graph:
+\subsection{Users and items to vectors}
+However, the relation between a user and an item is quite different from that 
+between words:
 \begin{itemize}
-	\item a node set consisting of 2 types of nodes: users and movies - nodes 
-	have no attributes
-	\item a link set consisting of 1 type of links: user-movie links between 
-	every (user, movie) pair - every link has one numerical attribute called 
-	rating, which can be known or unknown
+	\item The rating a user gives to an item explicitly tells us how much the 
+	user likes that item;
+	the relation is very specific: one user, one item, one rating - no more, no 
+	less.
+	\item The co-occurrences of words [the, quick, brown, fox, jumps, over] 
+	implicitly tell us these words are related but do not tell us any specific 
+	relation.
 \end{itemize}
+This observation suggests that a neural net should be able to learn user to 
+vector mapping and item to vector mapping supervised by the rating, in a more 
+specific, direct and simply way than it learns word to vector mappings 
+supervised by word co-occurrences.
+
+\section{Solution}
 Formally, the prediction task is, given any (user, movie) pair, predict the 
 rating the user would give to the movie:
 \begin{itemize}
 	\item input: X = (user, movie)
 	\item output: Y = rating(user, movie)
 \end{itemize}
-
-\subsection{Baseline solution and experiments}
-We choose the famous collaborative filtering technique to provide the baseline 
-solution \cite{polatidis2016multi}.
-There are two recent publications where a large number of collaborative 
-filtering variants are benchmarked \cite{hwang2016efficient} 
-\cite{polatidis2016multi} in experiments.
-These experiments use two MovieLens datasets \cite{harper2015movielens} 
-\footnote{http://grouplens.org/datasets/movielens},
-with specifications summarized in \autoref{tab:dataset} and samples shown in 
-\autoref{tab:rating}.
-The prediction accuracy metric used is MAE (mean absolute error).
-Each dataset is split into 2 parts: 20\% into the test set and 80\% into the 
-training set.
-In the following sections, we will provide a new solution using the node 
-mapping technique, benchmark the solution in the same experiments and compare 
-the 
-prediction accuracy of the new solution to the baseline solution.
-\begin{table}[h]
-	\centering
-	\caption{The dataset specs: MovieLens 100K dataset used in 
-	\cite{hwang2016efficient} and 
-	MovieLens 1M dataset used in \cite{polatidis2016multi}.}
-	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline
-		\textbf{Dataset} & \textbf{User\#} & \textbf{Movie\#} & 		
-		\textbf{Rating\#} 
-		\\ \hline
-		MovieLens100K & 1,000 & 1,700 & 100,000 \\ \hline
-		MovieLens1M & 6,000 & 4,000 & 1,000,000 \\ \hline
-	\end{tabularx}
-	\label{tab:dataset}
-\end{table}
-\begin{table}[h]
-	\centering
-	\caption{The dataset samples: Every link has 1 numerical attribute - 
-		rating. The rating values in this table are hypothetical.}
-	\begin{tabularx}{0.5\textwidth}{ |X|X|X| }  \hline
-		\textbf{User ID} & \textbf{Movie ID} & \textbf{Rating} \\ \hline
-		0 & 355 & 4 \\ \hline
-		0 & 876 & 3 \\ \hline
-		0 & 232 & 5 \\ \hline
-		... & ... & ... \\ \hline
-		999 & 784 & 4 \\ \hline
-	\end{tabularx}
-	\label{tab:rating}
-\end{table}
-
-\section{Solution}
 
 \subsection{Conceptual model}
 Using the node mapping technique, we provide a new solution to recommender 
@@ -396,6 +514,49 @@ techniques:
 \end{itemize}
 
 \section{Experiments}
+
+There is a recent work where a large number of collaborative 
+filtering variants are benchmarked \cite{polatidis2016multi}.
+These experiments use two MovieLens datasets \cite{harper2015movielens} 
+\footnote{http://grouplens.org/datasets/movielens},
+with specifications summarized in \autoref{tab:dataset} and samples shown in 
+\autoref{tab:rating}.
+The prediction accuracy metric used is MAE (mean absolute error).
+Each dataset is split into 2 parts: 20\% into the test set and 80\% into the 
+training set.
+In the following sections, we will provide a new solution using the node 
+mapping technique, benchmark the solution in the same experiments and compare 
+the 
+prediction accuracy of the new solution to the baseline solution.
+\begin{table}[h]
+	\centering
+	\caption{The dataset specs: MovieLens 100K dataset used in 
+		\cite{hwang2016efficient} and 
+		MovieLens 1M dataset used in \cite{polatidis2016multi}.}
+	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline
+		\textbf{Dataset} & \textbf{User\#} & \textbf{Movie\#} & 		
+		\textbf{Rating\#} 
+		\\ \hline
+		MovieLens100K & 1,000 & 1,700 & 100,000 \\ \hline
+		MovieLens1M & 6,000 & 4,000 & 1,000,000 \\ \hline
+	\end{tabularx}
+	\label{tab:dataset}
+\end{table}
+\begin{table}[h]
+	\centering
+	\caption{The dataset samples: Every link has 1 numerical attribute - 
+		rating. The rating values in this table are hypothetical.}
+	\begin{tabularx}{0.5\textwidth}{ |X|X|X| }  \hline
+		\textbf{User ID} & \textbf{Movie ID} & \textbf{Rating} \\ \hline
+		0 & 355 & 4 \\ \hline
+		0 & 876 & 3 \\ \hline
+		0 & 232 & 5 \\ \hline
+		... & ... & ... \\ \hline
+		999 & 784 & 4 \\ \hline
+	\end{tabularx}
+	\label{tab:rating}
+\end{table}
+
 
 \subsection{Experiment process}
 Our estimator sets aside 10\% of the training set as the validation set.
@@ -562,11 +723,10 @@ following scenarios:
 	estimator should extract knowledge of the node from the article or image 
 	content and integrate this knowledge to that extracted from links
 \end{itemize}
-We have an open source implementation available for interested readers  
-\footnote{https://github.com/yuchenhou/elephant}.
-The code is in Python and the main machine learning packages are TensorFlow 
-\cite{abadi2016tensorflow} \footnote{https://github.com/tensorflow/tensorflow} 
-and SkFlow \footnote{https://github.com/tensorflow/skflow}.
+We have a Python implementation under MIT license hosted on Github.
+%\footnote{https://github.com/yuchenhou/elephant}
+The main machine learning packages are TensorFlow \cite{abadi2016tensorflow}.
+%\footnote{https://github.com/tensorflow/tensorflow}
 Do not hesitate to contact us if you are interested in our work.
 
 \section{Conclusions}
@@ -580,12 +740,9 @@ For recommendation tasks in social networks, this technique realizes the idea
 of understanding complex users from their simple activities, and using that 
 understanding to predict their future activities.
 
-\section*{Acknowledgements}
-Yuan Tang \footnote{https://github.com/terrytangyuan} and Illia Polosukhin 
-\footnote{https://github.com/ilblackdragon} provided technical support for 
-SkFlow and TensorFlow during our experiments.
-This material is based on work supported by the National Science Foundation 
-under Grant No. 1318913.
+%\section*{Acknowledgements}
+%This material is based on work supported by the National Science Foundation 
+%under Grant No. 1318913.
 
 \bibliographystyle{plain}
 \bibliography{references}
