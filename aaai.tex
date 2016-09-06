@@ -27,30 +27,28 @@
 \maketitle
 
 \begin{abstract}
-	Deep learning applications are very successful in various domains 
+	Deep learning applications have become very successful in various domains 
 	including image recognition, speech recognition and natural language 
 	processing.
-	However, the research on its applications in recommendation systems is 
+	However, the research on its application in recommendation systems is 
 	still in early stage.
-	Here we present Model R, a neural network model created to provide a new 
-	solution for collaborative rating prediction problem.
+	Here we present Model R, a neural network model created to provide a deep 
+	learning solution for collaborative rating prediction problem.
 	This model extracts knowledge of users and items from known ratings and 
 	uses this knowledge to predict unknown ratings.
 	We demonstrate the power of Model R through experiments and compare it with 
-	the most prevalent collaborative filtering algorithm and its variants.
-	Our experiments show that Model R outperforms collaborative filtering 
-	algorithm by up to 18\% in terms of prediction accuracy.
+	the most prevalent collaborative filtering algorithm - neighborhood-based 
+	collaborative filtering.
 	Model R proves deep learning can be successfully applied to collaborative 
-	rating prediction problem and it can provide a solution to achieve higher 
-	prediction accuracy than the most prevalent collaborative filtering 
-	algorithm.
+	rating prediction problem and it outperforms neighborhood-based 
+	collaborative filtering by up to 18\% in terms of prediction accuracy.
 \end{abstract}
 
 \section{Introduction}
 The expression deep learning existed as early as 1986 in machine learning 
 community \cite{dechter1986learning}, though not so well known for many years.
 But now, deep learning techniques using neural network models are rapidly 
-gaining traction in many application domains 
+gaining traction in more and more application domains 
 such as:
 \begin{itemize}
 	\item speech recognition \cite{hannun2014deep}
@@ -87,7 +85,8 @@ We also clarify how our work differs from these related work.
 \subsection{Content based applications}
 Applications in this group extract information of an item from its content, 
 i.e., the input of the neural network is a vector produced from the item's 
-content (e.g., the audio of the song, the text of an article):
+content (e.g., the audio of a song, the text of an article). Here are some 
+examples:
 \begin{itemize}
 	\item One example is a music recommendation system \cite{van2013deep}. 
 	It is a tag prediction system implemented with a convolutional neural net: 
@@ -173,8 +172,8 @@ Formally, a collaborative rating prediction problem is defined as follows:
 \begin{itemize}
 	\item given: a 2-D array R[m][n], 
 	where R[i][j] is the rating User[i] gives to Item[j],
-	$ i \in [0, m-1] $, j $ \in [0, n-1] $, and a number of elements in Rating 
-	are unknown
+	$ i \in [0, m-1] $, j $ \in [0, n-1] $, and a number of elements in R are 
+	unknown
 	\item task: predict all unknown elements in R
 \end{itemize}
 Moreover, we define a user as the array of ratings he gives to all items:
@@ -202,11 +201,11 @@ unknown R[k][j]'s are omitted and c is a normalizing factor:
 \begin{align*}
 	c = \frac{1}{\sum_{l = 0}^{m - 1} |S(i, k)|}
 \end{align*}
-It is easy to understand the predicted rating User[i] gives to Item[j] as the 
-sum of ratings all users give to Item[j],
+It is easy to understand the predicted rating R[i][j] as the sum of ratings all 
+users give to Item[j],
 weighted by how similar each user is to the target user.
-The algorithm can use only a number of users with highest similarities to the 
-target user in the calculation, instead of using all users.
+The algorithm can opt to use only a fixed number of users with highest 
+similarities to the target user in the calculation, instead of using all users.
 
 \subsection{Variants}
 Each variant of the algorithm has a unique definition of the similarity 
@@ -215,7 +214,7 @@ function of User[i] and User[k]:
 	\item PCC: The Pearson correlation coefficient similarity, defined as 
 	\cite{resnick1994grouplens}:
 	\begin{align*}
-		&S_{PCC}(x, y) \\
+		&S(x, y) = S_{PCC}(x, y) \\
 		&= \frac{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})(R[y][i] - 
 		\overline{R[y]})}{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})^2 
 		\sum_{i 
@@ -228,7 +227,7 @@ function of User[i] and User[k]:
 	\item WPCC: The weighted PCC similarity, defined as 
 	\cite{herlocker1999algorithmic}:
 	\begin{align*}
-		S_{WPCC}(x, y) = 
+		S(x, y) = S_{WPCC}(x, y) = 
 		\begin{cases}
 			\frac{|I_{xy}|}{T} S_{PCC}(x, y) & |I_{xy}| < T \\
 			S_{PCC}(x, y) & otherwise
@@ -242,7 +241,8 @@ function of User[i] and User[k]:
 	\item SPCC: The sigmoid PCC similarity, defined as 
 	\cite{jamali2009trustwalker}:
 	\begin{align*}
-		S_{SPCC} (x, y) = \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
+		S(x, y) = S_{SPCC} (x, y) 
+		= \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
 	\end{align*}
 	SPCC is very similar to WPCC in the sense two users have lower similarity 
 	if they have a smaller number of co-rated items.
@@ -254,12 +254,12 @@ function of User[i] and User[k]:
 \section{Observations}
 Although the various applications in related work section can not solve the 
 collaborative rating prediction problem,
-they all have an interesting key process: vector representations of entities.
+they all have an interesting key process: representing entities as vectors.
 As deep learning techniques become more powerful and standardized, this key 
 process seems to be the most significant part in a domain specific deep 
 learning application.
 In an informal way, that is like to say: in order to apply deep learning to a 
-specific task, just represent the data at hand as vectors of numbers,
+specific task, represent the data at hand as vectors of numbers,
 feed them to the neural net, and then deep learning will take care of 
 everything else.
 
@@ -297,10 +297,10 @@ are both numerical.
 The famous word2vec technique is the first of its kind in using a neural net to 
 learn to map every entity (word in this case) in a vocabulary to a vector 
 without any domain knowledge \cite{mikolov2013efficient}.
-The subsequent techniques item2vec and node2vec use the identical skip-gram 
-model to map items and nodes to vectors.
-\autoref{tab:word} shows a mapping table that maps each word ID to the word 
-vector.
+The subsequent techniques item2vec and node2vec use the same skip-gram 
+model in word2vec to map items and nodes to vectors.
+\autoref{tab:word} shows a mapping table that maps each entity(word/item/node) 
+to its vector.
 In a corpus, every word is described/defined only by related words in its 
 contexts, by implicit relations between words in word co-occurrences.
 Nonetheless, the neural net can learn from word co-occurrences and map words to 
@@ -313,7 +313,8 @@ The same arguments apply to relations between items and nodes.
 	\caption{Entity (word/item/node) to vector mapping table for a set of n
 		entities with entity vectors of size d:
 		Each entity has an ID.
-		The values of vectors in this table are hypothetical.}
+		The values of vectors in this table are hypothetical.
+		}
 	\begin{tabularx}{0.5\textwidth}{|c|X|} \hline \rowcolor{blue!50}
 		Entity ID & Entity (word/item/node) vector \\ \hline
 		1 & [2.3, 564, -9.5 ... 3] \\ \hline
@@ -401,7 +402,7 @@ R (R as in relation), shown in \autoref{fig:conceptural}.
 	\end{tikzpicture}
 	\caption{The conceptual model R for a dataset with 1700 items and 1000 
 	users:
-	The d in the bracket (d as in dimension), the layer's size (number of 
+	The d in the bracket (d as in dimension) is the layer's size (number of 
 	units in the layer).
 	We keep all layers the same size for simplicity, although layers of 
 	different sizes may produce better results.
@@ -409,7 +410,8 @@ R (R as in relation), shown in \autoref{fig:conceptural}.
 	units in the layer (except for one-hot, which refers to the activations 
 	in the input layer).
 	Only layers and their connections are shown, while the units in each 
-	layer and their connections are not shown.}
+	layer and their connections are not shown.
+	}
 	\label{fig:conceptural}
 \end{figure*}
 The model contains the following layers:
@@ -419,12 +421,11 @@ The model contains the following layers:
 	this layer is directly activated by the testing program (e.g., to feed the 
 	1200th item, the testing program sets 1 at the 1200th unit and 0 at other 	
 	units in the item channel);
-	\item a mapping layer with linear units: it has 1 channel to map each 
-	item to an item vector and 1 channel to map each user to a user vector;
-	the activations of these 2 channels are the 2 vectors;
+	\item a mapping layer with linear units: it has one channel to map each 
+	entity to a vector;
+	the activations of these two channels are the two vectors;
 	it is the most critical layer as it gradually learns to map users and items 
-	to vectors, which are effectively complex and unobservable user and item 
-	attributes
+	to vectors, which are complex and unobservable user and item attributes
 	\item several fully connected hidden layers (1 layer is shown in the figure;
 	multiple numbers of layers and layer sizes are considered in the 
 	experiments) of ReLU (rectified linear units):
@@ -518,8 +519,8 @@ the baseline solutions.
 \subsection{Experiment settings}
 We evaluated Model R in the same settings used in a recent experimental 
 evaluation of the baseline solutions \cite{polatidis2016multi} on four datasets 
-(Jester \cite{goldberg2001eigentaste} is not used due to its file formatting 
-issue): 
+(Jester \cite{goldberg2001eigentaste} is not used due to its non-standard file 
+formatting issue): 
 \begin{itemize}
 	\item ML100: MovieLens100K\cite{harper2015movielens}
 	\item ML1000: MovieLens1M\cite{harper2015movielens}
@@ -529,7 +530,7 @@ issue):
 The specifications of the datasets are summarized in \autoref{tab:dataset}.
 The experiments use MAE (mean absolute error) as the prediction accuracy 
 metric, and split each dataset into 2 parts: 20\% into the test set and 80\% 
-into the training set. Every solution is evaluated with 
+into the training set.
 \begin{table}[h]
 	\centering
 	\caption{The dataset specs: 
@@ -548,7 +549,7 @@ into the training set. Every solution is evaluated with
 \end{table}
 
 \subsection{Experiment process}
-The estimator always sets aside 10\% of the training set as the validation set.
+The estimator always sets aside 10\% of the training set as a validation set.
 A larger or smaller validation set could not reduce the prediction error in the 
 experiments.
 The estimator learns for several epochs.
@@ -559,12 +560,12 @@ In each epoch, it does two things:
 \end{enumerate}
 In order to reduce over-fitting, the estimator stops learning when the 
 validation error has not decreased for 3 epochs.
-After that the testing program lets the estimator predict on testing set to 
+After that the testing program lets the estimator predict on testing set and 
 record its testing error as its prediction error on that dataset.
 
 \subsection{Experiment results}
 In our experiments, Model R's prediction error is 18\% to 8\% lower than
-the best baseline solution (MPCC) on all datasets, shown in 
+the best baseline solution MPCC - on all datasets, shown in 
 \autoref{tab:errors}.
 The error reduction from MPCC to Model R is calculated as:
 \begin{align*}
@@ -586,7 +587,7 @@ The error reduction from MPCC to Model R is calculated as:
 	\end{tabularx}
 	\label{tab:errors}
 \end{table}
-Model R is also very robust (4\% fluctuation in prediction error) in a wide 
+Model R is also very robust - 4\% fluctuation in prediction error - in a wide 
 parameter ranges listed below:
 \begin{itemize}
 	\item number of hidden layers: [2, 5]
@@ -599,8 +600,8 @@ parameter ranges listed below:
 We ran our experiments on a Dell Optiplex 780 machine with following 
 configurations:
 \begin{itemize}
-	\item Python implementation: CPython 3.4
-	\item OS: Ubuntu 15.10 64-bit
+	\item Python implementation: CPython 3.5
+	\item OS: Ubuntu 16.04 64-bit
 	\item Processor: Intel Core 2 Duo CPU E8400 @ 3GHz
 	\item Memory: 4GB
 \end{itemize}
