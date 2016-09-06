@@ -1,18 +1,19 @@
-\documentclass[twocolumn]{article}
+\documentclass[letterpaper]{article}
+\usepackage{aaai17}
 \usepackage[table]{xcolor}
 \usepackage{listings}
 \usepackage{amsmath}
-\usepackage{fullpage}
 \usepackage{tabularx}
 \usepackage{graphicx}
-\usepackage{caption}
 \usepackage{subcaption}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
 \usepackage{cite}
-\usepackage{hyperref}
 \usepackage{float}
 %\usepackage{authblk}
+%\usepackage{fullpage}
+\usepackage{hyperref}
+%\usepackage{caption}
 
 \begin{document}
 \lstset{language=python, tabsize=4}
@@ -26,21 +27,23 @@
 \maketitle
 
 \begin{abstract}
-	The applications of neural networks are very successful in various domains 
+	Deep learning applications are very successful in various domains 
 	including image recognition, speech recognition and natural language 
 	processing.
-	However, its application in graph mining is not well studied.
-	Here we present node mapping, a technique created for link attribute 
-	prediction powered by neural networks.
-	This technique extracts knowledge of nodes from known links and uses this 
-	knowledge to predict unknown links.
-	We demonstrate the power of this technique in a famous social network 
-	application scenario: recommender systems.
-	Our experiments show that the node mapping technique can provide a new
-	recommendation solution that outperforms collaborative filtering 
-	technique by up to 17\% in terms of prediction accuracy.
-	We anticipate this new technique to provide effective solutions to more 
-	prediction tasks in different graph applications.
+	However, the research on its applications in recommendation systems is 
+	still in early stage.
+	Here we present Model R, a neural network model created to provide a new 
+	solution for collaborative rating prediction problem.
+	This model extracts knowledge of users and items from known ratings and 
+	uses this knowledge to predict unknown ratings.
+	We demonstrate the power of Model R through experiments and compare it with 
+	the most prevalent collaborative filtering algorithm and its variants.
+	Our experiments show that Model R outperforms collaborative filtering 
+	algorithm by up to 18\% in terms of prediction accuracy.
+	Model R proves deep learning can be successfully applied to collaborative 
+	rating prediction problem and it can provide a solution to achieve higher 
+	prediction accuracy than the most prevalent collaborative filtering 
+	algorithm.
 \end{abstract}
 
 \section{Introduction}
@@ -54,7 +57,6 @@ such as:
 	\item image recognition \cite{simonyan2014very}
 	\item natural language processing \cite{yao2013recurrent}
 	\item graph mining \cite{grovernode2vec}
-	\item drug discovery \cite{dahl2014multi}
 	\item recommendation systems \cite{barkan2016item2vec}
 \end{itemize}
 Two reasons for its adoptions in these domains are its higher prediction 
@@ -95,7 +97,7 @@ content (e.g., the audio of the song, the text of an article):
 	\cite{elkahky2015multi}. 
 	It is a rating prediction system implemented with a fully connected neural 
 	net: the input is the letter tri-gram vector of the text description of a 
-	news article, app or movie, and the output is the rating.
+	news article, app, etc, and the output is the rating.
 \end{itemize}
 Obviously, these applications are very similar to image recognition and speech 
 recognition.
@@ -143,11 +145,11 @@ This is a collaborative rating prediction problem example:
 a set of 6 users give numerical ratings to a set of 3 items.
 For each user, only a subset of his ratings are known; 
 and we want to predict the unknown ratings.
-This example is demonstrated in \autoref{tab:ratings}.
+The dataset of this example is demonstrated in \autoref{tab:ratings}.
 \begin{table}[h]
 	\centering
-	\caption{A collaborative rating prediction problem example.
-		In this example, a set of 6 users give ratings to a set of 3 items: 
+	\caption{The dataset of the problem example.
+		In this dataset, a set of 6 users give ratings to a set of 3 items: 
 		for User[0], ratings to all 3 items are known; 
 		for User[1], ratings to Item[1] and Item[2] are known, 
 		but the rating to Item[0] is unknown; and so on.
@@ -182,8 +184,8 @@ Moreover, we define a user as the array of ratings he gives to all items:
 
 \section{Baseline solutions}
 Among many algorithms to collaborative rating prediction problem,
-a prevalent one is the neighborhood-based collaborative filtering algorithm 
-\cite{su2009survey}.
+the most prevalent one is the neighborhood-based collaborative filtering 
+algorithm \cite{su2009survey}.
 This algorithm also has several variants,
 which we will use as baseline solutions.
 
@@ -210,17 +212,7 @@ target user in the calculation, instead of using all users.
 Each variant of the algorithm has a unique definition of the similarity 
 function of User[i] and User[k]:
 \begin{itemize}
-	\item The cosing similarity is defined as \cite{sarwar2000analysis}:
-	\begin{align*}
-		&S_{cos}(x, y) \\
-		&= \frac{R[x] \cdot R[y]}{||R[x]|| \cdot ||R[y]||} \\
-		&= \frac{\sum_{i \in I_{xy}}R[x][i]R[y][i]}{\sqrt{\sum_{i \in 
-		I_x}R[x][i]^2} \sqrt{\sum_{i \in I_y}R[y][i]^2}}
-	\end{align*}
-	where $ I_{x} $ is the set of items rated by User[x],
-	and $ I_{y} $ is the set of items rated by User[y], 
-	and $ I_{xy} $ is the set of items rated by both User[x] and User[y]. 
-	\item The Pearson correlation coefficient (PCC) similarity is defined as 
+	\item PCC: The Pearson correlation coefficient similarity, defined as 
 	\cite{resnick1994grouplens}:
 	\begin{align*}
 		&S_{PCC}(x, y) \\
@@ -229,9 +221,11 @@ function of User[i] and User[k]:
 		\sum_{i 
 		\in I_{xy}}(R[y][i] - \overline{R[y]})^2 }
 	\end{align*}
-	where $ \overline{R[x]} $ is the average rating User[x] gives to all items.
+	where $ I_{x} $ is the set of items rated by User[x],
+	and	$ \overline{R[x]} $ is the average rating User[x] gives to all items,
+	and $ I_{xy} $ is the set of items rated by both User[x] and User[y].
 	PCC measures the linear correlation of two users.
-	\item The weighted PCC (WPCC) similarity is defined as 
+	\item WPCC: The weighted PCC similarity, defined as 
 	\cite{herlocker1999algorithmic}:
 	\begin{align*}
 		S_{WPCC}(x, y) = 
@@ -245,19 +239,19 @@ function of User[i] and User[k]:
 	both users (co-rated items) is less than the threshold. 
 	When the difference occurs, less number of co-rated items results in less 
 	similarity in the two users.
-	\item The sigmoid PCC (SPCC) similarity is defined as 
+	\item SPCC: The sigmoid PCC similarity, defined as 
 	\cite{jamali2009trustwalker}:
 	\begin{align*}
 		S_{SPCC} (x, y) = \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
 	\end{align*}
 	SPCC is very similar to WPCC in the sense two users have lower similarity 
 	if they have a smaller number of co-rated items.
-	\item The multi-level PCC (MPCC) similarity \cite{polatidis2016multi} . 
+	\item MPCC: The multi-level PCC similarity \cite{polatidis2016multi}. 
 	This one is also very similar to the previous ones but much more complex, 
 	so we skip its description here.
 \end{itemize}
 
-\section{Observations and approach}
+\section{Observations}
 Although the various applications in related work section can not solve the 
 collaborative rating prediction problem,
 they all have an interesting key process: vector representations of entities.
@@ -349,18 +343,31 @@ specific, direct and simply way than it learns word to vector mappings
 supervised by word co-occurrences.
 
 \section{Solution}
-Formally, the prediction task is, given any (user, movie) pair, predict the 
-rating the user would give to the movie:
-\begin{itemize}
-	\item input: X = (user, movie)
-	\item output: Y = rating(user, movie)
-\end{itemize}
+Following the above observations, we can build an estimator with a neural net 
+model using a (user, item) pair as its input and the rating as its output.
+Therefore, we should change the format of the example dataset from the one 
+shown in \autoref{tab:ratings} to a new one shown in \autoref{tab:rating}.
+The estimator will train on entries with known ratings (the train set) 
+and predict on the entries with unknown ratings (the test set).
+Of course our testing program knows the unknown ratings in order to calculate 
+the model's prediction error.
+\begin{table}[h]
+	\centering
+	\caption{The reformatted dataset of the problem example.}
+	\begin{tabularx}{0.5\textwidth}{ |c|X| }  \hline \rowcolor{blue!50}
+		Input = (User ID, Item ID) & Output = Rating \\ \hline
+		(0, 0) & 3 \\ \hline
+		(0, 1) & 5 \\ \hline
+		(0, 2) & 2 \\ \hline
+		(1, 0) & ? \\ \hline
+		... & ... \\ \hline
+	\end{tabularx}
+	\label{tab:rating}
+\end{table}
 
-\subsection{Conceptual model}
-Using the node mapping technique, we provide a new solution to recommender 
-systems: 
-an estimator with a neural net model called neural recommender model, shown in 
-\autoref{fig:conceptural}.
+\subsection{Conceptual neural net model}
+The model in the estimator is a fully connected neural net which we call Model 
+R (R as in relation), shown in \autoref{fig:conceptural}.
 \begin{figure*}[h]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
@@ -372,29 +379,29 @@ an estimator with a neural net model called neural recommender model, shown in
 	\tikzstyle{arrow} = [thick,->,>=stealth]
 	\node (linearRegression) [io] {linear regression};
 	\node (relu3) [process, below of=linearRegression] {ReLU[d=64]};
-	\node (linear2) [process, below of=relu3, xshift=-3cm] {linear[d=64]};
-	\node (linear1) [process, below of=relu3, xshift=3cm] {linear[d=64]};
-	\node (oneHot2) [io, below of=linear1] {one-hot[d=1000]};
-	\node (oneHot1) [io, below of=linear2] {one-hot[d=1700]};
+	\node (linear1) [process, below of=relu3, xshift=-3cm] {linear[d=64]};
+	\node (linear2) [process, below of=relu3, xshift=3cm] {linear[d=64]};
+	\node (oneHot2) [io, below of=linear2] {one-hot[d=1700]};
+	\node (oneHot1) [io, below of=linear1] {one-hot[d=1000]};
 	\node (rating) [above of=linearRegression] {rating};
 	\node (output) [left of=linearRegression, xshift=-5cm] {output layer};
 	\node (hidden1) [below of=output] {hidden layers};
 	\node (mapping) [below of=hidden1] {mapping layer};
 	\node (input) [below of=mapping] {input layer};
-	\node (movie) [below of=oneHot1] {movie};
-	\node (user) [below of=oneHot2] {user};
-	\draw [arrow] (movie) -- (oneHot1);
-	\draw [arrow] (user) -- (oneHot2);
-	\draw [arrow] (oneHot2) -- (linear1);
-	\draw [arrow] (oneHot1) -- (linear2);
+	\node (user) [below of=oneHot1] {user};
+	\node (item) [below of=oneHot2] {item};
+	\draw [arrow] (user) -- (oneHot1);
+	\draw [arrow] (item) -- (oneHot2);
+	\draw [arrow] (oneHot1) -- (linear1);
+	\draw [arrow] (oneHot2) -- (linear2);
 	\draw [arrow] (linear1) -- (relu3);
 	\draw [arrow] (linear2) -- (relu3);
 	\draw [arrow] (relu3) -- (linearRegression);
 	\draw [arrow] (linearRegression) -- (rating);
 	\end{tikzpicture}
-	\caption{The conceptual neural recommender model for a dataset with 1700 
-	movies and 1000 users:
-	The d in the bracket refers to dimension, the layer's size (number of 
+	\caption{The conceptual model R for a dataset with 1700 items and 1000 
+	users:
+	The d in the bracket (d as in dimension), the layer's size (number of 
 	units in the layer).
 	We keep all layers the same size for simplicity, although layers of 
 	different sizes may produce better results.
@@ -407,49 +414,43 @@ an estimator with a neural net model called neural recommender model, shown in
 \end{figure*}
 The model contains the following layers:
 \begin{itemize}
-	\item an input layer with one-hot activations: it has 1 channel for movies 
+	\item an input layer with one-hot activations: it has 1 channel for items 
 	and 1 channel for users;
 	this layer is directly activated by the testing program (e.g., to feed the 
-	1200th movie, the testing program sets 1 at the 1200th unit and 0 at other 	
-	units in the movie channel);
-	\item a mapping layer with linear units: it has 2 channels to map each 
-	movie and each user to a vector;
-	the activations of these 2 channels form the 2 node vectors (i.e., the 
-	movie vector and the user vector);
-	it is the most critical layer as it gradually learns to map every node to 
-	the correct vector during training;
+	1200th item, the testing program sets 1 at the 1200th unit and 0 at other 	
+	units in the item channel);
+	\item a mapping layer with linear units: it has 1 channel to map each 
+	item to an item vector and 1 channel to map each user to a user vector;
+	the activations of these 2 channels are the 2 vectors;
+	it is the most critical layer as it gradually learns to map users and items 
+	to vectors, which are effectively complex and unobservable user and item 
+	attributes
 	\item several fully connected hidden layers (1 layer is shown in the figure;
 	multiple numbers of layers and layer sizes are considered in the 
 	experiments) of ReLU (rectified linear units):
 	they have non-linear activation functions to give the model sufficient 
 	complexity;
-	they learn to process node vectors and produce more abstract 
-	rating-relevant information;
+	they learn to extract more and more abstract rating-relevant information;
 	\item an output layer with a linear regression unit: it learns to predict 
-	the rating based on processed information;
+	the rating based on abstracted information;
 \end{itemize}
-We fully take into account the characteristics of social networks when 
-designing this model.
-In a social network, user activities - not user profiles - provide the most 
-information about users, so we design the model to learn node vectors 
-supervised by link attributes.
-We have considered alternative models, but we find them hard to scale.
-For example, we can represent a user as the vector of movie ratings he has 
-given, 
-but this approach will not scale if we have an increasing number of movies.
-For example, a new user will require an update to the network topology (at 
-least at the input layer) and retraining.
+In this problem, ratings provide the all information about users and items.
+We fully take this character into account and design this model to learn 
+complex and unobservable user and item attributes (i.e., user and item vectors) 
+supervised by simple and observable rating.
 
-\subsection{Actual model}
+\subsection{Actual Neural net model}
 In practice, the model uses more efficient mapping tables instead of a 
-one-hot input layer to handle a graph with increasing number of nodes.
+one-hot input layer to handle a dataset with increasing number of users and 
+items.
 \autoref{fig:actural} shows the actual model with two modifications from the 
 conceptual model:
 \begin{itemize}
-	\item The input layer is replaced by 2 mapping tables: 1 for movie nodes 
-	and 1 for user nodes;
-	their inputs are node IDs and their outputs are node vectors, just like the 
-	word to vector mapping table referenced in \autoref{tab:word}
+	\item The input layer is replaced by two mapping tables: one for users and 
+	one for items;
+	their inputs are user and item IDs and their outputs are user and item 
+	vectors, just like the entity to vector mapping table referenced in 
+	\autoref{tab:word}
 	\item The mapping layer is replaced by a 2-channel input layer: it is 
 	directly activated by the outputs of the mapping tables
 \end{itemize}
@@ -466,38 +467,37 @@ conceptual model:
 	\tikzstyle{arrow} = [thick,->,>=stealth]
 	\node (linearRegression) [io] {linear regression};
 	\node (relu3) [process, below of=linearRegression] {ReLU[d=64]};
-	\node (linear2) [io, below of=relu3, xshift=-3cm] {node vector[d=64]};
-	\node (linear1) [io, below of=relu3, xshift=3cm] {node vector[d=64]};
-	\node (oneHot2) [startstop, below of=linear1] {user table[d=1000]};
-	\node (oneHot1) [startstop, below of=linear2] {movie table[d=1700]};
+	\node (linear1) [io, below of=relu3, xshift=-3cm] {user vector[d=64]};
+	\node (linear2) [io, below of=relu3, xshift=3cm] {item vector[d=64]};
+	\node (oneHot1) [startstop, below of=linear1] {user table[d=1000]};
+	\node (oneHot2) [startstop, below of=linear2] {item table[d=1700]};
 	\node (rating) [above of=linearRegression] {rating};
 	\node (output) [left of=linearRegression, xshift=-5cm] {output layer};
 	\node (hidden1) [below of=output] {hidden layers};
 	\node (input) [below of=hidden1] {input layer};
 	\node (mapping) [below of=input] {mapping tables};
-	\node (movie) [below of=oneHot1] {movie ID};
-	\node (user) [below of=oneHot2] {user ID};
-	\draw [arrow] (movie) -- (oneHot1);
-	\draw [arrow] (user) -- (oneHot2);
-	\draw [arrow] (oneHot2) -- (linear1);
-	\draw [arrow] (oneHot1) -- (linear2);
+	\node (user) [below of=oneHot1] {user ID};
+	\node (item) [below of=oneHot2] {item ID};
+	\draw [arrow] (user) -- (oneHot1);
+	\draw [arrow] (item) -- (oneHot2);
+	\draw [arrow] (oneHot1) -- (linear1);
+	\draw [arrow] (oneHot2) -- (linear2);
 	\draw [arrow] (linear1) -- (relu3);
 	\draw [arrow] (linear2) -- (relu3);
 	\draw [arrow] (relu3) -- (linearRegression);
 	\draw [arrow] (linearRegression) -- (rating);
 	\end{tikzpicture}
 	\caption{The actual model with two modifications:
-		We factor the node to vector mapping process out of the neural net into 
-		2 node to vector mapping tables.
-		We feed every node (a movie or user) to the estimator by feeding the 
-		node ID.
+		We factor the entity vector mapping process out of the neural net into 
+		2 mapping tables.
+		We feed every item or user to the estimator by feeding the ID.
 		During learning, the estimator updates the vectors in the tables the 
 		same way it updates weights in the conceptual model.}
 	\label{fig:actural}
 \end{figure*}
 
-\subsection{Learning techniques}
-The estimator uses the above neural net model and a number of popular learning 
+\subsection{Deep learning techniques}
+The estimator uses the above model and a number of popular deep learning 
 techniques:
 \begin{itemize}
 	\item backpropagation: propagation of the error gradients from output layer 
@@ -506,137 +506,94 @@ techniques:
 	the error (descending against the error gradient in weight space) for a 
 	random sample in each step \cite{lecun2012efficient}
 	\item mini-batch: the modification to SGD to accelerate and smooth the 
-	descent by minimizing the error for a small random portion of samples in 
+	descent by minimizing the error for a small random batch of samples in 
 	each step \cite{mairal2010online}
-	\item dropout (specified by keep probability): the technique to reduce unit 
-	co-adaptation by temporarily dropping out a random portion of units in each 
-	step \cite{srivastava2014dropout}
 \end{itemize}
 
 \section{Experiments}
+We evaluated Model R and the baseline solutions experimentally,
+and the results showed that Model R achieved much lower prediction error than 
+the baseline solutions.
 
-There is a recent work where a large number of collaborative 
-filtering variants are benchmarked \cite{polatidis2016multi}.
-These experiments use two MovieLens datasets \cite{harper2015movielens} 
-\footnote{http://grouplens.org/datasets/movielens},
-with specifications summarized in \autoref{tab:dataset} and samples shown in 
-\autoref{tab:rating}.
-The prediction accuracy metric used is MAE (mean absolute error).
-Each dataset is split into 2 parts: 20\% into the test set and 80\% into the 
-training set.
-In the following sections, we will provide a new solution using the node 
-mapping technique, benchmark the solution in the same experiments and compare 
-the 
-prediction accuracy of the new solution to the baseline solution.
+\subsection{Experiment settings}
+We evaluated Model R in the same settings used in a recent experimental 
+evaluation of the baseline solutions \cite{polatidis2016multi} on four datasets 
+(Jester \cite{goldberg2001eigentaste} is not used due to its file formatting 
+issue): 
+\begin{itemize}
+	\item ML100: MovieLens100K\cite{harper2015movielens}
+	\item ML1000: MovieLens1M\cite{harper2015movielens}
+	\item EP: Epinions \cite{massa2007trust}
+	\item MT: MovieTweetings \cite{dooms2013movietweetings}
+\end{itemize}
+The specifications of the datasets are summarized in \autoref{tab:dataset}.
+The experiments use MAE (mean absolute error) as the prediction accuracy 
+metric, and split each dataset into 2 parts: 20\% into the test set and 80\% 
+into the training set. Every solution is evaluated with 
 \begin{table}[h]
 	\centering
-	\caption{The dataset specs: MovieLens 100K dataset used in 
-		\cite{hwang2016efficient} and 
-		MovieLens 1M dataset used in \cite{polatidis2016multi}.}
-	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline
-		\textbf{Dataset} & \textbf{User\#} & \textbf{Movie\#} & 		
-		\textbf{Rating\#} 
-		\\ \hline
-		MovieLens100K & 1,000 & 1,700 & 100,000 \\ \hline
-		MovieLens1M & 6,000 & 4,000 & 1,000,000 \\ \hline
+	\caption{The dataset specs: 
+		The three columns are the dataset, number of users, items and ratings 
+		of the dataset.
+		}
+	\begin{tabularx}{0.5\textwidth}{ |X|X|X|X|}  \hline \rowcolor{blue!50}
+		Dataset & User \# & Item \# & Rating \# \\ \hline
+		ML100 & 1,000 & 1,700 & 100,000 \\ \hline
+		ML1000 & 6,000 & 4,000 & 1,000,000 \\ \hline
+		EP & 49,290 & 139,738 & 664,824 \\ \hline
+		MT & 39,363 & 22,610 & 431,780 \\ 
+		\hline
 	\end{tabularx}
 	\label{tab:dataset}
 \end{table}
-\begin{table}[h]
-	\centering
-	\caption{The dataset samples: Every link has 1 numerical attribute - 
-		rating. The rating values in this table are hypothetical.}
-	\begin{tabularx}{0.5\textwidth}{ |X|X|X| }  \hline
-		\textbf{User ID} & \textbf{Movie ID} & \textbf{Rating} \\ \hline
-		0 & 355 & 4 \\ \hline
-		0 & 876 & 3 \\ \hline
-		0 & 232 & 5 \\ \hline
-		... & ... & ... \\ \hline
-		999 & 784 & 4 \\ \hline
-	\end{tabularx}
-	\label{tab:rating}
-\end{table}
-
 
 \subsection{Experiment process}
-Our estimator sets aside 10\% of the training set as the validation set.
-Using a larger or smaller validation set does not improve the prediction 
-accuracy 
-in our experiments.
+The estimator always sets aside 10\% of the training set as the validation set.
+A larger or smaller validation set could not reduce the prediction error in the 
+experiments.
 The estimator learns for several epochs.
-During each epoch, the estimator updates its model by fitting the training set, 
-and then evaluates the learning progress by performing prediction using the 
-validation set.
-It logs the average training error and average validation error for each epoch 
-and stops learning when the validation error starts increasing to reduce 
-over-fitting.
-This early stopping technique can work well when the validation error 
-monotonically decrease to its minimum.
-We have not explored more sophisticated early stopping techniques to handle 
-other cases.
-After learning, the estimator evaluates its model by performing prediction 
-using the testing set.
-\autoref{fig:trainnig} shows two example learning processes with error traces.
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.4\textwidth}
-		\includegraphics[width=\textwidth]{movieLens100K}
-		\caption{MovieLens 100K}
-		\label{fig:movieLens100K}
-	\end{subfigure}
-	\begin{subfigure}{0.4\textwidth}
-		\includegraphics[width=\textwidth]{movieLens1M}
-		\caption{MovieLens 1M}
-		\label{fig:movieLens1M}
-	\end{subfigure}
-	\caption{Two example learning processes on different datasets:
-	The estimator stops learning when validation errors start increasing at 
-	the last epochs. 
-	The testing errors are 0.711 for MovieLens 100K and 0.655 for MovieLens 1M.}
-	\label{fig:trainnig}
-\end{figure}
+In each epoch, it does two things:
+\begin{enumerate}
+	\item learn on training set
+	\item predict on validation set and log validation error
+\end{enumerate}
+In order to reduce over-fitting, the estimator stops learning when the 
+validation error has not decreased for 3 epochs.
+After that the testing program lets the estimator predict on testing set to 
+record its testing error as its prediction error on that dataset.
 
 \subsection{Experiment results}
-In our experiments, the neural recommender model achieves 7\% to 17\% lower 
-prediction errors than the best solutions provided by collaborative filtering 
-and its variants benchmarked in \cite{hwang2016efficient} and 
-\cite{polatidis2016multi}, shown in \autoref{tab:accuracy}.
-The neural recommender model is also very robust against 
-parameter changes, shown in \autoref{tab:robust}.
+In our experiments, Model R's prediction error is 18\% to 8\% lower than
+the best baseline solution (MPCC) on all datasets, shown in 
+\autoref{tab:errors}.
+The error reduction from MPCC to Model R is calculated as:
+\begin{align*}
+	\delta = 1 - \frac{MPCCError}{ModelRError}
+\end{align*}
 \begin{table}[h]
 	\centering
-	\caption{The comparison of prediction errors (measured by MAE):
-		the neural recommender model (NR) achieves 7\% to 17\% error reduction 
-		from the baseline - collaborative filtering (CF).}
-	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c| }  \hline
-		\textbf{Dataset} & \textbf{CF} & \textbf{NR} & \textbf{reduction} 
-		\\ \hline
-		MovieLens 100K & 0.74 & 0.69 & 7\% \\ \hline
-		MovieLens 1M & 0.79 & 0.65 & 17\% \\ \hline
+	\caption{The comparison of prediction errors (measured by MAE): 4 baseline
+		solutions are represented by their first letters (P, W, S, M).
+		Model R's prediction error is 18\% to 8\% lower than the best baseline 
+		solution (MPCC) on all datasets.
+		}
+	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|c|c|c| } \hline \rowcolor{blue!50}
+		Dataset & P & W & S & M & Model R & $ \delta $ \\ \hline
+		ML100   & 0.83 & 0.82 & 0.83 & 0.82 & 0.70 & 14\% \\ \hline
+		ML100   & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 & 17\% \\ \hline
+		EP      & 1.00 & 1.02 & 1.00 & 0.93 & 0.76 & 18\% \\ \hline
+		MT      & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 & 8\% \\ \hline
 	\end{tabularx}
-	\label{tab:accuracy}
+	\label{tab:errors}
 \end{table}
-\begin{table*}[h]
-	\centering
-	\caption{High robustness of the estimator against parameter changes:
-		The estimator maintains testing errors in range [0.69, 0.72] for a wide 
-		range of parameters. These experiments are on MovieLens 100K dataset.}
-	\begin{tabularx}{\textwidth}{ |X|c|c|c|c| } \hline
-		 \textbf{Learning rate} & \textbf{Keep probability} & \textbf{Layer 
-		 size} & \textbf{Number of hidden layers} & \textbf{Testing error} \\ 
-		 \hline
-		 0.05 & 0.6 & 64 & 2 & 0.7143 \\ \hline
-		 0.01 & 0.6 & 64 & 2 & 0.7109 \\ \hline
-		 0.1 & 0.6 & 64 & 2 & 0.7114 \\ \hline
-		 0.1 & 0.8 & 64 & 2 & 0.7058 \\ \hline
-		 0.1 & 0.9 & 64 & 2 & 0.6925 \\ \hline
-		 0.1 & 0.9 & 32 & 2 & 0.6965 \\ \hline
-		 0.1 & 0.9 & 128 & 2 & 0.7026 \\ \hline
-		 0.1 & 0.9 & 32 & 1 & 0.7032 \\ \hline
-		 0.1 & 0.9 & 32 & 4 & 0.7008 \\ \hline
-	\end{tabularx}
-	\label{tab:robust}
-\end{table*}
+Model R is also very robust (4\% fluctuation in prediction error) in a wide 
+parameter ranges listed below:
+\begin{itemize}
+	\item number of hidden layers: [2, 5]
+	\item layer size: [20, 90]
+	\item learning rate: [0.01, 0.1]
+	\item batch size: [30, 70]
+\end{itemize}
 
 \subsection{Computing resources}
 We ran our experiments on a Dell Optiplex 780 machine with following 
@@ -653,92 +610,34 @@ Our implementation exploits thread level parallelism, but we have not explored
 data level parallelism (i.e., GPU) or process level parallelism (e.g., remote 
 procedure call).
 
-\section{Strengths}
-
-\subsection{Node-centered learning}
-The node mapping technique takes a node-centered approach as the estimator 
-extracts knowledge of nodes from links.
-In a social network, this leverages the fact that who a user contacts and what 
-movies a user likes tell us what kind of person he is and help us predict his 
-behavior.
-It effectively learns complex and unobservable user attributes (node 
-attributes) from simple and observable user activities (link attributes). 
-\autoref{tab:nodesVSlinks} compares nodes and links with respect to their 
-complexity and observability.
-\begin{table}[h]
-	\centering
-	\caption{A comparison of nodes and links with respect to their complexity 
-		and attribute observability in a social network:
-		Links tend to have low complexity and high observability while nodes 
-		are the opposite.
-		For example, it is easy to observe simple user activities like sending 
-		messages to other users and giving ratings to movies,
-		but it is hard to observe complex user attributes like personality, 
-		style or taste in movies.}
-	\begin{tabularx}{0.5\textwidth}{ |X|c|c| } \hline
-		\textbf{Aspect} & \textbf{Node} & \textbf{Link} \\ \hline
-		complexity & high & low \\ \hline
-		observability & low & high \\ \hline
-		example & user & rates, likes, messages \\ \hline
-	\end{tabularx}
-	\label{tab:nodesVSlinks}
-\end{table}
-
-\subsection{Online learning}
-The learning is online when the estimator learns for only one epoch. In 
-this case, its prediction accuracy will be lower, but it naturally handles 
-streaming graphs:
-\begin{itemize}
-	\item it can handle a new node by inserting a new vector into the mapping 
-	table
-	\item it does not need to handle new links as it uses every link once and 
-	then discards the link
-	\item it does not construct the graph or perform any complex graph 
-	operations like neighbor nodes lookup
-\end{itemize}
-We have not explored more sophisticated techniques for streaming graphs like 
-caching a finite set of new links/nodes and learning for multiple epochs on 
-that set.
-
 \section{Future work}
-We are interested in using this node mapping technique to provide solutions to 
-more prediction tasks in graph applications. Many of these tasks fall into the 
-category of recommendation in a social network, e.g., recommending friends or 
-posts to users.
-Specifically, we consider to study how to use this technique to handle the 
-following scenarios:
-\begin{itemize}
-	\item handle graphs with arbitrary topologies: e.g., given a social 
-	network where users send messages each other, the estimator should 
-	predict the amount of messages from one user to another
-	\item handle links with string attributes: e.g., given a text message from 
-	user A to user B (a link from A to B with a string attribute), the 
-	estimator should extract knowledge of the users from the message content
-	\item handle links with logical implications: e.g., given a user has 
-	written an article (a link from user to article with a write attribute), 
-	the estimator should extract knowledge of the user and the article from 
-	this activity
-	\item handle nodes with rich attributes: e.g., given an article (a node 
-	with a string attribute) or an image (a node with an image attribute), the 
-	estimator should extract knowledge of the node from the article or image 
-	content and integrate this knowledge to that extracted from links
-\end{itemize}
-We have a Python implementation under MIT license hosted on Github.
+We designed Model R for collaborative rating prediction problem,
+but we would like to incorporate content based capability into it to improve 
+its prediction accuracy.
+For example, in order to better predict the rating a user gives to an article,
+the model can append units at the mapping layer to receive a content vector 
+mapped from the text of the article by another neural net.
+The model can also append one unit for each numerical attribute of the user or 
+item (e.g., the age of a user, the price of a product) at the mapping layer.
+In this way, it will take advantage of not only relation data but also content 
+data, and therefore make more accurate predictions.
+We have an open source Python implementation under MIT license hosted on Github 
+(url omitted to comply with AAAI review requirements).
 %\footnote{https://github.com/yuchenhou/elephant}
-The main machine learning packages are TensorFlow \cite{abadi2016tensorflow}.
+The main machine learning package we use is TensorFlow 
+\cite{abadi2016tensorflow}.
 %\footnote{https://github.com/tensorflow/tensorflow}
-Do not hesitate to contact us if you are interested in our work.
+Do not hesitate to contact us if you are interested in collaboration.
 
 \section{Conclusions}
-Node mapping is an effective technique to predict link attributes in a graph 
-using a neural net model.
-The estimator learns both to map each node to a vector, and to predict 
-the target link attribute using these vectors.
-It provides a recommender systems solution that achieves better rating 
-prediction accuracy than collaborative filtering and many of its variants.
-For recommendation tasks in social networks, this technique realizes the idea 
-of understanding complex users from their simple activities, and using that 
-understanding to predict their future activities.
+Model R proves deep learning can be successfully applied to collaborative 
+rating prediction problem and it can provide a solution to achieve higher 
+prediction accuracy than the most prevalent collaborative filtering algorithm.
+The estimator powered by Model R effectively learns complex and unobservable 
+user and item attributes from simple and observable relations (i.e., users rate 
+items).
+The estimator learns both to map each entity to a vector, and to predict 
+the rating using these vectors.
 
 %\section*{Acknowledgements}
 %This material is based on work supported by the National Science Foundation 
