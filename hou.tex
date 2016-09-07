@@ -169,14 +169,14 @@ The dataset of this example is demonstrated in \autoref{tab:ratings}.
 		Every unknown rating is marked as a question mark.
 		The task is to predict the unknown ratings.
 	}
-	\begin{tabularx}{0.47\textwidth}{ |X|c|c|c|}  \hline \rowcolor{blue!50}
-		& Item[0] & Item[1] & Item[2] \\ \hline
-		User[0] & 3 & 5 & 2 \\ \hline
-		User[1] & ? & 5 & 2 \\ \hline
-		User[2] & 4 & 4 & 5 \\ \hline
-		User[3] & 2 & 4 & ? \\ \hline
-		User[4] & 5 & 5 & 4 \\ \hline
-		User[5] & 4 & ? & 4 \\ \hline
+	\begin{tabularx}{0.47\textwidth}{|X|c|c|c|}  \hline \rowcolor{blue!50}
+		        & Item[0] & Item[1] & Item[2] \\ \hline
+		User[0] & 3       & 5       & 2 \\ \hline
+		User[1] & ?       & 5       & 2 \\ \hline
+		User[2] & 4       & 4       & 5 \\ \hline
+		User[3] & 2       & 4       & ? \\ \hline
+		User[4] & 5       & 5       & 4 \\ \hline
+		User[5] & 4       & ?       & 4 \\ \hline
 	\end{tabularx}
 	\label{tab:ratings}
 \end{table}
@@ -292,21 +292,21 @@ are both numerical.
 	\centering
 	\caption{A summary of various types of entities, their numerical
 		representations and inter-entity relations in different domains:
-		Images in image recognition and utterances in speech recognition can be 
+		Images in image recognition and audios in speech recognition can be 
 		directly represented by 2D numerical arrays, 
-		but their relations to other images or utterances are not commonly 
+		but their relations to other images or audios are not commonly 
 		used. 
 		Words in natural languages, items in recommendation systems, and nodes 
 		in graphs can be represented by vectors (1D numerical arrays) and their 
 		relations to other words, items and nodes are commonly used to learn 
 		these vectors.}
-	\begin{tabularx}{0.47\textwidth}{|X|c|c| } \hline \rowcolor{blue!50}
-		Entity & Representation & Relations \\ \hline
-		image & 2D intensity array & NA \\ \hline
-		utterance & 2D intensity array & NA \\ \hline
-		word & word vector & co-occurrences \\ \hline
-		item & item vector & co-purchases \\ \hline
-		node & node vector & connections \\ \hline
+	\begin{tabularx}{0.47\textwidth}{|X|c|c|} \hline \rowcolor{blue!50}
+		Entity & Representation           & Relations \\ \hline
+		image  & 2D light amplitude array & NA \\ \hline
+		audio  & 2D sound amplitude array & NA \\ \hline
+		word   & word vector              & co-occurrences \\ \hline
+		item   & item vector              & co-purchases \\ \hline
+		node   & node vector              & connections \\ \hline
 	\end{tabularx}
 	\label{tab:domains}
 \end{table}
@@ -335,11 +335,11 @@ The same arguments apply to relations between items and nodes.
 		}
 	\begin{tabularx}{0.47\textwidth}{|c|X|} \hline \rowcolor{blue!50}
 		Entity ID & Entity (word/item/node) vector \\ \hline
-		1 & [2.3, 564, -9.5 ... 3] \\ \hline
-		2 & [76, -342.2, 0.3 ... 4.2] \\ \hline
-		3 & [-345, -834, 0.3 ... 34] \\ \hline
-		... & ... \\ \hline
-		n & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
+		1         & [2.3, 564, -9.5 ... 3] \\ \hline
+		2         & [76, -342.2, 0.3 ... 4.2] \\ \hline
+		3         & [-345, -834, 0.3 ... 34] \\ \hline
+		...       & ... \\ \hline
+		n         & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
 	\end{tabularx}
 	\label{tab:word}
 \end{table}
@@ -373,13 +373,13 @@ the model's prediction error.
 \begin{table}[!htb]
 	\centering
 	\caption{The reformatted dataset of the problem example.}
-	\begin{tabularx}{0.47\textwidth}{ |c|X| }  \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{|c|X|}  \hline \rowcolor{blue!50}
 		Input = (User ID, Item ID) & Output = Rating \\ \hline
-		(0, 0) & 3 \\ \hline
-		(0, 1) & 5 \\ \hline
-		(0, 2) & 2 \\ \hline
-		(1, 0) & ? \\ \hline
-		... & ... \\ \hline
+		(0, 0)                     & 3 \\ \hline
+		(0, 1)                     & 5 \\ \hline
+		(0, 2)                     & 2 \\ \hline
+		(1, 0)                     & ? \\ \hline
+		...                        & ... \\ \hline
 	\end{tabularx}
 	\label{tab:rating}
 \end{table}
@@ -557,12 +557,12 @@ into the training set.
 		The three columns are the dataset, number of users, items and ratings 
 		of the dataset.
 		}
-	\begin{tabularx}{0.47\textwidth}{ |X|X|X|X|}  \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{|X|X|X|X|}  \hline \rowcolor{blue!50}
 		Dataset & User \# & Item \# & Rating \# \\ \hline
-		ML100K  & 1,000 & 1,700 & 100,000 \\ \hline
-		ML1M    & 6,000 & 4,000 & 1,000,000 \\ \hline
-		EP      & 49,290 & 139,738 & 664,824 \\ \hline
-		MT      & 39,363 & 22,610 & 431,780 \\ 
+		ML100K  & 1,000   & 1,700   & 100,000 \\ \hline
+		ML1M    & 6,000   & 4,000   & 1,000,000 \\ \hline
+		EP      & 49,290  & 139,738 & 664,824 \\ \hline
+		MT      & 39,363  & 22,610  & 431,780 \\ 
 		\hline
 	\end{tabularx}
 	\label{tab:dataset}
@@ -599,7 +599,7 @@ The error reduction from MPCC to Model R is calculated as:
 		lower than the best baseline 
 		solution (MPCC) on all datasets.
 		}
-	\begin{tabularx}{0.47\textwidth}{ |X|c|c|c|c|c|c| } \hline 
+	\begin{tabularx}{0.47\textwidth}{|X|c|c|c|c|c|c|} \hline 
 	\rowcolor{blue!50}
 		Dataset & P    & W    & S    & M    & R    & $ \delta $ \\ \hline
 		ML100K  & 0.83 & 0.82 & 0.83 & 0.82 & 0.70 & 14\% \\ \hline
