@@ -159,7 +159,7 @@ a set of 6 users give numerical ratings to a set of 3 items.
 For each user, only a subset of his ratings are known; 
 and we want to predict the unknown ratings.
 The dataset of this example is demonstrated in \autoref{tab:ratings}.
-\begin{table}[h]
+\begin{table}[!htb]
 	\centering
 	\caption{The dataset of the problem example.
 		In this dataset, a set of 6 users give ratings to a set of 3 items: 
@@ -288,7 +288,7 @@ entities in different domains with different relations, as shown in
 It is clear that representations for all the entities are numerical arrays, 
 because neural nets rely on neurons' activations and communications, which 
 are both numerical.
-\begin{table}[h]
+\begin{table}[!htb]
 	\centering
 	\caption{A summary of various types of entities, their numerical
 		representations and inter-entity relations in different domains:
@@ -326,7 +326,7 @@ vectors accordingly,
 such that the relations between words are preserved in the word vector space 
 \citeauthor{mikolov2013distributed}.
 The same arguments apply to relations between items and nodes.
-\begin{table}[h]
+\begin{table}[!htb]
 	\centering
 	\caption{Entity (word/item/node) to vector mapping table for a set of n
 		entities with entity vectors of size d:
@@ -370,7 +370,7 @@ The estimator will train on entries with known ratings (the train set)
 and predict on the entries with unknown ratings (the test set).
 Of course our testing program knows the unknown ratings in order to calculate 
 the model's prediction error.
-\begin{table}[h]
+\begin{table}[!htb]
 	\centering
 	\caption{The reformatted dataset of the problem example.}
 	\begin{tabularx}{0.47\textwidth}{ |c|X| }  \hline \rowcolor{blue!50}
@@ -387,7 +387,7 @@ the model's prediction error.
 \subsection{Conceptual neural net model}
 The model in the estimator is a fully connected neural net which we call Model 
 R (R as in relation), shown in \autoref{fig:conceptural}.
-\begin{figure*}[h]
+\begin{figure*}[!htb]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
 	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
@@ -473,7 +473,7 @@ conceptual model:
 	\item The mapping layer is replaced by a 2-channel input layer: it is 
 	directly activated by the outputs of the mapping tables
 \end{itemize}
-\begin{figure*}[h]
+\begin{figure*}[!htb]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
 	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
@@ -551,7 +551,7 @@ The specifications of the datasets are summarized in \autoref{tab:dataset}.
 The experiments use MAE (mean absolute error) as the prediction accuracy 
 metric, and split each dataset into 2 parts: 20\% into the test set and 80\% 
 into the training set.
-\begin{table}[h]
+\begin{table}[!htb]
 	\centering
 	\caption{The dataset specs: 
 		The three columns are the dataset, number of users, items and ratings 
@@ -591,7 +591,7 @@ The error reduction from MPCC to Model R is calculated as:
 \begin{align*}
 	\delta = 1 - \frac{MPCCError}{ModelRError}
 \end{align*}
-\begin{table}[h]
+\begin{table}[!htb]
 	\centering
 	\caption{The comparison of prediction errors (measured by MAE): 4 baseline
 		solutions are represented by their first letters (P, W, S, M).
