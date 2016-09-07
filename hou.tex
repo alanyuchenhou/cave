@@ -22,12 +22,11 @@
 %\usepackage{subcaption}
 
 \pdfinfo{
-	/Title (Collaborative Rating Prediction with Deep learning)
+	/Title (Deep Learning Application in Collaborative Rating Prediction)
 	/Author (Author 1, Author 2)
-	/Keywords (deep learning, neural net, recommendation, rating, prediction)
 }
 \lstset{language=python, tabsize=4}
-\title{Collaborative Rating Prediction with Deep learning}
+\title{Deep Learning Application in Collaborative Rating Prediction}
 
 \author{Author 1 \and Author 2\\
 	Address line\\
@@ -94,7 +93,7 @@ we review a few existing deep learning applications in both content based
 filtering and collaborative filtering.
 We also clarify how our work differs from these related work.
 
-\subsection{Content based applications}
+\subsection{Applications in content based filtering}
 Applications in this group extract information of an item from its content, 
 i.e., the input of the neural network is a vector produced from the item's 
 content (e.g., the audio of a song, the text of an article). Here are some 
@@ -116,13 +115,13 @@ recognition.
 Our work differs from them in that our technique does not access the contents 
 of items.
 
-\subsection{Collaborative applications}
+\subsection{Applications in collaborative filtering}
 Applications in this group extract information of an item from its relations 
 with other items, and the input of the neural net is a vector learned by the 
 neural net itself from the relations between items.
 All these applications treat a list of items as a sentence of words 
 (effectively reducing their problems to a natural language processing problem)  
-and then apply the famous skip-gram model used in word2vec 
+and then apply the skip-gram model used in word2vec 
 \citeauthor{mikolov2013efficient}:
 \begin{itemize}
 	\item An item similarity prediction example is item2vec 
@@ -228,9 +227,9 @@ function of User[i] and User[k]:
 	\item PCC: The Pearson correlation coefficient similarity, defined as 
 	\citeauthor{resnick1994grouplens}:
 	\begin{align*}
-		&S(x, y) \\
-		&= S_{PCC}(x, y) \\
-		&= \frac{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})(R[y][i] - 
+		& S(x, y) \\
+		=& S_{PCC}(x, y) \\
+		=& \frac{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})(R[y][i] - 
 		\overline{R[y]})}{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})^2 
 		\sum_{i 
 		\in I_{xy}}(R[y][i] - \overline{R[y]})^2 }
@@ -242,9 +241,9 @@ function of User[i] and User[k]:
 	\item WPCC: The weighted PCC similarity, defined as 
 	\citeauthor{herlocker1999algorithmic}:
 	\begin{align*}
-		&S(x, y) \\
-		&= S_{WPCC}(x, y) \\
-		&= 
+		& S(x, y) \\
+		=& S_{WPCC}(x, y) \\
+		=&
 		\begin{cases}
 			\frac{|I_{xy}|}{T} S_{PCC}(x, y) & |I_{xy}| < T \\
 			S_{PCC}(x, y) & otherwise
@@ -258,9 +257,9 @@ function of User[i] and User[k]:
 	\item SPCC: The sigmoid PCC similarity, defined as 
 	\citeauthor{jamali2009trustwalker}:
 	\begin{align*}
-		&S(x, y) \\
-		&= S_{SPCC} (x, y) \\
-		&= \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
+		& S(x, y) \\
+		=& S_{SPCC} (x, y) \\
+		=& \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
 	\end{align*}
 	SPCC is very similar to WPCC in the sense two users have lower similarity 
 	if they have a smaller number of co-rated items.
@@ -312,9 +311,9 @@ are both numerical.
 \end{table}
 
 \subsection{Entities to vectors}
-The famous word2vec technique is the first of its kind in using a neural net to 
-learn to map every entity (word in this case) in a vocabulary to a vector 
-without any domain knowledge \citeauthor{mikolov2013efficient}.
+The word2vec technique is famous for using a neural net to learn to map every 
+entity (word in this case) in a vocabulary to a vector without any domain 
+knowledge \citeauthor{mikolov2013efficient}.
 The subsequent techniques item2vec and node2vec use the same skip-gram 
 model in word2vec to map items and nodes to vectors.
 \autoref{tab:word} shows a mapping table that maps each entity(word/item/node) 
@@ -515,18 +514,18 @@ conceptual model:
 	\label{fig:actural}
 \end{figure*}
 
-\subsection{Deep learning techniques}
+\subsection{Learning algorithms and techniques}
 The estimator uses the above model and a number of popular deep learning 
-techniques:
+algorithms and techniques:
 \begin{itemize}
 	\item backpropagation: propagation of the error gradients from output layer 
 	back to each earlier layer \citeauthor{rumelhart1988learning}
-	\item SGD (stochastic gradient descent): the optimization that minimizes 
+	\item stochastic gradient descent: the optimization that minimizes 
 	the error (descending against the error gradient in weight space) for a 
 	random sample in each step \citeauthor{lecun2012efficient}
-	\item mini-batch: the modification to SGD to accelerate and smooth the 
-	descent by minimizing the error for a small random batch of samples in 
-	each step \citeauthor{mairal2010online}
+	\item mini-batch: the modification to stochastic gradient descent to 
+	accelerate and smooth the descent by minimizing the error for a small 
+	random batch of samples in each step \citeauthor{mairal2010online}
 \end{itemize}
 
 \section{Experiments}
@@ -536,8 +535,8 @@ the baseline solutions.
 
 \subsection{Experiment settings}
 We evaluated Model R in the same settings used in a recent experimental 
-evaluation of the baseline solutions \citeauthor{polatidis2016multi} on four 
-datasets 
+evaluation of the baseline solutions \citeauthor{polatidis2016multi},
+one experiment for each of the four datasets 
 (Jester \citeauthor{goldberg2001eigentaste} is not used due to its non-standard 
 file 
 formatting issue): 
@@ -569,18 +568,16 @@ into the training set.
 \end{table}
 
 \subsection{Experiment process}
-The estimator always sets aside 10\% of the training set as a validation set.
+At the beginning of an experiment on a dataset,
+the estimator sets aside 10\% of the training set as a validation set.
 A larger or smaller validation set could not reduce the prediction error in the 
 experiments.
-The estimator learns for several epochs.
-In each epoch, it does two things:
-\begin{enumerate}
-	\item learn on training set
-	\item predict on validation set and log validation error
-\end{enumerate}
+Then the estimator learns for several epochs:
+in each epoch, it learns on training set, predicts on validation set, and logs 
+the validation error.
 In order to reduce over-fitting, the estimator stops learning when the 
 validation error has not decreased for 3 epochs.
-After that the testing program lets the estimator predict on testing set and 
+At the end, the testing program lets the estimator predict on testing set and 
 record its testing error as its prediction error on that dataset.
 
 \subsection{Experiment results}
