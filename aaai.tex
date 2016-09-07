@@ -1,29 +1,40 @@
 \documentclass[letterpaper]{article}
 \usepackage{aaai17}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
+
 \usepackage[table]{xcolor}
 \usepackage{listings}
 \usepackage{amsmath}
 \usepackage{tabularx}
 \usepackage{graphicx}
-\usepackage{subcaption}
-\usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows}
+\usepackage{hyperref}
 \usepackage{cite}
 \usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
 %\usepackage{authblk}
 %\usepackage{fullpage}
-\usepackage{hyperref}
 %\usepackage{caption}
+%\usepackage{subcaption}
+
+\pdfinfo{
+	/Title (Collaborative Rating Prediction with Deep learning)
+	/Author (Author 1, Author 2)
+	/Keywords (deep learning, neural net, recommendation, rating, prediction)
+}
+\lstset{language=python, tabsize=4}
+\title{Collaborative Rating Prediction with Deep learning}
+
+\author{Author 1 \and Author 2\\
+	Address line\\
+	Address line\\
+}
 
 \begin{document}
-\lstset{language=python, tabsize=4}
-\title{Collaborative rating prediction with artificial neural networks}
-
-%\author[1]{Yuchen Hou \thanks{yuchen.hou@wsu.edu}}
-%\author[1]{Lawrence B. Holder \thanks{holder@wsu.edu}}
-%\affil[1]{School of Electrical Engineering and Computer Science\\
-%	Washington State University\\
-%	Pullman, WA 99164}
 \maketitle
 
 \begin{abstract}
@@ -46,31 +57,32 @@
 
 \section{Introduction}
 The expression deep learning existed as early as 1986 in machine learning 
-community \cite{dechter1986learning}, though not so well known for many years.
+community \citeauthor{dechter1986learning}, though not so well known for many 
+years.
 But now, deep learning techniques using neural network models are rapidly 
 gaining traction in more and more application domains 
 such as:
 \begin{itemize}
-	\item speech recognition \cite{hannun2014deep}
-	\item image recognition \cite{simonyan2014very}
-	\item natural language processing \cite{yao2013recurrent}
-	\item graph mining \cite{grovernode2vec}
-	\item recommendation systems \cite{barkan2016item2vec}
+	\item speech recognition \citeauthor{hannun2014deep}
+	\item image recognition \citeauthor{simonyan2014very}
+	\item natural language processing \citeauthor{yao2013recurrent}
+	\item graph mining \citeauthor{grovernode2vec}
+	\item recommendation systems \citeauthor{barkan2016item2vec}
 \end{itemize}
 Two reasons for its adoptions in these domains are its higher prediction 
 accuracy and less engineering compared to other machine learning techniques.
 Among these domains, research in recommendation systems has been very active  
 due to its extremely high value in industries such as search, e-commerce, 
-travel and social \cite{buettner2016predicting}.
+travel and social \citeauthor{buettner2016predicting}.
 Recommendation systems are classified into two groups according to the way they 
 extract information about items: content based filtering and collaborative 
-filtering \cite{ricci2011introduction}.
+filtering \citeauthor{ricci2011introduction}.
 Collaborative filtering extract information from the relations between users 
 and items, while content based filtering extracts information from the contents 
 of items.
 Collaborative filtering has multiple forms including producing a list of items 
 a user would like, and predicting the ratings a user would give to a list of 
-items \cite{su2009survey}.
+items \citeauthor{su2009survey}.
 The focus of this paper is the rating prediction form of collaborative 
 filtering, which we call collaborative rating prediction.
 The contribution of this paper is a deep learning application in 
@@ -88,12 +100,13 @@ i.e., the input of the neural network is a vector produced from the item's
 content (e.g., the audio of a song, the text of an article). Here are some 
 examples:
 \begin{itemize}
-	\item One example is a music recommendation system \cite{van2013deep}. 
+	\item One example is a music recommendation system 
+	\citeauthor{van2013deep}. 
 	It is a tag prediction system implemented with a convolutional neural net: 
 	the input is the spectrogram vector of the audio of a song, and the output 
 	is the set of tags of the song (e.g., genre, instrumentation, tempo, mood).
 	\item Another example is a multi-view recommendation system 
-	\cite{elkahky2015multi}. 
+	\citeauthor{elkahky2015multi}. 
 	It is a rating prediction system implemented with a fully connected neural 
 	net: the input is the letter tri-gram vector of the text description of a 
 	news article, app, etc, and the output is the rating.
@@ -110,13 +123,14 @@ neural net itself from the relations between items.
 All these applications treat a list of items as a sentence of words 
 (effectively reducing their problems to a natural language processing problem)  
 and then apply the famous skip-gram model used in word2vec 
-\cite{mikolov2013efficient}:
+\citeauthor{mikolov2013efficient}:
 \begin{itemize}
 	\item An item similarity prediction example is item2vec 
-	\cite{barkan2016item2vec} where purchase orders (lists of items) are 
+	\citeauthor{barkan2016item2vec} where purchase orders (lists of items) are 
 	treated as sentences.
 	\item Similar examples exist in graph mining, like deep walk 
-	\cite{perozzi2014deepwalk} and node2vec \cite{grovernode2vec}, where a 
+	\citeauthor{perozzi2014deepwalk} and node2vec \citeauthor{grovernode2vec}, 
+	where a 
 	graph is sampled into walks (lists of nodes), and treated as sentences.
 \end{itemize}
 One drawback of these applications is that they fail to take advantage of 
@@ -155,7 +169,7 @@ The dataset of this example is demonstrated in \autoref{tab:ratings}.
 		Every unknown rating is marked as a question mark.
 		The task is to predict the unknown ratings.
 	}
-	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|}  \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{ |X|c|c|c|}  \hline \rowcolor{blue!50}
 		& Item[0] & Item[1] & Item[2] \\ \hline
 		User[0] & 3 & 5 & 2 \\ \hline
 		User[1] & ? & 5 & 2 \\ \hline
@@ -184,14 +198,14 @@ Moreover, we define a user as the array of ratings he gives to all items:
 \section{Baseline solutions}
 Among many algorithms to collaborative rating prediction problem,
 the most prevalent one is the neighborhood-based collaborative filtering 
-algorithm \cite{su2009survey}.
+algorithm \citeauthor{su2009survey}.
 This algorithm also has several variants,
 which we will use as baseline solutions.
 
 \subsection{Algorithm}
 The neighborhood-based collaborative filtering algorithm calculates each 
 unknown R[i][j] as 
-follows \cite{su2009survey}:
+follows \citeauthor{su2009survey}:
 \begin{align*}
 R[i][j] = c \sum_{k = 0}^{m-1} S(i, k) R[k][j]
 \end{align*}
@@ -212,9 +226,10 @@ Each variant of the algorithm has a unique definition of the similarity
 function of User[i] and User[k]:
 \begin{itemize}
 	\item PCC: The Pearson correlation coefficient similarity, defined as 
-	\cite{resnick1994grouplens}:
+	\citeauthor{resnick1994grouplens}:
 	\begin{align*}
-		&S(x, y) = S_{PCC}(x, y) \\
+		&S(x, y) \\
+		&= S_{PCC}(x, y) \\
 		&= \frac{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})(R[y][i] - 
 		\overline{R[y]})}{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})^2 
 		\sum_{i 
@@ -225,9 +240,11 @@ function of User[i] and User[k]:
 	and $ I_{xy} $ is the set of items rated by both User[x] and User[y].
 	PCC measures the linear correlation of two users.
 	\item WPCC: The weighted PCC similarity, defined as 
-	\cite{herlocker1999algorithmic}:
+	\citeauthor{herlocker1999algorithmic}:
 	\begin{align*}
-		S(x, y) = S_{WPCC}(x, y) = 
+		&S(x, y) \\
+		&= S_{WPCC}(x, y) \\
+		&= 
 		\begin{cases}
 			\frac{|I_{xy}|}{T} S_{PCC}(x, y) & |I_{xy}| < T \\
 			S_{PCC}(x, y) & otherwise
@@ -239,14 +256,15 @@ function of User[i] and User[k]:
 	When the difference occurs, less number of co-rated items results in less 
 	similarity in the two users.
 	\item SPCC: The sigmoid PCC similarity, defined as 
-	\cite{jamali2009trustwalker}:
+	\citeauthor{jamali2009trustwalker}:
 	\begin{align*}
-		S(x, y) = S_{SPCC} (x, y) 
-		= \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
+		&S(x, y) \\
+		&= S_{SPCC} (x, y) \\
+		&= \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
 	\end{align*}
 	SPCC is very similar to WPCC in the sense two users have lower similarity 
 	if they have a smaller number of co-rated items.
-	\item MPCC: The multi-level PCC similarity \cite{polatidis2016multi}. 
+	\item MPCC: The multi-level PCC similarity \citeauthor{polatidis2016multi}. 
 	This one is also very similar to the previous ones but much more complex, 
 	so we skip its description here.
 \end{itemize}
@@ -282,7 +300,7 @@ are both numerical.
 		in graphs can be represented by vectors (1D numerical arrays) and their 
 		relations to other words, items and nodes are commonly used to learn 
 		these vectors.}
-	\begin{tabularx}{0.5\textwidth}{|X|c|c| } \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{|X|c|c| } \hline \rowcolor{blue!50}
 		Entity & Representation & Relations \\ \hline
 		image & 2D intensity array & NA \\ \hline
 		utterance & 2D intensity array & NA \\ \hline
@@ -296,7 +314,7 @@ are both numerical.
 \subsection{Entities to vectors}
 The famous word2vec technique is the first of its kind in using a neural net to 
 learn to map every entity (word in this case) in a vocabulary to a vector 
-without any domain knowledge \cite{mikolov2013efficient}.
+without any domain knowledge \citeauthor{mikolov2013efficient}.
 The subsequent techniques item2vec and node2vec use the same skip-gram 
 model in word2vec to map items and nodes to vectors.
 \autoref{tab:word} shows a mapping table that maps each entity(word/item/node) 
@@ -306,7 +324,7 @@ contexts, by implicit relations between words in word co-occurrences.
 Nonetheless, the neural net can learn from word co-occurrences and map words to 
 vectors accordingly,
 such that the relations between words are preserved in the word vector space 
-\cite{mikolov2013distributed}.
+\citeauthor{mikolov2013distributed}.
 The same arguments apply to relations between items and nodes.
 \begin{table}[h]
 	\centering
@@ -315,7 +333,7 @@ The same arguments apply to relations between items and nodes.
 		Each entity has an ID.
 		The values of vectors in this table are hypothetical.
 		}
-	\begin{tabularx}{0.5\textwidth}{|c|X|} \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{|c|X|} \hline \rowcolor{blue!50}
 		Entity ID & Entity (word/item/node) vector \\ \hline
 		1 & [2.3, 564, -9.5 ... 3] \\ \hline
 		2 & [76, -342.2, 0.3 ... 4.2] \\ \hline
@@ -355,7 +373,7 @@ the model's prediction error.
 \begin{table}[h]
 	\centering
 	\caption{The reformatted dataset of the problem example.}
-	\begin{tabularx}{0.5\textwidth}{ |c|X| }  \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{ |c|X| }  \hline \rowcolor{blue!50}
 		Input = (User ID, Item ID) & Output = Rating \\ \hline
 		(0, 0) & 3 \\ \hline
 		(0, 1) & 5 \\ \hline
@@ -440,8 +458,8 @@ We fully take this character into account and design this model to learn
 complex and unobservable user and item attributes (i.e., user and item vectors) 
 supervised by simple and observable rating.
 
-\subsection{Actual Neural net model}
-In practice, the model uses more efficient mapping tables instead of a 
+\subsection{Actual neural net model}
+In practice, Model R uses more efficient mapping tables instead of a 
 one-hot input layer to handle a dataset with increasing number of users and 
 items.
 \autoref{fig:actural} shows the actual model with two modifications from the 
@@ -502,13 +520,13 @@ The estimator uses the above model and a number of popular deep learning
 techniques:
 \begin{itemize}
 	\item backpropagation: propagation of the error gradients from output layer 
-	back to each earlier layer \cite{rumelhart1988learning}
+	back to each earlier layer \citeauthor{rumelhart1988learning}
 	\item SGD (stochastic gradient descent): the optimization that minimizes 
 	the error (descending against the error gradient in weight space) for a 
-	random sample in each step \cite{lecun2012efficient}
+	random sample in each step \citeauthor{lecun2012efficient}
 	\item mini-batch: the modification to SGD to accelerate and smooth the 
 	descent by minimizing the error for a small random batch of samples in 
-	each step \cite{mairal2010online}
+	each step \citeauthor{mairal2010online}
 \end{itemize}
 
 \section{Experiments}
@@ -518,14 +536,16 @@ the baseline solutions.
 
 \subsection{Experiment settings}
 We evaluated Model R in the same settings used in a recent experimental 
-evaluation of the baseline solutions \cite{polatidis2016multi} on four datasets 
-(Jester \cite{goldberg2001eigentaste} is not used due to its non-standard file 
+evaluation of the baseline solutions \citeauthor{polatidis2016multi} on four 
+datasets 
+(Jester \citeauthor{goldberg2001eigentaste} is not used due to its non-standard 
+file 
 formatting issue): 
 \begin{itemize}
-	\item ML100: MovieLens100K\cite{harper2015movielens}
-	\item ML1000: MovieLens1M\cite{harper2015movielens}
-	\item EP: Epinions \cite{massa2007trust}
-	\item MT: MovieTweetings \cite{dooms2013movietweetings}
+	\item ML100K: MovieLens100K\citeauthor{harper2015movielens}
+	\item ML1M: MovieLens1M\citeauthor{harper2015movielens}
+	\item EP: Epinions \citeauthor{massa2007trust}
+	\item MT: MovieTweetings \citeauthor{dooms2013movietweetings}
 \end{itemize}
 The specifications of the datasets are summarized in \autoref{tab:dataset}.
 The experiments use MAE (mean absolute error) as the prediction accuracy 
@@ -537,12 +557,12 @@ into the training set.
 		The three columns are the dataset, number of users, items and ratings 
 		of the dataset.
 		}
-	\begin{tabularx}{0.5\textwidth}{ |X|X|X|X|}  \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{ |X|X|X|X|}  \hline \rowcolor{blue!50}
 		Dataset & User \# & Item \# & Rating \# \\ \hline
-		ML100 & 1,000 & 1,700 & 100,000 \\ \hline
-		ML1000 & 6,000 & 4,000 & 1,000,000 \\ \hline
-		EP & 49,290 & 139,738 & 664,824 \\ \hline
-		MT & 39,363 & 22,610 & 431,780 \\ 
+		ML100K  & 1,000 & 1,700 & 100,000 \\ \hline
+		ML1M    & 6,000 & 4,000 & 1,000,000 \\ \hline
+		EP      & 49,290 & 139,738 & 664,824 \\ \hline
+		MT      & 39,363 & 22,610 & 431,780 \\ 
 		\hline
 	\end{tabularx}
 	\label{tab:dataset}
@@ -575,15 +595,17 @@ The error reduction from MPCC to Model R is calculated as:
 	\centering
 	\caption{The comparison of prediction errors (measured by MAE): 4 baseline
 		solutions are represented by their first letters (P, W, S, M).
-		Model R's prediction error is 18\% to 8\% lower than the best baseline 
+		Model R (represented by letter R)'s prediction error is 18\% to 8\% 
+		lower than the best baseline 
 		solution (MPCC) on all datasets.
 		}
-	\begin{tabularx}{0.5\textwidth}{ |X|c|c|c|c|c|c| } \hline \rowcolor{blue!50}
-		Dataset & P & W & S & M & Model R & $ \delta $ \\ \hline
-		ML100   & 0.83 & 0.82 & 0.83 & 0.82 & 0.70 & 14\% \\ \hline
-		ML100   & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 & 17\% \\ \hline
+	\begin{tabularx}{0.47\textwidth}{ |X|c|c|c|c|c|c| } \hline 
+	\rowcolor{blue!50}
+		Dataset & P    & W    & S    & M    & R    & $ \delta $ \\ \hline
+		ML100K  & 0.83 & 0.82 & 0.83 & 0.82 & 0.70 & 14\% \\ \hline
+		ML1M    & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 & 17\% \\ \hline
 		EP      & 1.00 & 1.02 & 1.00 & 0.93 & 0.76 & 18\% \\ \hline
-		MT      & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 & 8\% \\ \hline
+		MT      & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 & 8\%  \\ \hline
 	\end{tabularx}
 	\label{tab:errors}
 \end{table}
@@ -600,10 +622,9 @@ parameter ranges listed below:
 We ran our experiments on a Dell Optiplex 780 machine with following 
 configurations:
 \begin{itemize}
-	\item Python implementation: CPython 3.5
-	\item OS: Ubuntu 16.04 64-bit
-	\item Processor: Intel Core 2 Duo CPU E8400 @ 3GHz
-	\item Memory: 4GB
+	\item operating system: Ubuntu 16.04 64-bit
+	\item processor: Intel Core 2 Duo CPU E8400 @ 3GHz
+	\item memory: 4GB
 \end{itemize}
 Each run (learning and prediction) takes around 1 to 8 minutes, 4 to 16 epochs, 
 depending on the dataset and parameters.
@@ -624,10 +645,8 @@ In this way, it will take advantage of not only relation data but also content
 data, and therefore make more accurate predictions.
 We have an open source Python implementation under MIT license hosted on Github 
 (url omitted to comply with AAAI review requirements).
-%\footnote{https://github.com/yuchenhou/elephant}
 The main machine learning package we use is TensorFlow 
-\cite{abadi2016tensorflow}.
-%\footnote{https://github.com/tensorflow/tensorflow}
+\citeauthor{abadi2016tensorflow}.
 Do not hesitate to contact us if you are interested in collaboration.
 
 \section{Conclusions}
@@ -640,11 +659,6 @@ items).
 The estimator learns both to map each entity to a vector, and to predict 
 the rating using these vectors.
 
-%\section*{Acknowledgements}
-%This material is based on work supported by the National Science Foundation 
-%under Grant No. 1318913.
-
-\bibliographystyle{plain}
+\bibliographystyle{aaai}
 \bibliography{references}
-
 \end{document}
