@@ -1,33 +1,31 @@
 \documentclass[letterpaper]{article}
+\setlength{\pdfpagewidth}{8.5in}
+\setlength{\pdfpageheight}{11in}
 \usepackage{aaai17}
 \usepackage{times}
 \usepackage{helvet}
 \usepackage{courier}
-\setlength{\pdfpagewidth}{8.5in}
-\setlength{\pdfpageheight}{11in}
 
 \usepackage[table]{xcolor}
-\usepackage{listings}
-\usepackage{amsmath}
 \usepackage{tabularx}
 \usepackage{graphicx}
-\usepackage{hyperref}
-\usepackage{cite}
-\usepackage{float}
+\usepackage{amsmath}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
-%\usepackage{authblk}
+
 %\usepackage{fullpage}
+%\usepackage{hyperref}
+%\usepackage{authblk}
 %\usepackage{caption}
 %\usepackage{subcaption}
+%\usepackage{listings}
+%\lstset{language=python, tabsize=4}
 
 \pdfinfo{
-	/Title (Deep Learning Application in Collaborative Rating Prediction)
+	/Title (Deep Learning Approach to Collaborative Rating Prediction)
 	/Author (Author 1, Author 2)
 }
-\lstset{language=python, tabsize=4}
-\title{Deep Learning Application in Collaborative Rating Prediction}
-
+\title{Deep Learning Approach to Collaborative Rating Prediction}
 \author{Author 1 \and Author 2\\
 	Address line\\
 	Address line\\
@@ -37,115 +35,121 @@
 \maketitle
 
 \begin{abstract}
-	Deep learning applications have become very successful in various domains 
+	Deep learning has been successful in various domains 
 	including image recognition, speech recognition and natural language 
 	processing.
 	However, the research on its application in recommendation systems is 
-	still in early stage.
+	still in an early stage.
 	Here we present Model R, a neural network model created to provide a deep 
-	learning solution for collaborative rating prediction problem.
+	learning solution for the collaborative rating prediction problem.
 	This model extracts knowledge of users and items from known ratings and 
 	uses this knowledge to predict unknown ratings.
 	We demonstrate the power of Model R through experiments and compare it with 
 	the most prevalent collaborative filtering algorithm - neighborhood-based 
 	collaborative filtering.
-	Model R proves deep learning can be successfully applied to collaborative 
-	rating prediction problem and it outperforms neighborhood-based 
+	Model R shows that deep learning can be successfully applied to 
+	collaborative rating prediction and it outperforms neighborhood-based 
 	collaborative filtering by up to 18\% in terms of prediction accuracy.
 \end{abstract}
 
 \section{Introduction}
-The expression deep learning existed as early as 1986 in machine learning 
-community \citeauthor{dechter1986learning}, though not so well known for many 
+The expression deep learning existed as early as 1986 in the machine learning 
+community \cite{dechter1986learning}, though not so well known for many 
 years.
 But now, deep learning techniques using neural network models are rapidly 
-gaining traction in more and more application domains 
-such as:
+gaining traction in more and more application domains such as:
 \begin{itemize}
-	\item speech recognition \citeauthor{hannun2014deep}
-	\item image recognition \citeauthor{simonyan2014very}
-	\item natural language processing \citeauthor{yao2013recurrent}
-	\item graph mining \citeauthor{grovernode2vec}
-	\item recommendation systems \citeauthor{barkan2016item2vec}
+	\item speech recognition \cite{hannun2014deep}
+	\item image recognition \cite{simonyan2014very}
+	\item natural language processing \cite{yao2013recurrent}
+	\item graph mining \cite{grovernode2vec}
+	\item recommendation systems \cite{barkan2016item2vec}
 \end{itemize}
 Two reasons for its adoptions in these domains are its higher prediction 
 accuracy and less engineering compared to other machine learning techniques.
 Among these domains, research in recommendation systems has been very active  
 due to its extremely high value in industries such as search, e-commerce, 
-travel and social \citeauthor{buettner2016predicting}.
+travel and social media \cite{buettner2016predicting}.
 Recommendation systems are classified into two groups according to the way they 
-extract information about items: content based filtering and collaborative 
-filtering \citeauthor{ricci2011introduction}.
-Collaborative filtering extract information from the relations between users 
-and items, while content based filtering extracts information from the contents 
+extract information about items: content-based filtering and collaborative 
+filtering \cite{ricci2011introduction}.
+Collaborative filtering extracts information from the relations between users 
+and items, while content-based filtering extracts information from the contents 
 of items.
 Collaborative filtering has multiple forms including producing a list of items 
 a user would like, and predicting the ratings a user would give to a list of 
-items \citeauthor{su2009survey}.
+items \cite{su2009survey}.
 The focus of this paper is the rating prediction form of collaborative 
 filtering, which we call collaborative rating prediction.
-The contribution of this paper is a deep learning application in 
-collaborative rating prediction, which we believe is the first of its kind.
+The contribution of this paper is a deep learning approach to collaborative 
+rating prediction.
 
 \section{Related work}
 In this section,
-we review a few existing deep learning applications in both content based 
+we review existing deep learning methods in both content-based 
 filtering and collaborative filtering.
-We also clarify how our work differs from these related work.
+We also clarify how our work differs from these related works.
 
-\subsection{Applications in content based filtering}
-Applications in this group extract information of an item from its content, 
+\subsection{Content-based filtering methods}
+Methods in this group extract information about an item from its content, 
 i.e., the input of the neural network is a vector produced from the item's 
 content (e.g., the audio of a song, the text of an article). Here are some 
 examples:
 \begin{itemize}
-	\item One example is a music recommendation system 
-	\citeauthor{van2013deep}. 
-	It is a tag prediction system implemented with a convolutional neural net: 
-	the input is the spectrogram vector of the audio of a song, and the output 
-	is the set of tags of the song (e.g., genre, instrumentation, tempo, mood).
-	\item Another example is a multi-view recommendation system 
-	\citeauthor{elkahky2015multi}. 
-	It is a rating prediction system implemented with a fully connected neural 
-	net: the input is the letter tri-gram vector of the text description of a 
-	news article, app, etc, and the output is the rating.
+	\item One example is a music recommendation system 	\cite{van2013deep}. 
+	It is a tag prediction system implemented with a convolutional neural net. 
+	The input is the spectrogram vector of the audio of a song,
+	and the output 	is the set of tags of the song (
+	e.g., genre, instrumentation, tempo, mood).
+	\item Another example is a multi-view recommendation system 	
+	\cite{elkahky2015multi}. 
+	It is a rating prediction system implemented with a fully connected 
+	neural net.
+	The input is the letter tri-gram vector of the text description of an item, 
+	etc, and the output is the rating.
+	\item A much more comprehensive example is a hierarchical Bayesian model 
+	called collaborative deep learning \cite{wang2015collaborative}.
+	This approach uses a stacked denoising autoencoder to extract information 
+	from the bag-of-word vector of the text description of an item,
+	and then uses the extracted information for rating prediction.
 \end{itemize}
-Obviously, these applications are very similar to image recognition and speech 
-recognition.
-Our work differs from them in that our technique does not access the contents 
-of items.
+Similar to image recognition and speech recognition, these methods use deep 
+learning to extract information about an entity from the content of the entity.
+Our work differs from these methods in that our technique does not access or 
+get information from the contents of items.
 
-\subsection{Applications in collaborative filtering}
-Applications in this group extract information of an item from its relations 
+\subsection{Collaborative filtering methods}
+Methods in this group extract information about an item from its relations 
 with other items, and the input of the neural net is a vector learned by the 
 neural net itself from the relations between items.
-All these applications treat a list of items as a sentence of words 
+These methods treat a list of items as a sentence of words 
 (effectively reducing their problems to a natural language processing problem)  
 and then apply the skip-gram model used in word2vec 
-\citeauthor{mikolov2013efficient}:
+\cite{mikolov2013efficient}:
 \begin{itemize}
 	\item An item similarity prediction example is item2vec 
-	\citeauthor{barkan2016item2vec} where purchase orders (lists of items) are 
+	\cite{barkan2016item2vec} where purchases (lists of items) are 
 	treated as sentences.
 	\item Similar examples exist in graph mining, like deep walk 
-	\citeauthor{perozzi2014deepwalk} and node2vec \citeauthor{grovernode2vec}, 
-	where a 
-	graph is sampled into walks (lists of nodes), and treated as sentences.
+	\cite{perozzi2014deepwalk} and node2vec \cite{grovernode2vec}, 
+	where a graph is sampled into walks (lists of nodes),
+	and treated as sentences.
 \end{itemize}
-One drawback of these applications is that they fail to take advantage of 
+One drawback of these methods is that they fail to take advantage of 
 the highly organized, regular and repeated structure in their relational data: 
-relations between users and items (i.e., a user gives numerical rating to an 
+relations between users and items (i.e., a user gives numeric rating to an 
 item) and relations between nodes (i.e., a source node connects to a 
-destination node though a labeled link).
-This nice structure is not exploited in natural language processing because it 
+destination node through a labeled link).
+This structure is not exploited in natural language processing because it 
 does not exist (i.e., for a neural net, words can simply show up in a sequence 
 from a day-to-day conversation, in many flexible and unpredictable ways, with 
 little structure or regularity).
 Although syntax and semantics exist in natural languages, we have not seen any 
 current neural network models taking advantage of these structures.
-Our work differs from the above applications in that our technique uses a 
-neural net model designed to take advantage of the structure in the relational 
-data and it is also able to predict a numerical attribute - the rating value.
+Our work differs from the above methods in that our technique uses a 
+deep learning model designed to take advantage of the structure in the 
+relational 
+data and it is also able to predict a numeric attribute - the rating value.
 
 \section{Problem}
 The problem we consider in this paper is collaborative rating prediction 
@@ -153,14 +157,14 @@ problem.
 In this section, we look at an example of the problem and then its definition.
 
 \subsection{Problem example}
-This is a collaborative rating prediction problem example: 
-a set of 6 users give numerical ratings to a set of 3 items.
-For each user, only a subset of his ratings are known; 
+As an example of a collaborative rating prediction problem, consider 
+a set of 6 users who give numeric ratings to a set of 3 items.
+For each user, only a subset of their ratings are known; 
 and we want to predict the unknown ratings.
-The dataset of this example is demonstrated in \autoref{tab:ratings}.
+The dataset for this example is shown in Table \ref{tab:ratings}.
 \begin{table}[!htb]
 	\centering
-	\caption{The dataset of the problem example.
+	\caption{Collaborative rating prediction problem example:
 		In this dataset, a set of 6 users give ratings to a set of 3 items: 
 		for User[0], ratings to all 3 items are known; 
 		for User[1], ratings to Item[1] and Item[2] are known, 
@@ -168,8 +172,9 @@ The dataset of this example is demonstrated in \autoref{tab:ratings}.
 		Every unknown rating is marked as a question mark.
 		The task is to predict the unknown ratings.
 	}
-	\begin{tabularx}{0.47\textwidth}{|X|c|c|c|}  \hline \rowcolor{blue!50}
-		        & Item[0] & Item[1] & Item[2] \\ \hline
+	\begin{tabularx}{0.47\textwidth}{|>{\columncolor{blue!50}}X|X|X|X|}  \hline 
+	\rowcolor{blue!50}
+		Ratings & Item[0] & Item[1] & Item[2] \\ \hline
 		User[0] & 3       & 5       & 2 \\ \hline
 		User[1] & ?       & 5       & 2 \\ \hline
 		User[2] & 4       & 4       & 5 \\ \hline
@@ -183,28 +188,33 @@ The dataset of this example is demonstrated in \autoref{tab:ratings}.
 \subsection{Problem definition}
 Formally, a collaborative rating prediction problem is defined as follows:
 \begin{itemize}
-	\item given: a 2-D array R[m][n], 
-	where R[i][j] is the rating User[i] gives to Item[j],
-	$ i \in [0, m-1] $, j $ \in [0, n-1] $, and a number of elements in R are 
-	unknown
-	\item task: predict all unknown elements in R
+	\item Given: a 2-D array R[m][n], 
+	where real number R[i][j] is the rating User[i] gives to Item[j],
+	integer i $ \in [0, m-1] $, integer j $ \in [0, n-1] $, and a number of 
+	p elements in R are unknown
+	\item Task: predict all unknown elements in R to minimize MAE.
 \end{itemize}
-Moreover, we define a user as the array of ratings he gives to all items:
+MAE (mean absolute error) is defined as
+\begin{align*}
+	MAE = \frac{1}{p} \sum_{i = 0}^{p}|f_i = y_i|
+\end{align*}
+where $ f_i $ is the predicted value and $ y_i $ is the true value.
+Moreover, we define a user as the array of ratings they give to all items: 
 \begin{align*}
 	User[i] = R[i]
 \end{align*}
 
 \section{Baseline solutions}
-Among many algorithms to collaborative rating prediction problem,
+Among the many methods for the collaborative rating prediction problem,
 the most prevalent one is the neighborhood-based collaborative filtering 
-algorithm \citeauthor{su2009survey}.
+algorithm \cite{su2009survey}.
 This algorithm also has several variants,
 which we will use as baseline solutions.
 
 \subsection{Algorithm}
 The neighborhood-based collaborative filtering algorithm calculates each 
 unknown R[i][j] as 
-follows \citeauthor{su2009survey}:
+follows \cite{su2009survey}:
 \begin{align*}
 R[i][j] = c \sum_{k = 0}^{m-1} S(i, k) R[k][j]
 \end{align*}
@@ -225,10 +235,9 @@ Each variant of the algorithm has a unique definition of the similarity
 function of User[i] and User[k]:
 \begin{itemize}
 	\item PCC: The Pearson correlation coefficient similarity, defined as 
-	\citeauthor{resnick1994grouplens}:
+	\cite{resnick1994grouplens}:
 	\begin{align*}
-		& S(x, y) \\
-		=& S_{PCC}(x, y) \\
+		& S_{PCC}(x, y) \\
 		=& \frac{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})(R[y][i] - 
 		\overline{R[y]})}{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})^2 
 		\sum_{i 
@@ -239,11 +248,9 @@ function of User[i] and User[k]:
 	and $ I_{xy} $ is the set of items rated by both User[x] and User[y].
 	PCC measures the linear correlation of two users.
 	\item WPCC: The weighted PCC similarity, defined as 
-	\citeauthor{herlocker1999algorithmic}:
+	\cite{herlocker1999algorithmic}:
 	\begin{align*}
-		& S(x, y) \\
-		=& S_{WPCC}(x, y) \\
-		=&
+		S_{WPCC}(x, y)=
 		\begin{cases}
 			\frac{|I_{xy}|}{T} S_{PCC}(x, y) & |I_{xy}| < T \\
 			S_{PCC}(x, y) & otherwise
@@ -252,60 +259,63 @@ function of User[i] and User[k]:
 	where T is a threshold of number of items. 
 	WPCC of two users differs from PCC only when the number of items rated by 
 	both users (co-rated items) is less than the threshold. 
-	When the difference occurs, less number of co-rated items results in less 
-	similarity in the two users.
-	\item SPCC: The sigmoid PCC similarity, defined as 
-	\citeauthor{jamali2009trustwalker}:
+	When the difference occurs, fewer co-rated items results in less similarity 
+	between the two users.
+	\item SPCC: The sigmoid PCC similarity, defined as 	
+	\cite{jamali2009trustwalker}:
 	\begin{align*}
-		& S(x, y) \\
-		=& S_{SPCC} (x, y) \\
-		=& \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
+		S_{SPCC} (x, y)
+		= \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
 	\end{align*}
 	SPCC is very similar to WPCC in the sense two users have lower similarity 
 	if they have a smaller number of co-rated items.
-	\item MPCC: The multi-level PCC similarity \citeauthor{polatidis2016multi}. 
-	This one is also very similar to the previous ones but much more complex, 
-	so we skip its description here.
+	\item MPCC: The multi-level PCC similarity \cite{polatidis2016multi}. 
+	This one is also very similar to the previous ones but much more complex.
+	MPCC essentially uses the PCC similarity measure, but increases it 
+	based on the number of co-rated items between the two users,
+	as long as the PCC similarity is sufficiently high.
+	The more co-rated items, the larger the increase.
+	But if the number of co-rated items or the PCC similarity is too low,
+	then a similarity of zero is returned.
 \end{itemize}
 
 \section{Observations}
-Although the various applications in related work section can not solve the 
+Although the methods described in the related work section cannot solve the 
 collaborative rating prediction problem,
 they all have an interesting key process: representing entities as vectors.
 As deep learning techniques become more powerful and standardized, this key 
-process seems to be the most significant part in a domain specific deep 
-learning application.
-In an informal way, that is like to say: in order to apply deep learning to a 
-specific task, represent the data at hand as vectors of numbers,
-feed them to the neural net, and then deep learning will take care of 
-everything else.
+process seems to be the most significant part in a domain-specific deep 
+learning approach.
+Here we take a similar approach.
 
 \subsection{Entities and representations}
 First of all, we summarize how a neural net represents various types of 
 entities in different domains with different relations, as shown in 
-\autoref{tab:domains}.
-It is clear that representations for all the entities are numerical arrays, 
+Table \ref{tab:domains}.
+It is clear that representations for all the entities are numeric arrays, 
 because neural nets rely on neurons' activations and communications, which 
-are both numerical.
+are both numeric.
 \begin{table}[!htb]
 	\centering
-	\caption{A summary of various types of entities, their numerical
+	\caption{A summary of various types of entities, their numeric
 		representations and inter-entity relations in different domains:
-		Images in image recognition and audios in speech recognition can be 
-		directly represented by 2D numerical arrays, 
-		but their relations to other images or audios are not commonly 
-		used. 
+		An image in image recognition is represented as a 2D light amplitude 
+		array with dimensions height and width; an audio in speech recognition 
+		is represented as a 2D sound amplitude array with dimensions time and 
+		frequency.
+		The relation between two images or two audio is not commonly used. 
 		Words in natural languages, items in recommendation systems, and nodes 
-		in graphs can be represented by vectors (1D numerical arrays) and their 
-		relations to other words, items and nodes are commonly used to learn 
-		these vectors.}
+		in graphs can be represented by vectors (1D numeric arrays).
+		The	relations between two words, two items and two nodes are commonly 
+		used to learn these vectors.
+	}
 	\begin{tabularx}{0.47\textwidth}{|X|c|c|} \hline \rowcolor{blue!50}
-		Entity & Representation           & Relations \\ \hline
-		image  & 2D light amplitude array & NA \\ \hline
-		audio  & 2D sound amplitude array & NA \\ \hline
-		word   & word vector              & co-occurrences \\ \hline
-		item   & item vector              & co-purchases \\ \hline
-		node   & node vector              & connections \\ \hline
+		Entity & Representation               & Relations \\ \hline
+		image  & 2D array[width, height]      & N/A \\ \hline
+		audio  & 2D array[time, frequency]    & N/A \\ \hline
+		word   & 1D array (i.e., word vector) & co-occurrences \\ \hline
+		item   & 1D array (i.e., item vector) & co-purchases \\ \hline
+		node   & 1D array (i.e., node vector) & connections \\ \hline
 	\end{tabularx}
 	\label{tab:domains}
 \end{table}
@@ -313,35 +323,16 @@ are both numerical.
 \subsection{Entities to vectors}
 The word2vec technique is famous for using a neural net to learn to map every 
 entity (word in this case) in a vocabulary to a vector without any domain 
-knowledge \citeauthor{mikolov2013efficient}.
+knowledge \cite{mikolov2013efficient}.
 The subsequent techniques item2vec and node2vec use the same skip-gram 
-model in word2vec to map items and nodes to vectors.
-\autoref{tab:word} shows a mapping table that maps each entity(word/item/node) 
-to its vector.
+model used in word2vec to map items and nodes to vectors.
 In a corpus, every word is described/defined only by related words in its 
 contexts, by implicit relations between words in word co-occurrences.
 Nonetheless, the neural net can learn from word co-occurrences and map words to 
 vectors accordingly,
 such that the relations between words are preserved in the word vector space 
-\citeauthor{mikolov2013distributed}.
-The same arguments apply to relations between items and nodes.
-\begin{table}[!htb]
-	\centering
-	\caption{Entity (word/item/node) to vector mapping table for a set of n
-		entities with entity vectors of size d:
-		Each entity has an ID.
-		The values of vectors in this table are hypothetical.
-		}
-	\begin{tabularx}{0.47\textwidth}{|c|X|} \hline \rowcolor{blue!50}
-		Entity ID & Entity (word/item/node) vector \\ \hline
-		1         & [2.3, 564, -9.5 ... 3] \\ \hline
-		2         & [76, -342.2, 0.3 ... 4.2] \\ \hline
-		3         & [-345, -834, 0.3 ... 34] \\ \hline
-		...       & ... \\ \hline
-		n         & $ [x_1, x_2, x_3 ... x_d] $ \\ \hline
-	\end{tabularx}
-	\label{tab:word}
-\end{table}
+\cite{mikolov2013distributed}.
+The same arguments apply to relations between items and between nodes.
 
 \subsection{Users and items to vectors}
 However, the relation between a user and an item is quite different from that 
@@ -349,23 +340,23 @@ between words:
 \begin{itemize}
 	\item The rating a user gives to an item explicitly tells us how much the 
 	user likes that item;
-	the relation is very specific: one user, one item, one rating - no more, no 
-	less.
-	\item The co-occurrences of words [the, quick, brown, fox, jumps, over] 
-	implicitly tell us these words are related but do not tell us any specific 
+	the relation is very specific: one user, one item, one rating.
+	\item The co-occurrences of words [quick, brown, fox, jumps, over] 
+	implicitly tell us these words are related but do not tell us any 
+	specific 
 	relation.
 \end{itemize}
-This observation suggests that a neural net should be able to learn user to 
-vector mapping and item to vector mapping supervised by the rating, in a more 
-specific, direct and simply way than it learns word to vector mappings 
-supervised by word co-occurrences.
+This observation suggests that a neural net should be able to learn a 
+user-to-vector mapping and an item-to-vector mapping supervised by the rating,
+in a more specific, direct and simply way than it learns word-to-vector 
+mappings supervised by word co-occurrences.
 
 \section{Solution}
 Following the above observations, we can build an estimator with a neural net 
 model using a (user, item) pair as its input and the rating as its output.
 Therefore, we should change the format of the example dataset from the one 
-shown in \autoref{tab:ratings} to a new one shown in \autoref{tab:rating}.
-The estimator will train on entries with known ratings (the train set) 
+shown in Table \ref{tab:ratings} to a new one shown in Table \ref{tab:rating}.
+The estimator will train on entries with known ratings (the training set) 
 and predict on the entries with unknown ratings (the test set).
 Of course our testing program knows the unknown ratings in order to calculate 
 the model's prediction error.
@@ -378,14 +369,17 @@ the model's prediction error.
 		(0, 1)                     & 5 \\ \hline
 		(0, 2)                     & 2 \\ \hline
 		(1, 0)                     & ? \\ \hline
+		(1, 1)                     & 5 \\ \hline
+		(1, 2)                     & 2 \\ \hline
 		...                        & ... \\ \hline
+		(5, 2)                     & 4 \\ \hline
 	\end{tabularx}
 	\label{tab:rating}
 \end{table}
 
-\subsection{Conceptual neural net model}
+\subsection{Conceptual deep learning model}
 The model in the estimator is a fully connected neural net which we call Model 
-R (R as in relation), shown in \autoref{fig:conceptural}.
+R (R as in relation), shown in Figure \ref{fig:conceptural}.
 \begin{figure*}[!htb]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
@@ -418,59 +412,59 @@ R (R as in relation), shown in \autoref{fig:conceptural}.
 	\draw [arrow] (linearRegression) -- (rating);
 	\end{tikzpicture}
 	\caption{The conceptual model R for a dataset with 1700 items and 1000 
-	users:
-	The d in the bracket (d as in dimension) is the layer's size (number of 
-	units in the layer).
-	We keep all layers the same size for simplicity, although layers of 
-	different sizes may produce better results.
-	The text before the bracket refers to the activation function of the 
-	units in the layer (except for one-hot, which refers to the activations 
-	in the input layer).
-	Only layers and their connections are shown, while the units in each 
-	layer and their connections are not shown.
+		users:
+		The d in the bracket (d as in dimension) is the layer's size (number of 
+		units in the layer).
+		We keep all non-input layers the same size for simplicity, although 
+		layers of different sizes may produce better results.
+		The text before the bracket refers to the activation function of the 
+		units in the layer (except for one-hot, which refers to the activations 
+		in the input layer).
+		Only layers and their connections are shown, while the units in each 
+		layer and their connections are not shown.
 	}
 	\label{fig:conceptural}
 \end{figure*}
 The model contains the following layers:
 \begin{itemize}
-	\item an input layer with one-hot activations: it has 1 channel for items 
-	and 1 channel for users;
-	this layer is directly activated by the testing program (e.g., to feed the 
-	1200th item, the testing program sets 1 at the 1200th unit and 0 at other 	
-	units in the item channel);
-	\item a mapping layer with linear units: it has one channel to map each 
-	entity to a vector;
-	the activations of these two channels are the two vectors;
-	it is the most critical layer as it gradually learns to map users and items 
-	to vectors, which are complex and unobservable user and item attributes
-	\item several fully connected hidden layers (1 layer is shown in the figure;
-	multiple numbers of layers and layer sizes are considered in the 
-	experiments) of ReLU (rectified linear units):
-	they have non-linear activation functions to give the model sufficient 
-	complexity;
-	they learn to extract more and more abstract rating-relevant information;
-	\item an output layer with a linear regression unit: it learns to predict 
-	the rating based on abstracted information;
+	\item An input layer with one-hot activations.
+	It has 1 channel for items and 1 channel for users.
+	This layer is directly activated by the testing program (
+	e.g., to feed the 1200th item, the testing program sets 1 at the 1200th 
+	unit and 0 at other units in the item channel).
+	\item A mapping layer with linear units. It has one channel to map each 
+	entity to a vector.
+	The activations of these two channels are the two vectors.
+	It is the most critical layer as it gradually learns to map users and 
+	items to vectors,
+	which are complex and unobservable user and item attributes.
+	\item Multiple fully connected hidden layers (only one layer is shown in the
+	figure, but	multiple numbers of layers and layer sizes are evaluated in 
+	the experiments) of ReLU (rectified linear units).
+	These units have non-linear activation functions to give the model 
+	sufficient complexity.
+	These layers learn to extract more and more abstract rating-relevant 
+	information.
+	\item An output layer with a linear regression unit.
+	It learns to predict the rating based on abstracted information.
 \end{itemize}
-In this problem, ratings provide the all information about users and items.
-We fully take this character into account and design this model to learn 
+In this problem, ratings provide the information about users and items.
+We fully take this property into account and design this model to learn 
 complex and unobservable user and item attributes (i.e., user and item vectors) 
-supervised by simple and observable rating.
+supervised by a simple observable rating.
 
-\subsection{Actual neural net model}
+\subsection{Actual deep learning model}
 In practice, Model R uses more efficient mapping tables instead of a 
-one-hot input layer to handle a dataset with increasing number of users and 
-items.
-\autoref{fig:actural} shows the actual model with two modifications from the 
-conceptual model:
+one-hot input layer in order to handle a dataset with an increasing number of 
+users and items, as shown in Figure \ref{fig:actural}.
+The actual model has with two modifications from the conceptual model:
 \begin{itemize}
 	\item The input layer is replaced by two mapping tables: one for users and 
-	one for items;
-	their inputs are user and item IDs and their outputs are user and item 
-	vectors, just like the entity to vector mapping table referenced in 
-	\autoref{tab:word}
-	\item The mapping layer is replaced by a 2-channel input layer: it is 
-	directly activated by the outputs of the mapping tables
+	one for items.
+	Their inputs are user and item IDs and their outputs are user and item 
+	vectors.
+	\item The mapping layer is replaced by a 2-channel input layer. It is 
+	directly activated by the outputs of the mapping tables.
 \end{itemize}
 \begin{figure*}[!htb]
 	\centering
@@ -514,41 +508,37 @@ conceptual model:
 	\label{fig:actural}
 \end{figure*}
 
-\subsection{Learning algorithms and techniques}
+\subsection{Learning techniques}
 The estimator uses the above model and a number of popular deep learning 
-algorithms and techniques:
+techniques:
 \begin{itemize}
-	\item backpropagation: propagation of the error gradients from output layer 
-	back to each earlier layer \citeauthor{rumelhart1988learning}
-	\item stochastic gradient descent: the optimization that minimizes 
+	\item Backpropagation: propagation of the error gradients from output layer 
+	back to each earlier layer \cite{rumelhart1988learning}
+	\item Stochastic gradient descent: the optimization that minimizes 
 	the error (descending against the error gradient in weight space) for a 
-	random sample in each step \citeauthor{lecun2012efficient}
-	\item mini-batch: the modification to stochastic gradient descent to 
+	random sample in each gradient decent step \cite{lecun2012efficient}
+	\item Mini-batch: the modification to stochastic gradient descent to 
 	accelerate and smooth the descent by minimizing the error for a small 
-	random batch of samples in each step \citeauthor{mairal2010online}
+	random batch of samples in each gradient decent step \cite{mairal2010online}
 \end{itemize}
 
 \section{Experiments}
 We evaluated Model R and the baseline solutions experimentally,
-and the results showed that Model R achieved much lower prediction error than 
+and the results show that Model R achieved much lower prediction error than 
 the baseline solutions.
 
 \subsection{Experiment settings}
 We evaluated Model R in the same settings used in a recent experimental 
-evaluation of the baseline solutions \citeauthor{polatidis2016multi},
-one experiment for each of the four datasets 
-(Jester \citeauthor{goldberg2001eigentaste} is not used due to its non-standard 
-file 
-formatting issue): 
+evaluation of the baseline solutions \cite{polatidis2016multi} on four datasets:
 \begin{itemize}
-	\item ML100K: MovieLens100K\citeauthor{harper2015movielens}
-	\item ML1M: MovieLens1M\citeauthor{harper2015movielens}
-	\item EP: Epinions \citeauthor{massa2007trust}
-	\item MT: MovieTweetings \citeauthor{dooms2013movietweetings}
+	\item ML100K: MovieLens100K\cite{harper2015movielens}
+	\item ML1M: MovieLens1M\cite{harper2015movielens}
+	\item EP: Epinions \cite{massa2007trust}
+	\item MT: MovieTweetings \cite{dooms2013movietweetings}
 \end{itemize}
-The specifications of the datasets are summarized in \autoref{tab:dataset}.
-The experiments use MAE (mean absolute error) as the prediction accuracy 
-metric, and split each dataset into 2 parts: 20\% into the test set and 80\% 
+The specifications of the datasets are summarized in Table \ref{tab:dataset}.
+The experiments use MAE as the prediction accuracy metric,
+and split each dataset randomly into 2 parts: 20\% into the test set and 80\% 
 into the training set.
 \begin{table}[!htb]
 	\centering
@@ -557,12 +547,11 @@ into the training set.
 		of the dataset.
 		}
 	\begin{tabularx}{0.47\textwidth}{|X|X|X|X|}  \hline \rowcolor{blue!50}
-		Dataset & User \# & Item \# & Rating \# \\ \hline
+		Dataset & Users \# & Items \# & Ratings \# \\ \hline
 		ML100K  & 1,000   & 1,700   & 100,000 \\ \hline
 		ML1M    & 6,000   & 4,000   & 1,000,000 \\ \hline
 		EP      & 49,290  & 139,738 & 664,824 \\ \hline
-		MT      & 39,363  & 22,610  & 431,780 \\ 
-		\hline
+		MT      & 39,363  & 22,610  & 431,780 \\ \hline
 	\end{tabularx}
 	\label{tab:dataset}
 \end{table}
@@ -570,86 +559,98 @@ into the training set.
 \subsection{Experiment process}
 At the beginning of an experiment on a dataset,
 the estimator sets aside 10\% of the training set as a validation set.
-A larger or smaller validation set could not reduce the prediction error in the 
+A larger or smaller validation set did not reduce the prediction error in the 
 experiments.
 Then the estimator learns for several epochs:
-in each epoch, it learns on training set, predicts on validation set, and logs 
-the validation error.
-In order to reduce over-fitting, the estimator stops learning when the 
-validation error has not decreased for 3 epochs.
-At the end, the testing program lets the estimator predict on testing set and 
-record its testing error as its prediction error on that dataset.
+in each epoch,
+it learns on the training set,
+predicts on the validation set,
+and logs the validation error.
+In order to reduce over-fitting,
+the estimator stops learning when the validation error has not decreased for 3 
+epochs.
+At the end, the testing program lets the estimator predict on the testing set 
+and record its testing error as its prediction error on that dataset.
 
 \subsection{Experiment results}
 In our experiments, Model R's prediction error is 18\% to 8\% lower than
-the best baseline solution MPCC - on all datasets, shown in 
-\autoref{tab:errors}.
+the best baseline solution (i.e., MPCC) on all datasets, as shown in Table 
+\ref{tab:errors}.
 The error reduction from MPCC to Model R is calculated as:
 \begin{align*}
-	\delta = 1 - \frac{MPCCError}{ModelRError}
+	\delta = \frac{MPCCError - ModelRError}{MPCCError}
 \end{align*}
 \begin{table}[!htb]
 	\centering
 	\caption{The comparison of prediction errors (measured by MAE): 4 baseline
 		solutions are represented by their first letters (P, W, S, M).
-		Model R (represented by letter R)'s prediction error is 18\% to 8\% 
+		Model R's (represented by letter R) prediction error is 18\% to 8\% 
 		lower than the best baseline 
 		solution (MPCC) on all datasets.
 		}
-	\begin{tabularx}{0.47\textwidth}{|X|c|c|c|c|c|c|} \hline 
-	\rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{|X|c|c|c|c|c|c|} \hline \rowcolor{blue!50}
 		Dataset & P    & W    & S    & M    & R    & $ \delta $ \\ \hline
-		ML100K  & 0.83 & 0.82 & 0.83 & 0.82 & 0.70 & 14\% \\ \hline
-		ML1M    & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 & 17\% \\ \hline
+		ML100K  & 0.83 & 0.82 & 0.83 & 0.82 & 0.69 & 16\% \\ \hline
+		ML1M    & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 & 18\% \\ \hline
 		EP      & 1.00 & 1.02 & 1.00 & 0.93 & 0.76 & 18\% \\ \hline
-		MT      & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 & 8\%  \\ \hline
+		MT      & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 & 9\%  \\ \hline
 	\end{tabularx}
 	\label{tab:errors}
 \end{table}
-Model R is also very robust - 4\% fluctuation in prediction error - in a wide 
-parameter ranges listed below:
-\begin{itemize}
-	\item number of hidden layers: [2, 5]
-	\item layer size: [20, 90]
-	\item learning rate: [0.01, 0.1]
-	\item batch size: [30, 70]
-\end{itemize}
-
+Model R is also very robust in a wide range of parameter settings, shown in 
+Table \ref{tab:robust}.
+\begin{table}[!htb]
+	\centering
+	\caption{High robustness of Model R against parameter changes:
+		The estimator maintains its prediction error in range [0.68, 0.73] for 
+		a wide range of parameter settings. The batch size is the size of the 
+		batch of samples used in a single gradient decent step.
+		These experiments are on MovieLens 100K dataset with learning rate set 
+		at 0.01.
+	}
+	\begin{tabularx}{0.47\textwidth}{|X|c|c|c|}  \hline \rowcolor{blue!50}
+		 batch size & layer size & hidden layers \# & MAE \\ \hline
+		 16 & 16 & 2 & 0.714 \\ \hline
+		 16 & 16 & 8 & 0.710 \\ \hline
+		 16 & 64 & 2 & 0.687 \\ \hline
+		 16 & 64 & 8 & 0.706 \\ \hline
+		 64 & 16 & 2 & 0.703 \\ \hline
+		 64 & 16 & 8 & 0.724 \\ \hline
+		 64 & 64 & 2 & 0.703 \\ \hline
+		 64 & 64 & 8 & 0.713 \\ \hline
+	\end{tabularx}
+	\label{tab:robust}
+\end{table}
 \subsection{Computing resources}
-We ran our experiments on a Dell Optiplex 780 machine with following 
-configurations:
-\begin{itemize}
-	\item operating system: Ubuntu 16.04 64-bit
-	\item processor: Intel Core 2 Duo CPU E8400 @ 3GHz
-	\item memory: 4GB
-\end{itemize}
-Each run (learning and prediction) takes around 1 to 8 minutes, 4 to 16 epochs, 
+We ran our experiments on a Dell Optiplex 780 machine with Ubuntu 16.04 64-bit 
+operating system, Intel Core 2 Duo CPU E8400 @ 3GHz processor and 4 GB memory.
+Each run (learning and prediction) takes 2 to 8 minutes,
 depending on the dataset and parameters.
 Our implementation exploits thread level parallelism, but we have not explored 
-data level parallelism (i.e., GPU) or process level parallelism (e.g., remote 
-procedure call).
+data level parallelism (i.e., GPU) or process level parallelism (e.g., 
+distributed cluster).
 
 \section{Future work}
-We designed Model R for collaborative rating prediction problem,
-but we would like to incorporate content based capability into it to improve 
-its prediction accuracy.
+We designed Model R for the collaborative rating prediction problem,
+but we would like to incorporate a content-based capability to improve its 
+prediction accuracy.
 For example, in order to better predict the rating a user gives to an article,
 the model can append units at the mapping layer to receive a content vector 
 mapped from the text of the article by another neural net.
-The model can also append one unit for each numerical attribute of the user or 
+The model can also append one unit for each numeric attribute of the user or 
 item (e.g., the age of a user, the price of a product) at the mapping layer.
 In this way, it will take advantage of not only relation data but also content 
 data, and therefore make more accurate predictions.
 We have an open source Python implementation under MIT license hosted on Github 
 (url omitted to comply with AAAI review requirements).
 The main machine learning package we use is TensorFlow 
-\citeauthor{abadi2016tensorflow}.
-Do not hesitate to contact us if you are interested in collaboration.
+\cite{abadi2016tensorflow}.
 
 \section{Conclusions}
-Model R proves deep learning can be successfully applied to collaborative 
-rating prediction problem and it can provide a solution to achieve higher 
-prediction accuracy than the most prevalent collaborative filtering algorithm.
+Model R shows that deep learning can be successfully applied to the 
+collaborative rating prediction problem
+and it can achieve higher prediction accuracy than a state-of-the-art 
+collaborative filtering method.
 The estimator powered by Model R effectively learns complex and unobservable 
 user and item attributes from simple and observable relations (i.e., users rate 
 items).
