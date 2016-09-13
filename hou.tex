@@ -23,10 +23,12 @@
 
 \pdfinfo{
 	/Title (Deep Learning Approach to Collaborative Rating Prediction)
-	/Author (Author 1, Author 2)
+	/Author (Author 0, Author 1)
+	/Keywords (deep learning, neural net, recomendation system, collaborative 
+	filtering)
 }
 \title{Deep Learning Approach to Collaborative Rating Prediction}
-\author{Author 1 \and Author 2\\
+\author{Author 0 \and Author 1\\
 	Address line\\
 	Address line\\
 }
@@ -76,6 +78,9 @@ filtering \cite{ricci2011introduction}.
 Collaborative filtering extracts information from the relations between users 
 and items, while content-based filtering extracts information from the contents 
 of items.
+There is also a hybrid approach that combines collaborative filtering and 
+content-based filtering to get the strengths of both 
+\cite{adomavicius2005toward}.
 Collaborative filtering has multiple forms including producing a list of items 
 a user would like, and predicting the ratings a user would give to a list of 
 items \cite{su2009survey}.
@@ -115,8 +120,13 @@ examples:
 \end{itemize}
 Similar to image recognition and speech recognition, these methods use deep 
 learning to extract information about an entity from the content of the entity.
-Our work differs from these methods in that our technique does not access or 
-get information from the contents of items.
+One of the limitations of content-based filtering is limited content analysis 
+\cite{adomavicius2005toward}.
+For example, if the items are articles addressing the same topic,
+the badly written articles and well-written articles can have very similar 
+textual content so that a content based system cannot distinguish them.
+In this paper, we focus not on content-based filtering, but collaborative 
+filtering (i.e., our technique does not access the contents of items).
 
 \subsection{Collaborative filtering methods}
 Methods in this group extract information about an item from its relations 
@@ -148,8 +158,8 @@ Although syntax and semantics exist in natural languages, we have not seen any
 current neural network models taking advantage of these structures.
 Our work differs from the above methods in that our technique uses a 
 deep learning model designed to take advantage of the structure in the 
-relational 
-data and it is also able to predict a numeric attribute - the rating value.
+relational data and it is also able to predict a numeric attribute - the rating 
+value.
 
 \section{Problem}
 The problem we consider in this paper is collaborative rating prediction 
@@ -196,9 +206,10 @@ Formally, a collaborative rating prediction problem is defined as follows:
 \end{itemize}
 MAE (mean absolute error) is defined as
 \begin{align*}
-	MAE = \frac{1}{p} \sum_{i = 0}^{p}|f_i = y_i|
+	MAE = \frac{1}{p} \sum_{i = 0}^{p}|f_i - y_i|
 \end{align*}
-where $ f_i $ is the predicted value and $ y_i $ is the true value.
+where $ f_i $ is the predicted value, $ y_i $ is the true value, and p is the 
+size of test set.
 Moreover, we define a user as the array of ratings they give to all items: 
 \begin{align*}
 	User[i] = R[i]
@@ -363,7 +374,7 @@ the model's prediction error.
 \begin{table}[!htb]
 	\centering
 	\caption{The reformatted dataset of the problem example.}
-	\begin{tabularx}{0.47\textwidth}{|c|X|}  \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{|X|X|}  \hline \rowcolor{blue!50}
 		Input = (User ID, Item ID) & Output = Rating \\ \hline
 		(0, 0)                     & 3 \\ \hline
 		(0, 1)                     & 5 \\ \hline
@@ -547,7 +558,7 @@ into the training set.
 		of the dataset.
 		}
 	\begin{tabularx}{0.47\textwidth}{|X|X|X|X|}  \hline \rowcolor{blue!50}
-		Dataset & Users \# & Items \# & Ratings \# \\ \hline
+		Dataset & Users   & Items   & Ratings \\ \hline
 		ML100K  & 1,000   & 1,700   & 100,000 \\ \hline
 		ML1M    & 6,000   & 4,000   & 1,000,000 \\ \hline
 		EP      & 49,290  & 139,738 & 664,824 \\ \hline
@@ -569,7 +580,7 @@ and logs the validation error.
 In order to reduce over-fitting,
 the estimator stops learning when the validation error has not decreased for 3 
 epochs.
-At the end, the testing program lets the estimator predict on the testing set 
+At the end, the testing program lets the estimator predict on the test set 
 and record its testing error as its prediction error on that dataset.
 
 \subsection{Experiment results}
@@ -608,7 +619,7 @@ Table \ref{tab:robust}.
 		These experiments are on MovieLens 100K dataset with learning rate set 
 		at 0.01.
 	}
-	\begin{tabularx}{0.47\textwidth}{|X|c|c|c|}  \hline \rowcolor{blue!50}
+	\begin{tabularx}{0.47\textwidth}{|X|X|c|c|}  \hline \rowcolor{blue!50}
 		 batch size & layer size & hidden layers \# & MAE \\ \hline
 		 16 & 16 & 2 & 0.714 \\ \hline
 		 16 & 16 & 8 & 0.710 \\ \hline
