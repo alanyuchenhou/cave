@@ -101,11 +101,12 @@ we either know it exists and know its weight (if it has been streamed in), or no
 
 \section{Baseline approaches}
 In our literature study, we found very limited existing approaches to this problem.
-A few approaches were derived from the SBM (Stochastic Block Model) \cite{aicher2014learning} and we use these as baseline approaches.
+A few approaches were derived from the SBM (Stochastic Block Model) 
+and we use these as baseline approaches \cite{aicher2014learning}.
 Now we review the SBM and its derivatives.
 
 \subsection{SBM (Stochastic Block Model)}
-The SBM is designed for unweighted graph.
+The SBM is designed for unweighted graph and uses only link existence information.
 The main idea is to partition nodes into K groups and connect groups with bundles.
 In this way, the graph has a 2-level structure:
 \begin{itemize}
@@ -151,7 +152,7 @@ which we rewrite as an exponential family:
 \end{align*}
 where
 \begin{align*}
-	T(x) = (x, 1)
+	T(A_{ij}) = (A_{ij}, 1)
 \end{align*}
 is the vector-valued function of sufficient statistics of the Bernoulli random variable and
 \begin{align*}
@@ -160,18 +161,17 @@ is the vector-valued function of sufficient statistics of the Bernoulli random v
 is the vector-valued function of natural parameters of the Bernoulli random variable.
 
 \subsection{pWSBM (pure Weighted Stochastic Block Model)}
-The pWSBM is designed for weighted graph.
+The pWSBM is designed for weighted graph and uses only link weight information.
 So it differs from SBM in a few ways described below.
 Here we choose model link weight with normal distribution.
-\begin{itemize}
-	\item A becomes the link weight matrix so $ A_{ij} \in R $
-	\item $ \theta $ becomes the bundle weight distribution parameter matrix
-	so $ \theta_{z_i z_j} = (\mu_{z_i z_j}, \sigma_{z_i z_j}^2) $
-	is the weight distribution parameter of bundle ($z_i, z_j$)
-\end{itemize}
-T(x) becomes the vector-valued function of sufficient statistics of the normal random variable:
+A becomes the link weight matrix so $ A_{ij} \in R $.
+$ \theta_{z_i z_j} $ becomes the weight distribution parameter of bundle ($z_i, z_j$):
 \begin{align*}
-	T(x) = (x, x^2, 1)
+	\theta_{z_i z_j} = (\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
+\end{align*}
+$ T(A_{ij}) $ becomes the vector-valued function of sufficient statistics of the normal random variable:
+\begin{align*}
+	T(A_{ij}) = (A_{ij}, A_{ij}^2, 1)
 \end{align*}
 $ \eta(\theta) $ becomes the vector-valued function of natural parameters of the normal random variable:
 \begin{align*}
@@ -196,6 +196,39 @@ A_{ij} \frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
 \end{align*}
 
 \subsection{bWSBM (balanced Weighted Stochastic Block Model)}
+The bWSBM is a hybrid of SBM and pWSBM
+and uses both link existence information and link weight information.
+The hybrid log likelihood becomes:
+\begin{align*}
+\log(P(A|z, \theta))
+= \alpha \sum_{ij \in E} (T_e(A_{ij}) \eta_e(\theta_{z_i z_j}))
++ (1 - \alpha) \sum_{ij \in W} (T_w(A_{ij}) \eta_w(\theta_{z_i z_j}))
+\end{align*}
+where pair $ (T_e, \eta_e) $ denotes the family of link existence distributions:
+\begin{align*}
+T_e(A_{ij}) &= (A_{ij}, 1)\\
+\eta_e(\theta) &= ( \log(\frac{\theta}{1-\theta}), \log(1-\theta) )
+\end{align*}
+and pair $ (T_w, \eta_w) $ denotes the family of the link weight distributions:
+
+\begin{align*}
+T_w(A_{ij}) &= (A_{ij}, A_{ij}^2, 1)\\
+\eta_w(\theta)
+&= (\frac{\mu}{\sigma^2}, -\frac{1}{2\sigma^2}, -\frac{\mu^2}{2\sigma^2})
+\end{align*}
+and $ \alpha \in [0, 1]$ is a tuning parameter that determines their relative importance,
+E is the set of observed interactions,
+and W is the set of weighted edges.
+In the following, we always assume $ \alpha = 0.5 $.
+
+\subsection{DCWBM (Degree Corrected Weighted Stochastic Block Model)}
+The DCWBM is designed to incorporate node degree
+by replacing pair $ (T_e, \eta_e) $ in the bWSBM with:
+\begin{align*}
+	T_e(A_{ij}) &= (A_{ij}, -d_id_j)\\
+	\eta_e(\theta) &= (\log\theta, \theta)
+\end{align*}
+where $ d_i $ is the degree of node i.
 
 \section{Experiments}
 We evaluate Model R experimentally
