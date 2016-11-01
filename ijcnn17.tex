@@ -9,11 +9,46 @@
 \lstset{language=python, tabsize=4}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,automata,quotes,positioning,babel}
+\usetikzlibrary{shapes.geometric, arrows}
 
 \title{Deep Learning Approach to Link Weight Prediction}
 
 \begin{document}
 \maketitle
+
+\section{Introduction}
+Deep learning is rapidly gaining traction in many application domains \cite{lecun2015deep}, e.g.,
+speech recognition \cite{hannun2014deep},
+image recognition \cite{simonyan2014very},
+natural language processing \cite{yao2013recurrent},
+recommendation systems \cite{barkan2016item2vec},
+and graph mining \cite{grovernode2vec}.
+Among these domains,
+graph mining is a new and active application area for deep learning.
+The research in graph mining has advanced many fields
+where objects and their relations can be modeled by nodes and links in a network \cite{chakrabarti2006graph}, e.g.,
+computer networks \cite{bermond1995distributed},
+social networks \cite{cook2006mining},
+protein interaction networks \cite{bader2003automated},
+ecological food webs \cite{brown2003ecological},
+and citation networks \cite{greenberg2009citation}.
+An important task in graph mining is link prediction \cite{liben2007link},
+e.g., to predict whether a person will follow another person in a social network.
+To be more specific,
+link prediction problem actually refers to link existence prediction:
+to predict whether a link from a node to another node exists or not.
+Link existence prediction is a well-known problem,
+but one of its related problems is not: link weight prediction.
+Link weight prediction is
+to predict the weight of a link from a node to another node
+so the question it cares about is not if two nodes are connected,
+but how likely or how strong they are connected.
+This consideration is very useful in many application scenarios, e.g.,
+to say Alice likes Bob is not as good as
+to say Alice texts/tweets/mentions Bob 128 times per day on average,
+because quantitative and measurable things are simple and informative.
+The contribution of this paper is
+a deep learning approach to link weight prediction problem.
 
 \section{Problem}
 We consider the problem of link weight prediction in a weighted directed graph.
@@ -99,14 +134,78 @@ This is a very practical point when we handle streaming graphs:
 for any possible link,
 we either know it exists and know its weight (if it has been streamed in), or not - we never know some link does not exist or does not have weight.
 
-\section{Baseline approaches}
-In our literature study, we found very limited existing approaches to this problem.
-A few approaches were derived from the SBM (Stochastic Block Model) 
-and we use these as baseline approaches \cite{aicher2014learning}.
-Now we review the SBM and its derivatives.
+\section{Related work}
+In our literature study on previous research in link weight prediction problem,
+we have found few existing approaches and no deep learning ones.
+In this section,
+we review a few existing approaches to link weight prediction.
+Our work differs from these approaches in that it is a deep learning approach.
+
+\subsection{Node similarity model}
+This class of approaches, designed for undirected graphs,
+uses a linear regression model \cite{zhao2015prediction}:
+\begin{align*}
+	w_{xy} = k \cdot s_{xy}
+\end{align*}
+where $ w_{xy} $ and $ s_{xy} $ are the weight and similarity of node x and node y.
+The assumption is the weight of a link between two nodes 
+is proportional to the similarity of those two nodes.
+The similarity $ s_{xy} $ of two nodes x and y is calculated by 3 different groups of measures of 2-hop paths connecting those two nodes:
+\begin{itemize}
+	\item Unweighted indexes \cite{adamic2003friends}
+	\item Weighted indexes \cite{murata2007link}
+	\item Reliable route weighted indexes \cite{taha1982operations}
+\end{itemize}
+There are 3 unweighted indexes, based on path counts, described below.
+The CN (Common Neighbors) index counts the number of common neighbors between two nodes:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} 1
+\end{align*}
+where N(x) is the set of neighbors of node x and z is a common neighbor of x and y.
+The AA (Adamic-Adar) index differs from CN index by depressing the contribution of high-degree common neighbors:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} \frac{1}{\log(k_z)}
+\end{align*}
+where $ k_z $ is the degree of node z.
+The RA (Resource Allocation) index differs from AA index
+by depressing high-degree common neighbors more:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} \frac{1}{k_z}
+\end{align*}
+The 3 weighted indexes are based on path lengths, including:
+WCN (Weighted CN) index:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} (w_{xz} + w_{zy})
+\end{align*}
+WAA (Weighted AA) index:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} \frac{w_{xz} + w_{zy}}{\log(1 + s_z)}
+\end{align*}
+WRA (Weighted RA) index:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} \frac{w_{xz} + w_{zy}}{s_z}
+\end{align*}
+where $ s_z $ is the strength of node z:
+\begin{align*}
+	s_z = \sum_{u \in N(z)} w_{zu}
+\end{align*}
+The 3 reliable route weighted indexes are based on path reliability,
+i.e., the product of link weights, including:
+rWCN (Reliable-route WCN) index:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} (w_{xz} \cdot w_{zy})
+\end{align*}
+rWAA (Reliable-route WAA) index:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} \frac{w_{xz} \cdot w_{zy}}{\log(1 + s_z)}
+\end{align*}
+rWRA (Reliable-route WRA) index:
+\begin{align*}
+	s_{xy} = \sum_{z \in N(x) \cap N(y)} \frac{w_{xz} \cdot w_{zy}}{s_z}
+\end{align*}
 
 \subsection{SBM (Stochastic Block Model)}
-The SBM is designed for unweighted graph and uses only link existence information.
+The SBM is designed for unweighted graph and uses only link existence information \cite{holland1983stochastic}.
 The main idea is to partition nodes into K groups and connect groups with bundles.
 In this way, the graph has a 2-level structure:
 \begin{itemize}
@@ -161,7 +260,7 @@ is the vector-valued function of sufficient statistics of the Bernoulli random v
 is the vector-valued function of natural parameters of the Bernoulli random variable.
 
 \subsection{pWSBM (pure Weighted Stochastic Block Model)}
-The pWSBM is designed for weighted graph and uses only link weight information.
+The pWSBM is designed for weighted graph and uses only link weight information \cite{aicher2014learning}.
 So it differs from SBM in a few ways described below.
 Here we choose model link weight with normal distribution.
 A becomes the link weight matrix so $ A_{ij} \in R $.
@@ -197,7 +296,7 @@ A_{ij} \frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
 
 \subsection{bWSBM (balanced Weighted Stochastic Block Model)}
 The bWSBM is a hybrid of SBM and pWSBM
-and uses both link existence information and link weight information.
+and uses both link existence information and link weight information \cite{aicher2014learning}.
 The hybrid log likelihood becomes:
 \begin{align*}
 \log(P(A|z, \theta))
@@ -228,12 +327,177 @@ by replacing pair $ (T_e, \eta_e) $ in the bWSBM with:
 	T_e(A_{ij}) &= (A_{ij}, -d_id_j)\\
 	\eta_e(\theta) &= (\log\theta, \theta)
 \end{align*}
-where $ d_i $ is the degree of node i.
+where $ d_i $ is the degree of node i \cite{aicher2014learning}.
+
+
+\section{Observations}
+As deep learning techniques become more powerful and standardized,
+a key process of a domain-specific deep learning application
+is to represent entities as vectors.
+This process is important because a neural net needs vectors as inputs.
+
+\subsection{Entities and representations}
+First of all, we summarize how a neural net represents various types of 
+entities in different domains with different relations, as shown in 
+Table \ref{tab:domains}.
+It is clear that representations for all the entities are numeric arrays, 
+because neural nets rely on neurons' activations and communications, which 
+are both numeric.
+\begin{table}[!htb]
+	\centering
+	\caption{A summary of various types of entities, their numeric
+		representations and inter-entity relations in different domains:
+		An image in image recognition is represented as a 2D light amplitude 
+		array with dimensions height and width; an audio in speech recognition 
+		is represented as a 2D sound amplitude array with dimensions time and 
+		frequency.
+		The relation between two images or two audio is not commonly used. 
+		Words in natural languages, items in recommendation systems, and nodes 
+		in graphs can be represented by vectors (1D numeric arrays).
+		The	relations between two words, two items and two nodes are commonly 
+		used to learn these vectors.
+	}
+	\begin{tabularx}{1\textwidth}{|c|X|X|} \hline \rowcolor{blue!50}
+		Entity & Representation               & Relations \\ \hline
+		image  & 2D light amplitude array[width, height]      & N/A \\ \hline
+		audio  & 2D sound amplitude array[time, frequency]    & N/A \\ \hline
+		word   & 1D array (i.e., word vector) & co-occurrences of words in a context \\ \hline
+		item   & 1D array (i.e., item vector) & co-purchases of items in a order \\ \hline
+		node   & 1D array (i.e., node vector) & connections of nods (i.e., links) \\ \hline
+	\end{tabularx}
+	\label{tab:domains}
+\end{table}
+
+\subsection{Entities to vectors}
+The word2vec technique is famous for using a neural net to learn to map every 
+entity (word in this case) in a vocabulary to a vector without any domain 
+knowledge \cite{mikolov2013efficient}.
+The subsequent techniques item2vec \cite{barkan2016item2vec}
+and node2vec \cite{grovernode2vec} use the same skip-gram 
+model used in word2vec to map items and nodes to vectors.
+In a corpus, every word is described/defined only by related words in its 
+contexts, by implicit relations between words in word co-occurrences.
+Nonetheless, the neural net can learn from word co-occurrences and map words to 
+vectors accordingly,
+such that the relations between words are preserved in the word vector space 
+\cite{mikolov2013distributed}.
+The same arguments apply to relations between items and between nodes.
+
+\subsection{Nodes to vectors}
+The relation between nodes is quite different from that between words:
+\begin{itemize}
+	\item The weight of a link from one node to another explicitly tells us
+	how strong one node connects to the other;
+	the relation is very specific: one source node, one link, one destination node.
+	\item The co-occurrences of words [quick, brown, fox, jumps, over] 
+	implicitly tell us these words are related but do not tell us any 
+	specific relation.
+\end{itemize}
+The skip-gram model can not take advantage of highly structured data in graphs,
+because it is designed for natural languages,
+which does not have regular or predictable structures.
+For a neural net, 
+words can simply show up in sequences from day-to-day conversations,
+in many flexible and unpredictable ways, with little structure or regularity.
+This observation suggests that a neural net should be able to learn a 
+node-to-vector mapping supervised by the link weight,
+in a more specific, direct and simply way than it learns word-to-vector 
+mappings supervised by word co-occurrences.
+
+\section{Solution}
+Following the above observations,
+we can build an estimator with a neural net model
+using a node pair as its input
+and the weight of the link connecting the nodes as its output.
+
+\subsection{Model R}
+The model in the estimator is a fully connected neural net which we call Model 
+R (R as in relation), shown in Figure \ref{fig:model}.
+The model contains the following layers:
+\begin{itemize}
+	\item A mapping layer with mapping tables.
+	They map node IDs to node vectors.
+	The estimator randomly initializes and learns these vectors.
+	\item An input layer directly activated by the mapping tables.
+	Its activations are the two node vectors.
+	\item Multiple fully connected hidden layers
+	(only one layer is shown in the	figure) of ReLU (rectified linear units).
+	These units have non-linear activation functions to give the model 
+	sufficient complexity.
+	These layers learn to extract more and more abstract weight-relevant 
+	information.
+	\item An output layer with a linear regression unit.
+	It learns to predict the weight based on abstracted information.
+\end{itemize}
+In this problem, weights provide the information about nodes.
+We fully take this property into account and design this model to learn 
+complex and unobservable node information (i.e., node vectors) 
+supervised by a simple observable weight.
+\begin{figure*}[!htb]
+	\centering
+	\begin{tikzpicture}[node distance=2cm]
+	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
+	angle=110, minimum width=1cm, minimum height=1cm, text centered, 
+	draw=black, fill=blue!30]
+	\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=1cm, 
+	minimum height=1cm, text centered, draw=black, fill=red!30]
+	\tikzstyle{process} = [rectangle, minimum width=1cm, minimum height=1cm, 
+	text centered, draw=black, fill=green!30]
+	\tikzstyle{arrow} = [thick,->,>=stealth]
+	\node (linearRegression) [io] {linear regression};
+	\node (relu3) [process, below of=linearRegression] {ReLU[d=64]};
+	\node (linear1) [io, below of=relu3, xshift=-3cm] {node vector};
+	\node (linear2) [io, below of=relu3, xshift=3cm] {node vector};
+	\node (oneHot1) [startstop, below of=linear1] {mapping table};
+	\node (oneHot2) [startstop, below of=linear2] {mapping table};
+	\node (weight) [above of=linearRegression] {link weight};
+	\node (output) [left of=linearRegression, xshift=-5cm] {output layer};
+	\node (hidden1) [below of=output] {hidden layers};
+	\node (input) [below of=hidden1] {input layer};
+	\node (mapping) [below of=input] {mapping layer};
+	\node (source) [below of=oneHot1] {node ID};
+	\node (destination) [below of=oneHot2] {node ID};
+	\draw [arrow] (source) -- (oneHot1);
+	\draw [arrow] (destination) -- (oneHot2);
+	\draw [arrow] (oneHot1) -- (linear1);
+	\draw [arrow] (oneHot2) -- (linear2);
+	\draw [arrow] (linear1) -- (relu3);
+	\draw [arrow] (linear2) -- (relu3);
+	\draw [arrow] (relu3) -- (linearRegression);
+	\draw [arrow] (linearRegression) -- (weight);
+	\end{tikzpicture}
+	\caption{
+		Model R for a weighted graph.
+		We keep all non-input layers the same size for simplicity, although 
+		layers of different sizes may produce better results.
+		Only layers and their connections are shown, while the units in each 
+		layer and their connections are not shown.
+		We feed every node to the estimator by feeding the ID.
+		During learning,
+		the estimator learns and populates the vectors in the tables.
+	}
+	\label{fig:model}
+\end{figure*}
+
+\subsection{Learning techniques}
+The estimator uses the above model and a number of popular deep learning 
+techniques:
+\begin{itemize}
+	\item Backpropagation: propagation of the error gradients from output layer 
+	back to each earlier layer \cite{rumelhart1988learning}
+	\item Stochastic gradient descent: the optimization that minimizes 
+	the error (descending against the error gradient in weight space) for a 
+	random sample in each gradient decent step \cite{lecun2012efficient}
+	\item Mini-batch: the modification to stochastic gradient descent to 
+	accelerate and smooth the descent by minimizing the error for a small 
+	random batch of samples in each gradient decent step \cite{mairal2010online}
+\end{itemize}
 
 \section{Experiments}
-We evaluate Model R experimentally
-and the results show that 
-Model R can achieve much lower prediction error than the baseline models \cite{aicher2014learning}.
+We evaluate Model R experimentally with SBM, pWSBM, bWSBM and as baselines,
+and compare their prediction errors on several datasets.
+The results show 
+that Model R can achieve much lower prediction error than the baseline models.
 
 \subsection{Datasets}
 The experiments use 4 datasets summarized in \autoref{tab:datasets}.
