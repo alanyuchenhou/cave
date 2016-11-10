@@ -5,7 +5,7 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{listings}
-\lstset{language=python, tabsize=4}
+\lstset{frame=single, language=python, tabsize=4}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,automata,quotes,positioning,babel}
 \usetikzlibrary{shapes.geometric, arrows}
@@ -72,8 +72,8 @@ and citation networks \cite{greenberg2009citation}.
 An important task in graph mining is link prediction \cite{liben2007link},
 e.g., to predict whether a person will follow another person in a social network.
 To be more specific,
-link prediction problem actually refers to link existence prediction:
-to predict whether a link from a node to another node exists or not.
+the link prediction problem actually refers to link existence prediction:
+to predict whether a link from a node to another node exists or will form.
 Link existence prediction is a well-known problem,
 but one of its related problems is not: link weight prediction.
 Link weight prediction is
@@ -85,14 +85,18 @@ For example, when describing a connection in a social network,
 to say Alice likes Bob is not as precise as
 to say Alice texts/tweets/mentions Bob 128 times per day on average,
 because the second description is quantitative and more informative.
+A special case of link weight prediction is collaborative filtering.
+For example, to predict users' ratings to movies
+is to predict the link weights on the bipartite graph
+where the two disjoint node sets are users and movies.
 
 As neural nets have demonstrated their power in many domains,
 we naturally wonder if we can apply them in prediction tasks in graph mining,
 and what kind of techniques are helpful in using their power.
-We want to create a technique to predict link weight in a graph using a 
+We want to create a technique to predict link weights in a graph using a 
 neural net model.
 The estimator should learn to represent the graph in a meaningful way and to 
-learn to predict the target link weight using the representation it learns.
+learn to predict the target link weights using the representation it learns.
 The contribution of this paper is
 a deep learning approach to link weight prediction problem.
 
@@ -169,8 +173,8 @@ we can recommend B as a new connection to A.
 \subsection{Problem definition}
 Now we define the link weight prediction problem in a weighted directed graph.
 \begin{itemize}
-	\item Given the edge list of a weighted directed graph with some unknown link weights
-	\item Predict unknown link weights
+	\item Given a weighted directed graph with the node set V and link subset E
+	\item Build a model w = f(x, y) where x and y are nodes and w is the weight of link (x, y) that can predict the weight of any link
 \end{itemize}
 There is one thing to clarify about this definition.
 For every possible link (1 out of $ n^2 $, where n is the number of nodes), 
@@ -178,10 +182,10 @@ if we know its weight, we know it exists;
 if we do not know its weight, we do not know it exists.
 This is a very practical point when we handle streaming graphs:
 for any possible link,
-we either know it exists and know its weight (if it has been streamed in), or not - we never know some link does not exist or does not have weight.
+we either know it exists and know its weight (if it has been streamed in), or we do not know if the link will ever exist, nor know its weight.
 
 \section{Existing approaches}
-In our literature study on previous research in link weight prediction problem,
+In our literature study on previous research in the link weight prediction problem,
 we have found few existing approaches and no deep learning ones.
 In this section,
 we review these existing approaches.
@@ -194,21 +198,22 @@ It employs a linear regression model \cite{zhao2015prediction}:
 \begin{align*}
 	w_{xy} = k \cdot s_{xy}
 \end{align*}
-where $ w_{xy} $ is the weight of the link between node x and node y,.
+where k is the regression coefficient,
+$ w_{xy} $ is the weight of the link between node x and node y,
 and $ s_{xy} $ is the similarity of x and y, calculated based on their common neighbors:
 \begin{align*}
 	s_{xy} = \sum_{z \in N(x) \cap N(y)} F
 \end{align*}
-where N(x) is the set of neighbors of node x and z is a common neighbor of x and y.
-and F is an index factor which has 9 different forms, shown in \autoref{tab:indexes}.
+where N(x) is the set of neighbors of node x, z is a common neighbor of x and y,
+and F is an index factor which has nine different forms, shown in \autoref{tab:indexes}.
 \begin{table}[!htb]\centering
 	\caption{9 different forms of index factor F.}
 	\begin{tabularx}{0.45\textwidth}{|>{\columncolor{blue!40}}X|X|X|X|}  \hline \rowcolor{blue!40}
 		& Common Neighbors & Adamic-Adar & Resource Allocation \\ \hline
 		Unweighted &
 		\[1\] &
-		\[\frac{1}{\log(k_z)}\] &
-		\[\frac{1}{k_z}\] \\ \hline
+		\[\frac{1}{\log(d_z)}\] &
+		\[\frac{1}{d_z}\] \\ \hline
 		Weighted &
 		\[w_{xz} + w_{zy}\] &
 		\[\frac{w_{xz} + w_{zy}}{\log(1 + s_z)}\] &
@@ -220,17 +225,17 @@ and F is an index factor which has 9 different forms, shown in \autoref{tab:inde
 	\end{tabularx}
 	\label{tab:indexes}
 \end{table}
-In \autoref{tab:indexes}, $ k_z $ is the degree of node z and $ s_z $ is the strength of node z:
+In \autoref{tab:indexes}, $ d_z $ is the degree of node z and $ s_z $ is the strength of node z:
 \begin{align*}
 s_z = \sum_{u \in N(z)} w_{zu}
 \end{align*}
-These 9 forms are 3 groups of measures of 2-hop paths connecting those two nodes:
+These nine forms represent three groups of measures of 2-hop paths connecting those two nodes:
 \begin{itemize}
 	\item Unweighted group \cite{adamic2003friends}: based on path existence - ignoring path weights
 	\item Weighted group \cite{murata2007link}: based on path lengths - sum of path weights
 	\item Reliable route weighted group \cite{taha1982operations}: based on path reliability - product of weights
 \end{itemize}
-And each group contains 3 forms:
+And each group contains three forms:
 \begin{itemize}
 	\item Common Neighbors: pure path based
 	\item Adamic-Adar: similar to Common Neighbors
@@ -239,8 +244,8 @@ And each group contains 3 forms:
 \end{itemize}
 
 \subsection{SBM (Stochastic Block Model)}
-This approach is designed for unweighted graph and uses only link existence information \cite{holland1983stochastic}.
-The main idea is to partition nodes into K groups and connect groups with bundles.
+This approach is designed for unweighted graphs and uses only link existence information \cite{holland1983stochastic}.
+The main idea is to partition nodes into L groups and connect groups with bundles.
 In this way, the graph has a 2-level structure:
 \begin{itemize}
 	\item Lower level: each group consists of nodes which were topologically similar in the original graph
@@ -251,11 +256,11 @@ Given a graph with adjacency matrix A, the SBM has the following parameters:
 \begin{itemize}
 	\item A: link existence matrix, where $ A_{ij} \in \{0, 1\} $
 	\item z: the group vector,
-	where $ z_i \in \{ 1 ... K \} $ is the group label of node i
+	where $ z_i \in \{ 1 ... L \} $ is the group label of node i
 	\item $ \theta $: the bundle existence probability matrix,
 	where $ \theta_{z_i z_j} $ is the existence probability of bundle ($z_i, z_j$)
 \end{itemize}
-So the existence of link (i, j) $ A_{ij} $ is a binary random variable following Bernoulli distribution:
+So the existence of link (i, j) $ A_{ij} $ is a binary random variable following the Bernoulli distribution:
 \begin{align*}
 	A_{ij} \sim B(1, \theta_{z_i z_j})
 \end{align*}
@@ -295,10 +300,10 @@ is the vector-valued function of sufficient statistics of the Bernoulli random v
 is the vector-valued function of natural parameters of the Bernoulli random variable.
 
 \subsection{pWSBM (pure Weighted Stochastic Block Model)}
-The pWSBM is designed for weighted graph and uses only link weight information \cite{aicher2014learning}.
+The pWSBM is designed for weighted graphs and uses only link weight information \cite{aicher2014learning}.
 So it differs from SBM in a few ways described below.
 Here we choose model link weight with normal distribution.
-A becomes the link weight matrix:
+Adjacency matrix A becomes the link weight matrix:
 \begin{align*}
 	A_{ij} \in R
 \end{align*}
@@ -316,7 +321,7 @@ $ \eta(\theta) $ becomes the vector-valued function of natural parameters of the
 	&= \eta(\mu, \sigma^2)\\
 	&= (\frac{\mu}{\sigma^2}, -\frac{1}{2\sigma^2}, -\frac{\mu^2}{2\sigma^2})
 \end{align*}
-So the weight of link (i, j)  $ A_{ij} $ is a real random variable following normal distribution:
+So the weight of link (i, j)  $ A_{ij} $ is a real random variable following the normal distribution:
 \begin{align*}
 	A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
 \end{align*}
@@ -356,7 +361,7 @@ T_w(A_{ij}) &= (A_{ij}, A_{ij}^2, 1)\\
 and $ \alpha \in [0, 1]$ is a tuning parameter that determines their relative importance,
 E is the set of observed interactions,
 and W is the set of weighted edges.
-In the following, we always assume $ \alpha = 0.5 $.
+In the following, we use $ \alpha = 0.5 $ following the practice in \cite{aicher2014learning}.
 
 \subsection{DCWBM (Degree Corrected Weighted Stochastic Block Model)}
 The DCWBM is designed to incorporate node degree
@@ -369,7 +374,7 @@ where $ d_i $ is the degree of node i \cite{aicher2014learning}.
 
 \subsection{Deep learning approaches to other related problems}
 There are a few deep learning approaches to
-node classification problem (i.e., to predict whether a node has a label) and 
+the node classification problem (i.e., to predict whether a node has a label) and 
 link existence prediction problem (i.e., to predict whether a link exists).
 Two earlier approaches are graph neural nets and relational neural 
 nets \cite{scarselli2009graph},
@@ -451,9 +456,8 @@ The relation between nodes is quite different from that between words:
 	but do not tell us any specific relations
 	(e.g., Are [quick] and [brown] related? What is the relation between [fox] and [jumps]? Is [over] a relation or entity?).
 \end{itemize}
-Natural languages do not have the notion like
-all information can be described as entities and their relations,
-but graph naturally does.
+Natural languages do not have the notion that
+all information can be described as entities and their relations, as in graphs.
 For a neural net, 
 words can simply show up in sequences from day-to-day conversations,
 in many flexible and unpredictable ways, with little structure or regularity.
@@ -470,8 +474,13 @@ we build an estimator with a neural net model using a node pair as its input
 and the weight of the link connecting the nodes as its output.
 
 \subsection{Model R}
-The model in the estimator is a fully connected neural net which we call Model 
-R (R as in relation), shown in Figure \ref{fig:model}.
+We design he model in the estimator as a fully connected neural net which we call Model R (R as in "relation"), shown in Figure \ref{fig:model}.
+We have considered a convolutional neural net as an alternative,
+but there is not any spacial property in the input node vectors
+for a convolutional neural to take advantage of,
+compared to the 2D array of an image where the spacial location of each pixel
+has significant meaning (e.g., relative distances of pixels).
+
 \begin{figure*}[!htb]
 	\centering
 	\begin{tikzpicture}[node distance=2cm]
@@ -519,7 +528,7 @@ The model contains the following layers:
 \begin{itemize}
 	\item A mapping layer that maps node IDs to node vectors.
 	In the node dictionary,	the key is the node ID, the value is the node vector,
-	which is learned through back propagation and stochastic gradient decent.
+	which is learned through back propagation and stochastic gradient descent.
 	\item An input layer directly activated by the node dictionaries.
 	Its activations are the two node vectors.
 	\item Multiple fully connected hidden layers of rectified linear units
@@ -542,7 +551,7 @@ The model contains the following layers:
 Link weights provide the information about nodes.
 We fully take this property into account and design this model to learn 
 complex and unobservable node information (i.e., node vectors) 
-supervised by a simple and observable relations of nodes (i.e., link weight).
+supervised by a simple and observable relations between nodes (i.e., link weight).
 
 \subsection{Learning techniques}
 The estimator uses the above model and a number of popular deep learning 
@@ -552,14 +561,14 @@ techniques:
 	back to each earlier layer \cite{rumelhart1988learning}
 	\item Stochastic gradient descent: the optimization that minimizes 
 	the error (descending against the error gradient in weight space) for a 
-	random sample in each gradient decent step \cite{lecun2012efficient}
+	random sample in each gradient descent step \cite{lecun2012efficient}
 	\item Mini-batch: the modification to stochastic gradient descent to 
 	accelerate and smooth the descent by minimizing the error for a small 
-	random batch of samples in each gradient decent step \cite{mairal2010online}
+	random batch of samples in each gradient descent step \cite{mairal2010online}
 	\item Early stopping: the regularization used to reduce over-fitting during the iterative learning process by stopping the learning when validation error stops decreasing \cite{smale2007learning}
 \end{itemize}
 
-\section{Experiment}
+\section{Experiments}
 We evaluate Model R experimentally with SBM, pWSBM, bWSBM and DCWBM as baselines,
 and compare their prediction errors on several datasets.
 We use the same datasets and experiment process used in a recent study of these baselines \cite{aicher2014learning}.
@@ -567,7 +576,7 @@ The results show
 that Model R can achieve much lower prediction error than the baseline models.
 
 \subsection{Datasets}
-The experiments use 4 datasets summarized in \autoref{tab:datasets}.
+The experiments use four datasets summarized in \autoref{tab:datasets}.
 \begin{table*}[!htb]\centering
 	\caption{The datasets used in experiments.}
 	\begin{tabularx}{\textwidth}{|c|c|X|c|X|}  \hline \rowcolor{blue!40}
@@ -582,7 +591,7 @@ The experiments use 4 datasets summarized in \autoref{tab:datasets}.
 
 \subsection{Experiment process}
 We do the same experiment for each dataset.
-All the link weights are normalized to ranger [-1, 1] after applying a logarithm function.
+All the link weights are normalized to the range [-1, 1] after applying a logarithm function.
 Each experiment consists of 25 independent trials.
 In each trial, we split the dataset randomly into 3 subsets:
 \begin{itemize}
@@ -605,14 +614,17 @@ The pseudo code of the experiment process is shown in \autoref{fig:code}.
 				errors.append(testing_error)
 			return (errors.mean(), errors.standard_deviation())
 		def evaluate_model_on(dataset):
-			(trainning_set, validation_set, testing_set) = split(dataset)
+			(training_set, validation_set, testing_set) = split(dataset)
 			while validation_error decreases:
 				training_error = estimator.learn(training_set)
 				validation_error = estimator.predict(validation_set)
 			testing_error = estimator.predict(testing_set)
 			return testing_error
 	\end{lstlisting}
-	\caption{The pseudo code of the experiment process}
+	\caption{
+		The pseudo code of the experiment process.
+		The estimator.learn() method learns for one epoch through the training set, updating the weights after each example batch.
+	}
 	\label{fig:code}
 \end{figure*}
 
@@ -629,7 +641,7 @@ shown in \autoref{fig:errors}.
 	}
 	\label{fig:errors}
 \end{figure*}
-In this section we compare Model R with only the best baseline model - pWSBM, as it outperforms other baseline models on every dataset.
+In this section we compare Model R with the baseline models on every dataset.
 Given the dataset,
 we regard ModelRError (as well as BaselineError) as a random variable
 so each trial generates an example of it.
@@ -686,14 +698,14 @@ reducing error by 25\% to 73\% from the best baseline model - pWSBM.
 The number in every parenthesis is the standard deviation of the errors in 25 trials in the last digit. The very low p values strongly indicate the error reduction is significant.
 \begin{table*}[!htb]\centering
 	\caption{
-		The mean squared errors of 5 models on 4 datasets.
+		The mean squared errors with standard deviations of 5 models on 4 datasets.
 	}
-	\begin{tabularx}{\textwidth}{|X|X|X|X|X|X|X|X|} \hline \rowcolor{blue!40}
+	\begin{tabularx}{\textwidth}{|c|X|X|X|X|X|c|c|} \hline \rowcolor{blue!40}
 		Dataset & pWSBM & bWSBM & SBM & DCWBM & Model R & Reduction & p \\ \hline
-		Airport & 0.0486(6) & 0.0543(5) & 0.0632(8) & 0.0746(9) & 0.013(1) & 73\% & 4.2e-66 \\ \hline
-		Collaboration & 0.0407(1) & 0.0462(1) & 0.0497(3) & 0.0500(2) & 0.030(1) & 25\% & 9.1e-44 \\ \hline
-		Congress & 0.0571(4) & 0.0594(4) & 0.0634(6) & 0.0653(4) & 0.036(3) & 35\% & 7.1e-35 \\ \hline
-		Forum & 0.0726(3) & 0.0845(3) & 0.0851(4) & 0.0882(4) & 0.037(1) & 48\% & 4.2e-68 \\ \hline
+		Airport & 0.0486 $ \pm $ 0.0006 & 0.0543 $ \pm $ 0.0005 & 0.0632 $ \pm $ 0.0008 & 0.0746 $ \pm $ 0.0009 & 0.013 $ \pm $ 0.001 & 73\% & 4.2e-66 \\ \hline
+		Collaboration & 0.0407 $ \pm $ 0.0001 & 0.0462 $ \pm $ 0.0001 & 0.0497 $ \pm $ 0.0003 & 0.0500 $ \pm $ 0.0002 & 0.030 $ \pm $ 0.001 & 25\% & 9.1e-44 \\ \hline
+		Congress & 0.0571 $ \pm $ 0.0004 & 0.0594 $ \pm $ 0.0004 & 0.0634 $ \pm $ 0.0006 & 0.0653 $ \pm $ 0.0004 & 0.036 $ \pm $ 0.003 & 35\% & 7.1e-35 \\ \hline
+		Forum & 0.0726 $ \pm $ 0.0003 & 0.0845 $ \pm $ 0.0003 & 0.0851 $ \pm $ 0.0004 & 0.0882 $ \pm $ 0.0004 & 0.037 $ \pm $ 0.001 & 48\% & 4.2e-68 \\ \hline
 	\end{tabularx}
 	\label{tab:errors}
 \end{table*}
@@ -715,12 +727,24 @@ with popular deep learning package TensorFlow \cite{abadi2016tensorflow}.
 
 \section{Conclusion}
 Model R shows that deep learning can be successfully applied to link weight prediction problem.
-It effectively learns complex and unobservable node information (i.e., node vectors) from simple and observable relations of nodes (i.e., link weight),
-and use that information to predict unknown link weight.
+It effectively learns complex and unobservable node information (i.e., node vectors) from simple and observable relations between nodes (i.e., link weight),
+and uses that information to predict unknown link weights.
 Compared to Stochastic Block Model based approaches,
-this neural net model is much more accurate and simpler.
+this neural net model is much more accurate.
 We anticipate this new approach to provide effective solutions to more
 graph mining tasks.
+
+\section{Future work}
+We are interested in improving this model in the future to handle more complex dynamic graphs and especially for social network applications.
+For example, handle graphs with node attributes.
+Users can have labels like nationality, and real attributes like age.
+One feasible approach is to append one unit for each of these attributes to the node vector.
+Another example is to handle large dynamic graphs.
+A social network can have large volume of links collected continuously by a
+distributed system.
+A potential approach is to deploy an estimator to each computing node of
+the distributed system and analyze a link stream there,
+and let these estimators exchange the knowledge periodically.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
