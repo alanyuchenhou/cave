@@ -14,16 +14,18 @@
 \begin{document}
 	\title{Deep Learning Approach to Link Weight Prediction}
 	\author{
-		\IEEEauthorblockN{Author}
+		\IEEEauthorblockN{Yuchen Hou}
 		\IEEEauthorblockA{
-			Address\\
-			Email
+			School of Electrical Engineering and Computer Science \\
+			Washington State University, Pullman, WA 99164 \\
+			yuchen.hou@wsu.edu
 		}
 		\and
-		\IEEEauthorblockN{Author}
+		\IEEEauthorblockN{Lawrence B. Holder}
 		\IEEEauthorblockA{
-			Address\\
-			Email
+			School of Electrical Engineering and Computer Science \\
+			Washington State University, Pullman, WA 99164 \\
+			holder@wsu.edu
 		}
 	}
 	\maketitle
@@ -50,7 +52,7 @@
 Both academia and industry have seen pervasive adoption of deep learning 
 techniques powered by neural network models since early 2010s,
 when they began to outperform other machine learning techniques in various 
-application domains \cite{lecun2015deep}, e.g.,
+application domains, e.g.,
 speech recognition \cite{hannun2014deep},
 image recognition \cite{simonyan2014very},
 natural language processing \cite{yao2013recurrent},
@@ -63,7 +65,7 @@ but also require much less domain knowledge and engineering.
 Among those domains,
 graph mining is a new and active application area for deep learning.
 The research in graph mining has advanced many fields
-where objects and their relations can be modeled by nodes and links in a network \cite{chakrabarti2006graph}, e.g.,
+where objects and their relations can be modeled by nodes and links in a network, e.g.,
 computer networks \cite{bermond1995distributed},
 social networks \cite{cook2006mining},
 protein interaction networks \cite{bader2003automated},
@@ -474,9 +476,9 @@ we build an estimator with a neural net model using a node pair as its input
 and the weight of the link connecting the nodes as its output.
 
 \subsection{Model R}
-We design he model in the estimator as a fully connected neural net which we call Model R (R as in "relation"), shown in Figure \ref{fig:model}.
+We design the model in the estimator as a fully connected neural net which we call Model R (R as in "relation"), shown in Figure \ref{fig:model}.
 We have considered a convolutional neural net as an alternative,
-but there is not any spacial property in the input node vectors
+but there is no spacial property in the input node vectors
 for a convolutional neural to take advantage of,
 compared to the 2D array of an image where the spacial location of each pixel
 has significant meaning (e.g., relative distances of pixels).
@@ -731,20 +733,22 @@ It effectively learns complex and unobservable node information (i.e., node vect
 and uses that information to predict unknown link weights.
 Compared to Stochastic Block Model based approaches,
 this neural net model is much more accurate.
-We anticipate this new approach to provide effective solutions to more
+We anticipate this new approach will provide effective solutions to more
 graph mining tasks.
 
-\section{Future work}
 We are interested in improving this model in the future to handle more complex dynamic graphs and especially for social network applications.
-For example, handle graphs with node attributes.
+In particular, we want to handle graphs with node attributes.
 Users can have labels like nationality, and real attributes like age.
 One feasible approach is to append one unit for each of these attributes to the node vector.
 Another example is to handle large dynamic graphs.
-A social network can have large volume of links collected continuously by a
+A social network can have a large volume of links collected continuously by a
 distributed system.
 A potential approach is to deploy an estimator to each computing node of
 the distributed system and analyze a link stream there,
 and let these estimators exchange the knowledge periodically.
+
+\section*{Acknowledgements}
+This material is based upon work supported by the National Science Foundation under Grant No. 1646640.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
