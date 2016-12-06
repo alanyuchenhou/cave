@@ -11,7 +11,6 @@
 \usetikzlibrary{arrows.meta,automata,quotes,positioning,babel}
 \usetikzlibrary{shapes.geometric, arrows}
 
-
 \begin{document}
 	\title{Deep Learning Approaches to Graph mining}
 	\author{Yuchen Hou}
@@ -39,8 +38,8 @@ My intended PhD research is deep learning approaches to graph mining.
 Specifically, I investigate deep learning approaches to
 two important types of problems in graph mining:
 \begin{itemize}
-	\item Predicting generic node and link attributes, e.g., boolean and numeric node attributes, link existence and link weight.
-	\item Predicting domain specific graph attributes, e.g., the security status of a computer network and the chemical activity of a compound.
+	\item Predicting node and link attributes, e.g., boolean and numeric node attributes, link existence and link weight.
+	\item Predicting graph attributes, e.g., the security status of a computer network and the chemical activity of a compound.
 \end{itemize}
 
 \section{Background}
@@ -212,7 +211,6 @@ including pWSBM (pure Weighted Stochastic Block Model),
 bWSBM (balanced Weighted Stochastic Block Model and
 DCWBM (Degree Corrected Weighted Stochastic Block Model) \cite{aicher2014learning}.
 
-
 \subsubsection{Deep learning approaches to problems related to link weight prediction}
 There are a few deep learning approaches to
 the node classification problem (i.e., to predict whether a node has a label) and 
@@ -241,10 +239,8 @@ such that the relations between words are preserved in the word vector space
 \cite{mikolov2013distributed}.
 The same arguments apply to relations between items and between nodes.
 
-
-\subsection{Approach}
-Following the above observations,
-we build an estimator with a neural net model using a node pair as its input
+\subsection{Deep learning approach}
+We build an estimator with a neural net model using a node pair as its input
 and the weight of the link connecting the nodes as its output.
 
 \subsubsection{Model R}
@@ -427,6 +423,13 @@ this neural net model is much more accurate.
 We anticipate this new approach will provide effective solutions to more
 graph mining problems.
 
+\subsection{Papers}
+\begin{enumerate}
+	\item Rejected: ASONAM 2017, Node mapping: Link attribute prediction with neural networks
+	\item Rejected, resubmission planned: AAAI 2017, Deep Learning Approach to Collaborative Rating Prediction
+	\item In review: IJCNN 2017, Deep Learning Approach to Link Weight Prediction
+\end{enumerate}
+
 \section{Future research}
 In our future research,
 we want to study deep learning approaches to graph attribute prediction problem.
@@ -435,29 +438,30 @@ and to learn to predict the target graph attribute using that representation.
 
 \subsection{Problem}
 We consider the graph attribute prediction problem
-in an undirected graph where nodes and links have labels.
+in a graph where nodes and links have attributes.
 This attribute can be boolean (classification) or numeric (regression).
+For simplicity, we focus on classification problem only.
 We first take a look at an example of the problem,
 and then give the problem a definition.
 Later we will discuss how to handle graph regression problem.
 
 \subsubsection{Problem example}
-Let us look at an example of graph attribute prediction problem - compound toxicity prediction. shown in \autoref{fig:protein}.
-In this problem, the estimator needs to learn to predict the toxicity of
-a compound based on the chemical structure of the compound.
+Let us look at an example of graph attribute prediction problem - compound activity prediction shown in \autoref{fig:protein}.
+In this problem, the estimator needs to learn to predict the compound activity
+based on the compound structure.
 More specifically, we show the estimator the training set of examples,
-where the input is the graph representing the compound and
-the output is the toxicity of the compound.
-And the estimator needs to predict the unknown toxicity of each compound
+where the input is the graph representing the compound structure and
+the output is the compound activity.
+And the estimator needs to predict the unknown activity of each compound
 in the testing set.
-The toxicity can be in range [0, 1] or in set \{0, 1\},
-but we assume it is in range [0, 1] in this section for simplicity.
+In general, the activity is a vector
+where each element represents a specific type of activity.
 \begin{figure*}[!htb]\centering
 	\includegraphics[width=\textwidth]{ProteinStructure}
 	\caption{
 		The chemical structure of a polypeptide macromolecule:
 		Nodes and links in this graph represent atoms and bonds in the compound,
-		where labels (colors) of the nodes and links represents
+		where attributes (colors) of the nodes and links represents
 		the types of the atoms and bonds.
 		A polypeptide is a linear organic polymer consisting of a large number of amino-acid residues bonded together in a chain.
 		However, in general, a compound can have any topology.
@@ -468,16 +472,125 @@ but we assume it is in range [0, 1] in this section for simplicity.
 \subsubsection{Problem definition}
 Now we define the graph attribute prediction problem in an undirected graph.
 \begin{itemize}
-	\item Given a set of undirected graphs, where each graph has a known target attribute in range [0, 1] and all its nodes and links are labeled with a finite label set L.
+	\item Given a set of undirected graphs, where each graph has a known target attribute and every node and link has one attribute.
 	\item Build a model y = f(x) where x is the graph and y is the target attribute of x, that can predict the target attribute of any graph.
 \end{itemize}
 
 \subsection{Related work}
 In our literature study on previous research,
-we have found existing approaches to the link weight prediction problem
-and deep learning approaches to problems related to link weight prediction problem,
-but no deep learning approaches to link weight prediction problem.
+we have found existing approaches to graph classification problem
+and deep learning approaches to problems related to graph classification problem,
+but no deep learning approaches to graph classification problem.
 In this section, we review these existing approaches.
+
+\subsubsection{Graph kernel approach to graph classification}
+This approach is similarity based \cite{kashima2003marginalized}.
+The model is similar to support vector machines:
+\[ y = f(x) = \sum_{i} \alpha_i K(x, x_i) \]
+where the sign of y is the target attribute, f is the model,
+x is the testing example, $ \alpha_i $'s are target attribute levels',
+$ x_i $'s are training examples, and
+$ K(x, x_i) $ is the label sequence graph kernel
+that measures the similarity of x and $ x_i $.
+In the training stage,
+the model learns an $ \alpha_i $ for each $ x_i $;
+in prediction stage,
+it predicts y as 
+the sum of $ \alpha_i $ weighted by $ K(x, x_i) $'s \cite{scholkopf2001learning}.
+
+An example kernel function is the label sequence graph kernel,
+based on graph paths,
+where each path is represented by the sequence of attributes of the nodes and links
+on the path.
+For example, in the graph shown in \autoref{fig:example},
+we can represent a path from node A to node B via node C as (A, 4, C, 11, B).
+In this example, the node attributes are categorical and link attributes are numeric.
+In general, the node attributes and link attributes appear alternatively.
+The label sequence graph kernel is defined as
+\[ K(x_1, x_2) =
+\sum_{h_1 \in x_1} \sum_{h_2 \in x_2} 
+k(h_1, h_2) p(H = h_1 | x_1) p(H = h_2 | x_2) \]
+where $ x_1, x_2 $ are two graphs,
+$ h_i $ is any path in $ x_i $,
+$ k(h_1, h_2) $ is the label sequence path kernel
+that measures the similarity of $ h_1, h_2 $,
+H is a random path variable predefined by a random walking policy W, and
+$ p(h_i | x_i) $ is the conditional probability of $ H = h_i $ given $ x_i $.
+There are many implementations for W and k.
+An example W can be, at any node:
+\begin{itemize}
+	\item stop the walk with probability c (constant)
+	\item walk to any neighbor with probability $ (1 - c) / D $,
+	where D is the degree of the node
+\end{itemize}
+An example k can be Kronecker delta: 1 when the two paths are the same and 0 otherwise.
+The model calculates $ K(x_1, x_2) $ as
+the sum of $ k(h_1, h_2) $ weighted by $ p(H = h_1 | x_1) p(H = h_2 | x_2) $.
+
+\subsubsection{Graph boosting approach to graph classification}
+This approach is feature based \cite{saigo2009gboost}.
+It requires feature engineering with domain knowledge.
+For example, in chemistry informatics, experts can define a set of discriminative chemical substructures as the features.
+And a compound can be represented by a feature vector where each element indicates
+the presence of a certain substructure.
+In general, this approach needs a predefined set of subgraphs and convert the
+graph to a feature vector where each element is the presence or count of a certain subgraph.
+With this feature vector, standard machine learning models (including neural network models) can learn to predict the target attribute with this feature vector.
+Many recent claims of deep learning approaches to compound activity prediction
+take this approach by applying neural network as the machine learning model
+\cite{unterthiner2015toxicity}, \cite{unterthiner2014deep} \cite{ramsundar2015massively}.
+In this research, we do not consider them as real deep learning approaches,
+because they involve feature engineering with domain knowledge.
+
+\subsubsection{Image recognition approach to graph classification}
+This approach takes advantage of the advancement of deep learning in image recognition by converting a graph to an image and apply standard deep learning techniques developed for image recognition \cite{wallach2015atomnet}.
+This approach requires the nodes in the graph to have explicit coordinates -
+instead of only the topologies - e.g., the atom coordinates in a compound.
+The coordinates allow the construction of a 3D image of the compound,
+shown in \autoref{fig:protein}.
+In this research, we do not consider it as a deep learning approach to real
+graph classification problem because it requires nodes to have locations.
+
+\subsection{Observations and possible deep learning approaches to graph classification}
+Now we review make observations about those existing approaches and
+propose possible deep learning approaches to graph classification inspired by them.
+
+\subsubsection{Graph kernel inspired deep learning approach}
+Path sequences of node and link attributes in a graph is similar to
+sentences of characters in a natural language document.
+So a potential approach is to reduce a graph to a document and apply deep learning techniques developed for natural language processing.
+The neural net for this approach can be either recurrent or convolutional.
+
+\subsubsection{Graph boosting inspired deep learning approach}
+Subgraphs in a graph are similar to sub-images in an image.
+If, instead of counting those predefined subgraphs,
+we use deep learning to learn to detect and examine all discriminative subgraphs,
+we may get a end to end deep learning approach for graph classification.
+We haven't seen deep learning techniques developed for this process,
+but we've found previous research on eye movement \footnote{https://en.wikipedia.org/wiki/Eye\_movement}
+providing evidences that humans examine images using
+saccade (macro movement of gaze from a sub-image to another sub-image)
+\footnote{https://en.wikipedia.org/wiki/Saccade} and
+fixation (micro movement of gaze within a sub-image)
+\footnote{https://en.wikipedia.org/wiki/Fixation\_(visual)}.
+Human visual system is shown to be able to detect and examine all discriminative
+sub-images in a sequence and comprehend the image.
+Therefore, a potential approach to graph classification is
+to directly detect and examine all discriminative subgraphs in a sequence.
+Examining subgraphs can be easier because the size of a subgraph is bounded,
+while that of a graph is not.
+However, it is not clear if there are other ways to represent a subgraph
+except sampling paths in the graph as in graph kernel.
+The neural net for this approach needs memory so it should be recurrent.
+It might also have convolutional neural net when examining every subgraph.
+There is one significant difficulty in this approach:
+although a sub-image (e.g., a face in a person)
+almost always exists in a image dataset,
+a sub-graph (e.g., a substructure of a compound)
+might not always exists in a compound dataset.
+Another difficulty is subgraph examination might be just as hard as graph classification.
+One last difficulty is that the movement between two subgraphs may
+require complex policy from reinforcement learning or search strategy.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
