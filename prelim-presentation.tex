@@ -1,9 +1,9 @@
 \documentclass{article}
+\usepackage{pdflscape}
 \usepackage{fullpage}
 \usepackage{listings}
 \usepackage{amsmath}
 \usepackage{tabularx}
-\usepackage[table]{xcolor}
 \usepackage{graphicx}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,automata,quotes,positioning,babel}
@@ -11,19 +11,21 @@
 \usepackage{cite}
 \usepackage{hyperref}
 \usepackage{float}
-\begin{document}
+\pagenumbering{gobble}
 \lstset{language=python, tabsize=4}
 \title{Deep Learning Approaches to Graph Mining}
 \author{Yuchen Hou}
+\begin{document}
+\begin{landscape}
 \maketitle
-
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{Social_Network_Analysis_Visualization}
+	\includegraphics[width=0.6\linewidth]{Social_Network_Analysis_Visualization}
 	\caption{ \href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{Social Network Analysis Visualization}(Martin Grandjean / Wikimedia Commons / Attribution-Share Alike 3.0 Unported)}
 	\label{fig:Social_Network_Analysis_Visualization}
 \end{figure}
 
+\pagebreak
 \section{Introduction: deep learning and graph mining}
 
 \subsection{Deep learning in different domains}
@@ -41,6 +43,7 @@
 	\item Predicting graph attributes, e.g., the chemical activity of a compound
 \end{itemize}
 
+\pagebreak
 \section{Background: graph mining problems}
 \begin{itemize}
 	\item Link prediction, e.g., Alice likes/follows Bob
@@ -49,6 +52,7 @@
 	\item Graph regression, e.g., Ethanol has toxicity 0.53
 \end{itemize}
 
+\pagebreak
 \section{Preliminary research: link weight prediction with deep learning}
 
 \subsection{Problem: link weight prediction}
@@ -66,7 +70,7 @@
 	\node[state] (C) [below right=of B] {C};
 	\node[state] (A) [above right=of C] {A};
 	\path[->]   
-	(A) edge[bend left,"?"]   (B)
+	(A) edge["?"]   (B)
 	(B) edge[bend left,"7"]   (C)
 	(B) edge[bend left,"?"]   (A)
 	(A) edge[bend left,"4"]   (C)
@@ -83,7 +87,7 @@
 	\caption{
 		The same example as \autoref{fig:example}, but with edge list representation for the network.
 	}
-	\begin{tabularx}{0.6\textwidth}{|X|X|X|}  \hline \rowcolor{blue!40}
+	\begin{tabularx}{0.6\textwidth}{|X|X|X|}  \hline
 		Source node & Destination node & Link weight \\ \hline
 		A & B & ? \\ \hline
 		A & C & 74 \\ \hline
@@ -106,7 +110,7 @@
 \subsubsection{SBM(Stochastic Block Model) approach to link prediction}
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{SBM}
+	\includegraphics[width=0.8\linewidth]{SBM}
 	\caption{ \href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{Social Network Analysis Visualization}(Martin Grandjean / Wikimedia Commons / Attribution-Share Alike 3.0 Unported)}
 	\label{fig:SBM}
 \end{figure}
@@ -133,48 +137,17 @@ to maximize the probability of observation A:
 P(A|z, \theta) 
 = \prod_{ij} \theta_{z_i z_j}^{A_{ij}}(1-\theta_{z_i z_j})^{1-A_{ij}}
 \end{align*}
-which we rewrite as an exponential family:
-\begin{align*}
-\log(P(A|z, \theta))
-= \sum_{ij} (
-T(A_{ij}) \eta(\theta_{z_i z_j})
-)
-\end{align*}
-where
-\begin{align*}
-T(A_{ij}) = (A_{ij}, 1)
-\end{align*}
-is the vector-valued function of sufficient statistics of the Bernoulli random variable and
-\begin{align*}
-\eta(\theta) = ( \log(\frac{\theta}{1-\theta}), \log(1-\theta) )
-\end{align*}
-is the vector-valued function of natural parameters of the Bernoulli random variable.
 
+\pagebreak
 \subsubsection{pWSBM (pure Weighted Stochastic Block Model) approach to link weight prediction}
 The pWSBM models the weight of link (i, j) $ A_{ij} $ as a real random variable following the normal distribution:
 \begin{align*}
 A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
 \end{align*}
-So it differs from SBM in a few ways described below.
-$ \theta_{z_i z_j} $ becomes the weight distribution parameter of bundle ($z_i, z_j$):
-\begin{align*}
-\theta_{z_i z_j} = (\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
-\end{align*}
-$ T(A_{ij}) $ becomes the vector-valued function of sufficient statistics of the normal random variable:
-\begin{align*}
-T(A_{ij}) = (A_{ij}, A_{ij}^2, 1)
-\end{align*}
-$ \eta(\theta) $ becomes the vector-valued function of natural parameters of the normal random variable:
-\begin{align*}
-\eta(\theta)
-&= \eta(\mu, \sigma^2)\\
-&= (\frac{\mu}{\sigma^2}, -\frac{1}{2\sigma^2}, -\frac{\mu^2}{2\sigma^2})
-\end{align*}
 The pWSBM fits parameter z and $ \theta $
 to maximize the log likelihood of observation A:
 \begin{align*}
 \log(P(A|z, \theta))
-&= \log(P(A|z, \mu, \sigma^2))\\
 &= \sum_{ij} (
 A_{ij} \frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
 - A_{ij}^2 \frac{1}{2\sigma_{z_i z_j}^2}
@@ -187,15 +160,16 @@ The SBM has a few other derivatives designed for link weight prediction:
 	\item DCWBM (Degree Corrected Weighted Stochastic Block Model)
 \end{itemize}
 
-\subsubsection{Deep learning approaches to problems related to link weight prediction}
+\subsubsection{Deep learning approach to language modeling: word2vec model}
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{softmax-nplm}
+	\includegraphics[width=0.9\linewidth]{softmax-nplm}
 	\caption{
 		\href{https://www.tensorflow.org/tutorials/word2vec/}
-		{The continuous bag-of-words model for language modeling} (Tensorflow project)}
+		{The word2vec: continuous bag-of-words model for language modeling} (Tensorflow project)}
 	\label{fig:softmax-nplm}
 \end{figure}
+\subsubsection{Deep learning approach to language modeling: word2vec model detailed view}
 \begin{figure}[H]
 	\centering
 	\newcommand{\layersep}{2.5cm}
@@ -241,6 +215,7 @@ The SBM has a few other derivatives designed for link weight prediction:
 	\caption{The word2vec model (skip-gram or continuous bag-of-words) with vocabulary size 8}
 	\label{fig:skipGram}
 \end{figure}
+\subsubsection{word2vec model outcome: word semantic relations}
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\linewidth]{linear-relationships}
@@ -250,20 +225,22 @@ The SBM has a few other derivatives designed for link weight prediction:
 	}
 	\label{fig:linear-relationships}
 \end{figure}
+\subsubsection{word2vec model outcome: word semantic similarities}
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{tsne}
+	\includegraphics[width=0.6\linewidth]{tsne}
 	\caption{
 		\href{https://www.tensorflow.org/tutorials/word2vec/}
 		{Word vectors' distances represent word semantic similarities} (Tensorflow project)
 	}
 	\label{fig:tsne}
 \end{figure}
+\subsubsection{Deep learning approaches: from language modeling to graph mining}
 \begin{table}[H]\centering
 	\caption{
-		Recent approaches usually reduce domain specific objects to sentences (lists of words) and then apply skip-gram model, created in word2vec for natural language processing.
+		Recent approaches usually reduce domain specific objects to sentences (lists of words) and then apply skip-gram model.
 	}
-	\begin{tabularx}{\textwidth}{|c|c|c|X|}  \hline \rowcolor{blue!40}
+	\begin{tabularx}{\textwidth}{|c|c|c|X|}  \hline
 		Approach & problem & model & main technique \\ \hline
 		word2vec & language modeling & skip-gram & map words to vectors \\ \hline
 		deep walk & node classification & skip-gram & reduce paths (lists of nodes) to sentences (lists of words) \\ \hline
@@ -273,6 +250,7 @@ The SBM has a few other derivatives designed for link weight prediction:
 	\label{tab:related-work}
 \end{table}
 
+\pagebreak
 \subsection{Deep learning approach to link weight prediction}
 \begin{figure}[H]
 	\centering
@@ -313,7 +291,7 @@ The SBM has a few other derivatives designed for link weight prediction:
 \subsubsection{Datasets}
 \begin{table}[H]\centering
 	\caption{The datasets used in experiments.}
-	\begin{tabularx}{\textwidth}{|c|c|X|c|X|}  \hline \rowcolor{blue!40}
+	\begin{tabularx}{\textwidth}{|c|c|X|c|X|}  \hline
 		Dataset & Node count & Node type & Link count & Link weight type \\ \hline
 		Airport & 500 & busiest airports in US & 5960 & number of passengers traveling from one airport to the other\\ \hline
 		Collaboration & 226 & nations on Earth & 20616 & number of academic papers written by authors from the two connected nations \\ \hline
@@ -334,6 +312,7 @@ The SBM has a few other derivatives designed for link weight prediction:
 	\label{fig:errors}
 \end{figure}
 
+\pagebreak
 \subsection{Conclusions}
 \begin{itemize}
 	\item Model R learns node information (i.e., node vectors) from node relations (i.e., link weight)
@@ -341,6 +320,8 @@ The SBM has a few other derivatives designed for link weight prediction:
 	\item Model R is more accurate than Stochastic Block Model based approaches
 	\item Deep learning can be successfully applied to link weight prediction problem
 \end{itemize}
+
+\pagebreak
 \subsection{Papers}
 \begin{enumerate}
 	\item ASONAM 2016, Node mapping: Link attribute prediction with neural networks (rejected).
@@ -367,12 +348,14 @@ The SBM has a few other derivatives designed for link weight prediction:
 	\label{fig:protein}
 \end{figure}
 
+\pagebreak
 \subsubsection{Problem definition}
 \begin{itemize}
 	\item Given a training set of labeled graphs with known target attributes.
 	\item Build a model y = f(x) to predict the target attribute y of any graph x the testing set.
 \end{itemize}
 
+\pagebreak
 \subsection{Related work}
 
 \subsubsection{Graph kernel approach to graph attribute prediction}
@@ -403,7 +386,7 @@ where
 \end{itemize}
 
 \begin{figure}[H]\centering
-	\includegraphics[width=\textwidth]{AminoAcids}
+	\includegraphics[width=0.8\textwidth]{AminoAcids}
 	\caption{
 		Graph kernel approach illustration - this approach measures the graph similarity using common paths.
 		\href{https://commons.wikimedia.org/wiki/File:Amino_Acids.svg}
@@ -428,10 +411,22 @@ where
 
 \subsubsection{Deep learning approach to spatial graph attribute prediction}
 \begin{itemize}
-	\item Convert a	spatial graph to an image
+	\item Represent a spatial graph as an image
 	\item Use standard deep learning techniques developed for image recognition
 \end{itemize}
 
+\begin{figure}[H]\centering
+	\includegraphics[width=\textwidth]{ProteinStructure}
+	\caption{
+		Spatial graph represented by an image.
+		\href{https://commons.wikimedia.org/wiki/File:ProteinStructure.jpg}
+		{Protein Structure}
+		(Maksim / Wikimedia Commons / public domain)
+	}
+	\label{fig:spatial}
+\end{figure}
+
+\pagebreak
 \subsection{Potential deep learning approaches to graph classification}
 
 \subsubsection{Graph kernel inspired deep learning approach}
@@ -443,27 +438,28 @@ where
 
 \subsubsection{Graph boosting inspired deep learning approach}
 \begin{itemize}
-	\item Detect, examine and get impressions on all discriminative subgraphs in a graph.
+	\item Detect, examine and get impressions (neuron activities) on all discriminative subgraphs in a graph.
 	\item Predict the target graph attribute using impressions previously acquired.
 	\item This approach requires memory so it needs to contain recurrent neural nets.
 	\item \href{http://blog.art21.org/2013/01/07/tracking-the-gaze/#.WG8lYN9ifRb}
 	{Similar to human eye movements in an image comprehension process.}
 \end{itemize}
 
+\pagebreak
 \subsection{Expected experiments}
 
-\subsubsection{Possible Datasets}
+\subsubsection{Potential application domains and prediction tasks}
 \begin{itemize}
-	\item chemical compounds
-	\item social networks
-	\item computer networks
-	\item collaboration networks
-	\item recommendation networks
+	\item chemical compounds: compound activity prediction
+	\item social networks: social group type prediction
+	\item computer networks: security status prediction
+	\item collaboration networks: affiliation type prediction
 \end{itemize}
 
 \subsubsection{Expected results}
 Deep learning approaches should outperform baselines including graph kernel and graph boosting approaches.
 
+\pagebreak
 \subsection{Expected conclusions}
 \begin{itemize}
 	\item The model should learn to extract information of a graph with arbitrary size and topology
@@ -472,6 +468,7 @@ Deep learning approaches should outperform baselines including graph kernel and 
 	\item Deep learning can be successfully applied to graph attribute prediction problem
 \end{itemize}
 
+\pagebreak
 \section{Summary}
 \begin{itemize}
 	\item Research topic: deep learning approaches to graph mining
@@ -483,9 +480,8 @@ Deep learning approaches should outperform baselines including graph kernel and 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\linewidth]{Thank-you-word-cloud}
-	\caption{ \href{https://commons.wikimedia.org/wiki/File:Spectrogram-19thC.png}{Thank you word cloud}(Aquegg / Wikimedia Commons / Attribution-Share Alike 4.0 International)}
-	\label{fig:Thank-you-word-cloud}
+	\includegraphics[width=\linewidth]{thankyou}
 \end{figure}
 
+\end{landscape}
 \end{document}
