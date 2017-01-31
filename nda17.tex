@@ -18,9 +18,10 @@
 	/Title (Deep Learning Approach to Collaborative Rating Prediction)
 }
 \title{Deep Learning Approach to Collaborative Rating Prediction}
+\keywords{deep learning, recommendation systems, neural networks, collaborative filtering}
+
 
 \begin{document}
-\maketitle
 
 \begin{abstract}
 	Deep learning has been successful in various domains 
@@ -39,6 +40,16 @@
 	collaborative rating prediction and it outperforms neighborhood-based 
 	collaborative filtering by up to 18\% in terms of prediction accuracy.
 \end{abstract}
+
+\maketitle
+
+\textbf{CCS concepts}:
+
+\begin{itemize}
+	\item Information systems - World Wide Web - Web searching and information discovery - Collaborative filtering
+	\item Computing methodologies - Machine learning - Learning paradigms - Supervised learning
+	\item Computing methodologies - Machine learning - Machine learning approaches - Neural networks
+\end{itemize}
 
 \section{Introduction}
 The expression deep learning existed as early as 1986 in the machine learning 
@@ -97,7 +108,7 @@ examples:
 	It is a rating prediction system implemented with a fully connected 
 	neural net.
 	The input is the letter tri-gram vector of the text description of an item, 
-	etc, and the output is the rating.
+	and the output is the rating.
 	\item A much more comprehensive example is a hierarchical Bayesian model 
 	called collaborative deep learning \cite{wang2015collaborative}.
 	This approach uses a stacked denoising autoencoder to extract information 
@@ -149,8 +160,7 @@ relational data and it is also able to predict a numeric attribute - the rating
 value.
 
 \section{Problem}
-The problem we consider in this paper is collaborative rating prediction 
-problem.
+The problem we consider in this paper is collaborative rating prediction.
 In this section, we look at an example of the problem and then its definition.
 
 \subsection{Problem example}
@@ -159,16 +169,15 @@ a set of 6 users who give numeric ratings to a set of 3 items.
 For each user, only a subset of their ratings are known; 
 and we want to predict the unknown ratings.
 The dataset for this example is shown in Table \ref{tab:ratings}.
+In this dataset, a set of 6 users give ratings to a set of 3 items: 
+for User[0], ratings to all 3 items are known; 
+for User[1], ratings to Item[1] and Item[2] are known, 
+but the rating to Item[0] is unknown; and so on.
+Every unknown rating is marked as a question mark.
+The task is to predict the unknown ratings.
 \begin{table}[!htb]
 	\centering
-	\caption{Collaborative rating prediction problem example:
-		In this dataset, a set of 6 users give ratings to a set of 3 items: 
-		for User[0], ratings to all 3 items are known; 
-		for User[1], ratings to Item[1] and Item[2] are known, 
-		but the rating to Item[0] is unknown; and so on.
-		Every unknown rating is marked as a question mark.
-		The task is to predict the unknown ratings.
-	}
+	\caption{Collaborative rating prediction problem example.}
 	\begin{tabular}{cccc} \hline
 		Ratings & Item[0] & Item[1] & Item[2] \\ \hline
 		User[0] & 3       & 5       & 2 \\ \hline
@@ -186,15 +195,14 @@ Formally, a collaborative rating prediction problem is defined as follows:
 \begin{itemize}
 	\item Given: a 2-D array R[m][n], 
 	where real number R[i][j] is the rating User[i] gives to Item[j],
-	integer i $ \in [0, m-1] $, integer j $ \in [0, n-1] $, and a number of 
-	p elements in R are unknown
-	\item Task: predict all unknown elements in R to minimize MAE.
+	integer i $ \in [0, m-1] $, integer j $ \in [0, n-1] $,
+	and p elements in R are unknown
+	\item Task: predict all unknown elements in R to minimize mean absolute error (MAE), defined as
+	\begin{align*}
+	MAE = \frac{1}{p} \sum_{k = 1}^{p}|f_k - y_k|
+	\end{align*}
 \end{itemize}
-MAE (mean absolute error) is defined as
-\begin{align*}
-	MAE = \frac{1}{p} \sum_{i = 0}^{p}|f_i - y_i|
-\end{align*}
-where $ f_i $ is the predicted value, $ y_i $ is the true value, and p is the 
+where $ f_k $ is the predicted value, $ y_k $ is the true value, and p is the 
 size of test set.
 Moreover, we define a user as the array of ratings they give to all items: 
 \begin{align*}
@@ -219,10 +227,10 @@ where S(i, k) is the similarity of User[i] and User[k] to be defined by each
 variant,
 unknown R[k][j]'s are omitted and c is a normalizing factor:
 \begin{align*}
-	c = \frac{1}{\sum_{l = 0}^{m - 1} |S(i, k)|}
+	c = \frac{1}{\sum_{k = 0}^{m - 1} |S(i, k)|}
 \end{align*}
-It is easy to understand the predicted rating R[i][j] as the sum of ratings all 
-users give to Item[j],
+It is easy to understand the predicted rating R[i][j] as 
+the sum of ratings each user gives to Item[j],
 weighted by how similar each user is to the target user.
 The algorithm can opt to use only a fixed number of users with highest 
 similarities to the target user in the calculation, instead of using all users.
@@ -289,22 +297,22 @@ Here we take a similar approach.
 First of all, we summarize how a neural net represents various types of 
 entities in different domains with different relations, as shown in 
 Table \ref{tab:domains}.
+An image in image recognition is represented as a 2D light amplitude 
+array with dimensions height and width; an audio in speech recognition 
+is represented as a 2D sound amplitude array with dimensions time and 
+frequency.
+The relation between two images or two audio is not commonly used. 
+Words in natural languages, items in recommendation systems, and nodes 
+in graphs can be represented by vectors (1D numeric arrays).
+The	relations between two words, two items and two nodes are commonly 
+used to learn these vectors.
 It is clear that representations for all the entities are numeric arrays, 
 because neural nets rely on neurons' activations and communications, which 
 are both numeric.
 \begin{table}[!htb]
 	\centering
 	\caption{A summary of various types of entities, their numeric
-		representations and inter-entity relations in different domains:
-		An image in image recognition is represented as a 2D light amplitude 
-		array with dimensions height and width; an audio in speech recognition 
-		is represented as a 2D sound amplitude array with dimensions time and 
-		frequency.
-		The relation between two images or two audio is not commonly used. 
-		Words in natural languages, items in recommendation systems, and nodes 
-		in graphs can be represented by vectors (1D numeric arrays).
-		The	relations between two words, two items and two nodes are commonly 
-		used to learn these vectors.
+		representations and inter-entity relations in different domains.
 	}
 	\begin{tabular}{ccc} \hline
 		Entity & Representation               & Relations \\ \hline
@@ -413,10 +421,9 @@ R (R as in relation), shown in Figure \ref{fig:conceptural}.
 		The d in the bracket (d as in dimension) is the layer's size (number of 
 		units in the layer).
 		We keep all non-input layers the same size for simplicity, although 
-		layers of different sizes may produce better results.
+		layers of different sizes have shown better results.
 		The text before the bracket refers to the activation function of the 
-		units in the layer (except for one-hot, which refers to the activations 
-		in the input layer).
+		units in the layer.
 		Only layers and their connections are shown, while the units in each 
 		layer and their connections are not shown.
 	}
@@ -454,7 +461,7 @@ supervised by a simple observable rating.
 In practice, Model R uses more efficient mapping tables instead of a 
 one-hot input layer in order to handle a dataset with an increasing number of 
 users and items, as shown in Figure \ref{fig:actural}.
-The actual model has with two modifications from the conceptual model:
+The actual model has two modifications from the conceptual model:
 \begin{itemize}
 	\item The input layer is replaced by two mapping tables: one for users and 
 	one for items.
@@ -462,6 +469,12 @@ The actual model has with two modifications from the conceptual model:
 	vectors.
 	\item The mapping layer is replaced by a 2-channel input layer. It is 
 	directly activated by the outputs of the mapping tables.
+	\item If we need to add a new user or item into the dataset
+	after the model finishes learning,
+	we can add the new entry into the table and let the model learn
+	only the new user or item vector using the newly introduced data,
+	by fixing all other weights in the model.
+	In this way the model can avoid relearning on the entire dataset.
 \end{itemize}
 \begin{figure*}[!htb]
 	\centering
@@ -498,8 +511,8 @@ The actual model has with two modifications from the conceptual model:
 	\end{tikzpicture}
 	\caption{The actual model with two modifications:
 		We factor the entity vector mapping process out of the neural net into 
-		2 mapping tables.
-		We feed every item or user to the estimator by feeding the ID.
+		two mapping tables.
+		We feed every item or user to the estimator by feeding their ID.
 		During learning, the estimator updates the vectors in the tables the 
 		same way it updates weights in the conceptual model.}
 	\label{fig:actural}
@@ -528,8 +541,8 @@ the baseline solutions.
 We evaluated Model R in the same settings used in a recent experimental 
 evaluation of the baseline solutions \cite{polatidis2016multi} on four datasets:
 \begin{itemize}
-	\item ML100K: MovieLens100K\cite{harper2015movielens}
-	\item ML1M: MovieLens1M\cite{harper2015movielens}
+	\item ML100K: MovieLens100K \cite{harper2015movielens}
+	\item ML1M: MovieLens1M \cite{harper2015movielens}
 	\item EP: Epinions \cite{massa2007trust}
 	\item MT: MovieTweetings \cite{dooms2013movietweetings}
 \end{itemize}
@@ -579,9 +592,9 @@ The error reduction from MPCC to Model R is calculated as:
 \end{align*}
 \begin{table}[!htb]
 	\centering
-	\caption{The comparison of prediction errors (measured by MAE): 4 baseline
-		solutions are represented by their first letters (P, W, S, M).
-		Model R's (represented by letter R) prediction error is 18\% to 8\% 
+	\caption{The comparison of prediction errors (measured by MAE): 
+		the four baseline solutions are represented by their first letters (P, W, S, M).
+		Model R's (represented by letter R) prediction error is 18\% to 9\% 
 		lower than the best baseline 
 		solution (MPCC) on all datasets.
 		}
@@ -601,7 +614,7 @@ Table \ref{tab:robust}.
 	\caption{High robustness of Model R against parameter changes:
 		The estimator maintains its prediction error in range [0.68, 0.73] for 
 		a wide range of parameter settings. The batch size is the size of the 
-		batch of samples used in a single gradient decent step.
+		batch of samples used in a single gradient descent step.
 		These experiments are on MovieLens 100K dataset with learning rate set 
 		at 0.01.
 	}
@@ -618,14 +631,20 @@ Table \ref{tab:robust}.
 	\end{tabular}
 	\label{tab:robust}
 \end{table}
+
 \subsection{Computing resources}
-We ran our experiments on a Dell Optiplex 780 machine with Ubuntu 16.04 64-bit 
-operating system, Intel Core 2 Duo CPU E8400 @ 3GHz processor and 4 GB memory.
+We ran our experiments on a Lenovo ThinkCentre M83 machine with the following specifications:
+\begin{itemize}
+	\item Python implementation: CPython 3.5
+	\item Operating system: Ubuntu 16.10 64-bit
+	\item Memory: 16 GB
+	\item Processor: Intel Core i7-4770 CPU @ 3.40GHz $ \times $ 8
+\end{itemize}
+The program uses all 8 threads of the processor.
 Each run (learning and prediction) takes 2 to 8 minutes,
-depending on the dataset and parameters.
-Our implementation exploits thread level parallelism, but we have not explored 
-data level parallelism (i.e., GPU) or process level parallelism (e.g., 
-distributed cluster).
+depending on the dataset and parameters in the learning algorithm.
+The program is coded in Python
+with popular deep learning package TensorFlow \cite{abadi2016tensorflow}.
 
 \section{Future work}
 We designed Model R for the collaborative rating prediction problem,
@@ -638,8 +657,7 @@ The model can also append one unit for each numeric attribute of the user or
 item (e.g., the age of a user, the price of a product) at the mapping layer.
 In this way, it will take advantage of not only relation data but also content 
 data, and therefore make more accurate predictions.
-We have an open source Python implementation under MIT license hosted on Github 
-(url omitted to comply with AAAI review requirements).
+We have an open source Python implementation under MIT license hosted on Github.
 The main machine learning package we use is TensorFlow 
 \cite{abadi2016tensorflow}.
 
