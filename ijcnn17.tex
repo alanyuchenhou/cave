@@ -3,7 +3,6 @@
 \usepackage{tabularx}
 \usepackage{graphicx}
 \usepackage{amsmath}
-\usepackage{hyperref}
 \usepackage{listings}
 \lstset{frame=single, language=python, tabsize=4}
 \usepackage{tikz}
@@ -71,22 +70,20 @@ social networks \cite{cook2006mining},
 protein interaction networks \cite{bader2003automated},
 ecological food webs \cite{brown2003ecological},
 and citation networks \cite{greenberg2009citation}.
-An important task in graph mining is link prediction \cite{liben2007link},
+An important task in graph mining is link prediction \cite{liben2007link} 
+\cite{al2006link},
 e.g., to predict whether a person will follow another person in a social network.
 To be more specific,
 the link prediction problem actually refers to link existence prediction:
 to predict whether a link from a node to another node exists or will form.
 Link existence prediction is a well-known problem,
 but one of its related problems is not: link weight prediction.
-Link weight prediction is
-to predict the weight of a link from a node to another node
-so the question it cares about is not if two nodes are connected,
-but how likely or how strong they are connected.
-This consideration is very practical in many scenarios.
-For example, when describing a connection in a social network,
-to say Alice likes Bob is not as precise as
-to say Alice texts/tweets/mentions Bob 128 times per day on average,
-because the second description is quantitative and more informative.
+Link weight prediction is to predict the weight of a link,
+i.e., to predict how likely or how strong two nodes are connected.
+Link weight prediction is more informative in many scenarios.
+For example, when describing the connection of two users in a social network,
+a description "Alice texts Bob 128 times per day" is more informative than
+"Alice likes Bob" .
 A special case of link weight prediction is collaborative filtering.
 For example, to predict users' ratings to movies
 is to predict the link weights on the bipartite graph
@@ -110,7 +107,7 @@ An undirected graph can be reduced to a directed graph by converting each weight
 so the prediction for a weighted undirected graph is a special case of the problem we consider.
 
 \subsection{Problem example}
-Let us look at an example of link weight prediction - message volume prediction in a social network, shown in \autoref{fig:example} and \autoref{tab:example}.
+Let us look at an example of link weight prediction - message volume prediction in a social network, shown in Figure \ref{fig:example} and Table \ref{tab:example}.
 In this example, there are 3 users in a social network: A, B and C.
 Each user can send any amount of text messages to every other user.
 We know the message size transmitted between A and C, B and C, but not A and B.
@@ -150,7 +147,7 @@ We want to predict the message size transmitted between A and B.
 \end{figure}
 \begin{table}[!htb]\centering
 	\caption{
-		The same example as \autoref{fig:example}, but with edge list representation for the network.
+		The same example as Figure \ref{fig:example}, but with edge list representation for the network.
 	}
 	\begin{tabularx}{0.45\textwidth}{|X|X|c|}  \hline \rowcolor{blue!40}
 		Source node & Destination node & Link weight \\ \hline
@@ -178,7 +175,6 @@ Now we define the link weight prediction problem in a weighted directed graph.
 	\item Given a weighted directed graph with the node set V and link subset E
 	\item Build a model w = f(x, y) where x and y are nodes and w is the weight of link (x, y) that can predict the weight of any link
 \end{itemize}
-There is one thing to clarify about this definition.
 For every possible link (1 out of $ n^2 $, where n is the number of nodes), 
 if we know its weight, we know it exists;
 if we do not know its weight, we do not know it exists.
@@ -206,8 +202,8 @@ and $ s_{xy} $ is the similarity of x and y, calculated based on their common ne
 \begin{align*}
 	s_{xy} = \sum_{z \in N(x) \cap N(y)} F
 \end{align*}
-where N(x) is the set of neighbors of node x, z is a common neighbor of x and y,
-and F is an index factor which has nine different forms, shown in \autoref{tab:indexes}.
+where N(x) is the set of neighbors of node x, z is any common neighbor of x and y,
+and F is an index factor which has nine different forms, shown in Table \ref{tab:indexes}.
 \begin{table}[!htb]\centering
 	\caption{9 different forms of index factor F.}
 	\begin{tabularx}{0.45\textwidth}{|>{\columncolor{blue!40}}X|X|X|X|}  \hline \rowcolor{blue!40}
@@ -227,7 +223,7 @@ and F is an index factor which has nine different forms, shown in \autoref{tab:i
 	\end{tabularx}
 	\label{tab:indexes}
 \end{table}
-In \autoref{tab:indexes}, $ d_z $ is the degree of node z and $ s_z $ is the strength of node z:
+In Table \ref{tab:indexes}, $ d_z $ is the degree of node z and $ s_z $ is the strength of node z:
 \begin{align*}
 s_z = \sum_{u \in N(z)} w_{zu}
 \end{align*}
@@ -476,12 +472,16 @@ we build an estimator with a neural net model using a node pair as its input
 and the weight of the link connecting the nodes as its output.
 
 \subsection{Model R}
-We design the model in the estimator as a fully connected neural net which we call Model R (R as in "relation"), shown in Figure \ref{fig:model}.
+We design the model in the estimator as a fully connected neural net which we call Model R (R as in relation), shown in Figure \ref{fig:model}.
 We have considered a convolutional neural net as an alternative,
-but there is no spacial property in the input node vectors
-for a convolutional neural to take advantage of,
+but we decided it would not be a good fit for this application.
+These node vectors do not any spacial property
+for a convolutional neural network to take advantage of,
 compared to the 2D array of an image where the spacial location of each pixel
 has significant meaning (e.g., relative distances of pixels).
+These node vectors do not have any of those invariance properties in image either,
+such as translation invariance, rotation invariance,
+size invariance and illumination invariance.
 
 \begin{figure*}[!htb]
 	\centering
@@ -537,12 +537,6 @@ The model contains the following layers:
 	(only two layers are shown in the figure).
 	These units employ the rectifier ($ f(x) = \max (0, x) $)
 	as their activation function.
-	Compared to earlier popular activation functions like sigmoid function
-	($ f(x) = (1 + \exp(-x))^{-1} $),
-	rectifier not only simplifies and accelerates computation,
-	but also eliminates vanishing gradient problems,
-	and has become the most popular activation function
-	for deep neural networks \cite{lecun2015deep}.
 	These layers learn to extract more and more abstract weight-relevant 
 	information.
 	\item An output layer with a linear regression unit.
@@ -570,6 +564,44 @@ techniques:
 	\item Early stopping: the regularization used to reduce over-fitting during the iterative learning process by stopping the learning when validation error stops decreasing \cite{smale2007learning}
 \end{itemize}
 
+\subsection{Model R design parameters}
+Given the above design and learning techniques,
+there are still a number of design parameters we can adjust,
+e.g., the number of layers, the number of units in each layer,
+and the activation function of each unit.
+Now we briefly discuss different options for these parameters,
+and also some justifications for our choices.
+\begin{itemize}
+	\item The choice of rectifier as the activation function is a relatively easy one.
+	Compared to earlier popular activation functions like sigmoid function
+	($ f(x) = (1 + \exp(-x))^{-1} $),
+	rectifier not only simplifies and accelerates computation,
+	but also eliminates vanishing gradient problems,
+	and has become the most popular activation function
+	for deep neural networks \cite{lecun2015deep}.
+	\item The choice of layer size is related to
+	the number of examples in the dataset.
+	Naturally, the larger the dataset is,
+	the more discriminative the model should be,
+	and consequently higher degrees of freedom,
+	higher dimensions of vectors and larger layer sizes.
+	Empirically, we typically set the layer size as a logarithm function of the dataset size:
+	\[d = log_2(n)\]
+	where d (as in dimension) is the layer size and n is the dataset size.
+	\item The choice of number of layers is related to the complexity of the relation between the input and the output of the model.
+	As a trivial example, if the input and the output have linear relation,
+	no hidden layer is necessary and the model is simply a linear model.
+	If the input and the out put have non-linear relation,
+	the more complex the relation is, the more number of layers are necessary.
+	Empirically, we typically set the the layer size to 4,
+	and occasionally down to 2 and up to 8.
+\end{itemize}
+We naturally assume the most optimum design parameters are dataset dependent.
+However, we do not know any theoretical way to calculate the most optimum parameters based on the statistic signatures of a specific dataset.
+Therefore, 
+In this work, we evaluate different parameter choices through a few experiments.
+We will work on design parameter optimization in our future research.
+
 \section{Experiments}
 We evaluate Model R experimentally with SBM, pWSBM, bWSBM and DCWBM as baselines,
 and compare their prediction errors on several datasets.
@@ -578,15 +610,15 @@ The results show
 that Model R can achieve much lower prediction error than the baseline models.
 
 \subsection{Datasets}
-The experiments use four datasets summarized in \autoref{tab:datasets}.
+The experiments use four datasets summarized in Table \ref{tab:datasets}.
 \begin{table*}[!htb]\centering
 	\caption{The datasets used in experiments.}
-	\begin{tabularx}{\textwidth}{|c|c|X|c|X|}  \hline \rowcolor{blue!40}
-		Dataset & Node count & Node type & Link count & Link weight type \\ \hline
+	\begin{tabularx}{\textwidth}{|c|c|c|c|X|}  \hline \rowcolor{blue!40}
+		Dataset name & Node count & Node type & Link count & Link weight type \\ \hline
 		Airport\cite{colizza2007reaction} & 500 & busiest airports in US & 5960 & number of passengers traveling from one airport to the other\\ \hline
-		Collaboration\cite{pan2012world} & 226 & nations on Earth & 20616 & number of academic papers written by authors from the two connected nations \\ \hline
+		Collaboration\cite{pan2012world} & 226 & nations on Earth & 20616 & number of papers written by authors from the two nations \\ \hline
 		Congress\cite{porter2005network} & 163  & 102nd US Congress committees & 26569 & interlock value of shared members from the two committees \\ \hline
-		Forum\cite{opsahl2009clustering}  & 1899 & users of a student social network at UC Irvine & 20291 & number of messages sent from one student to the other \\ \hline
+		Forum\cite{opsahl2009clustering}  & 1899 & users of a student social network & 20291 & number of messages sent from one student to the other \\ \hline
 	\end{tabularx}
 	\label{tab:datasets}
 \end{table*}
@@ -603,7 +635,7 @@ In each trial, we split the dataset randomly into 3 subsets:
 \end{itemize}
 We use mean squared error as the prediction accuracy metric.
 For each experiment, we report the mean and standard deviation of the errors from 25 trials.
-The pseudo code of the experiment process is shown in \autoref{fig:code}.
+The pseudo code of the experiment process is shown in Figure \ref{fig:code}.
 \begin{figure*}[!htb]\centering
 	\begin{lstlisting}
 		def main():
@@ -633,7 +665,7 @@ The pseudo code of the experiment process is shown in \autoref{fig:code}.
 \subsection{Experiment results}
 In our experiments,
 Model R's error is lower than every other model on every dataset,
-shown in \autoref{fig:errors}.
+shown in Figure \ref{fig:errors}.
 \begin{figure*}[!htb]\centering
 	\includegraphics[width=1\textwidth]{link-weight-errors}
 	\caption{
@@ -694,7 +726,7 @@ We calculate the p value and also error reduction from baseline to Model R as:
 Reduction = \frac{BaselineError - ModelRError}{BaselineError}
 \end{align*}
 The p value is almost 0 for all datasets and error reduction is significant,
-shown in \autoref{tab:errors}.
+shown in Table \ref{tab:errors}.
 Model R has lower error than every other model on every dataset,
 reducing error by 25\% to 73\% from the best baseline model - pWSBM.
 The number in every parenthesis is the standard deviation of the errors in 25 trials in the last digit. The very low p values strongly indicate the error reduction is significant.
@@ -713,34 +745,81 @@ The number in every parenthesis is the standard deviation of the errors in 25 tr
 \end{table*}
 These results show that Model R outperforms pWSBM on all these datasets.
 
-\subsection{Computing resources}
-We ran our experiments on a Lenovo ThinkCentre M83 machine with the following specifications:
+\subsection{Model robustness}
+In our experiments, we have not observed any significant (more than 5\%)
+prediction error increase or decrease when we change parameters around the values
+we typically choose.
+Overall, Model R has demonstrated very high level of model robustness.
+
+\subsection{Reproducibility}
+In order to ensure the reproducibility of the experiment,
+we specify the implementation details in this section:
 \begin{itemize}
+	\item Programming language: Python 3
 	\item Python implementation: CPython 3.5
+	\item Deep learning package: TensorFlow \cite{abadi2016tensorflow}
 	\item Operating system: Ubuntu 16.10 64-bit
+	\item Computer make and model: Lenovo ThinkCentre M83
 	\item Memory: 16 GB
 	\item Processor: Intel Core i7-4770 CPU @ 3.40GHz $ \times $ 8
 \end{itemize}
 The program uses all 8 threads of the processor.
 Each experiment takes about one hour to finish,
 depending on the dataset and parameters in the learning algorithm.
-The program is coded in Python
-with popular deep learning package TensorFlow \cite{abadi2016tensorflow}.
+The program is open-source under MIT license hosted on Github \footnote{https://github.com/yuchenhou/elephant}
+so that anyone can use it without any restriction.
 
 \section{Conclusion}
 Model R shows that deep learning can be successfully applied to link weight prediction problem.
 It effectively learns complex and unobservable node information (i.e., node vectors) from simple and observable relations between nodes (i.e., link weight),
 and uses that information to predict unknown link weights.
-Compared to Stochastic Block Model based approaches,
-this neural net model is much more accurate.
 We anticipate this new approach will provide effective solutions to more
 graph mining tasks.
 
-We are interested in improving this model in the future to handle more complex dynamic graphs and especially for social network applications.
+Compared to SBM based approaches, Model R is much more accurate.
+A few possible reasons are:
+\begin{itemize}
+	\item Higher level of discrimination for nodes:
+	SBM based approaches do not differentiate nodes within a same group,
+	and assume the weights of all links connecting two nodes from two groups
+	follow the same distribution;
+	Model R does not assume that,
+	but gives every node a unique description - the node vector - so that
+	it can have a more accurate description for every single node.
+	\item Higher level of model flexibility:
+	SBM based approaches assume the weight of every link follows
+	a normal distribution;
+	Model R does not assume that, but takes advantage of high flexibility of
+	layers of non-linear neural network units,
+	so that it can model very complex weight distributions.
+\end{itemize}
+
+\section{Future work}
+There are three aspects we would like to study in our future work on this model.
+In this section, we briefly discuss these three aspects.
+
+The first one is the mapping layer of Model R.
+In the current model, the mapping layer contains two independent node dictionaries
+to learn the node vectors.
+During learning stage, these two dictionaries learn to map the nodes to two spaces:
+\begin{itemize}
+	\item The source node dictionary maps nodes to source node space.
+	\item The destination node dictionary maps nodes to destination node space.
+\end{itemize}
+A more intuitive approach is to have every node mapped to
+one and only one node vector in both dictionaries,
+as in the word2vec technique.
+However, will this more intuitive approach actually perform better?
+Or does it depend on whether the graph is undirected or directed?
+These are interesting questions we can study in the future.
+
+The second one is to handle more complex graphs
+and especially for social network applications.
 In particular, we want to handle graphs with node attributes.
 Users can have labels like nationality, and real attributes like age.
 One feasible approach is to append one unit for each of these attributes to the node vector.
-Another example is to handle large dynamic graphs.
+
+The third one is to handle large dynamic graphs.
 A social network can have a large volume of links collected continuously by a
 distributed system.
 A potential approach is to deploy an estimator to each computing node of
