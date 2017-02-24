@@ -61,35 +61,15 @@ but also require much less domain knowledge and engineering.
 
 Among those domains,
 graph mining is a new and active application area for deep learning.
-The research in graph mining has advanced many fields
-where objects and their relations can be modeled by nodes and links in a network, e.g.,
-computer networks \cite{bermond1995distributed},
-social networks \cite{cook2006mining},
-protein interaction networks \cite{bader2003automated},
-ecological food webs \cite{brown2003ecological},
-and citation networks \cite{greenberg2009citation}.
 An important task in graph mining is link prediction \cite{liben2007link} 
-\cite{al2006link},
-e.g., to predict whether a person will follow another person in a social network.
-To be more specific,
-the link prediction problem actually refers to link existence prediction:
-to predict whether a link from a node to another node exists or will form.
-Link existence prediction is a well-known problem,
-but one of its related problems is not: link weight prediction.
-Link weight prediction is to predict the weight of a link,
-i.e., to predict how likely or how strong two nodes are connected.
+\cite{al2006link}, i.e., link existence prediction:
+to predict the existence of a link.
+A less well-known problem is the link weight prediction: to predict the weight of a link.
 Link weight prediction is more informative in many scenarios.
 For example, when describing the connection of two users in a social network,
 a description "Alice texts Bob 128 times per day" is more informative than
-"Alice likes Bob" .
-A special case of link weight prediction is collaborative filtering.
-For example, to predict users' ratings to movies
-is to predict the link weights on the bipartite graph
-where the two disjoint node sets are users and movies.
+"Alice likes Bob".
 
-As neural nets have demonstrated their power in many domains,
-we naturally wonder if we can apply them in prediction tasks in graph mining,
-and what kind of techniques are helpful in using their power.
 We want to create a technique to predict link weights in a graph using a 
 neural net model.
 The estimator should learn to represent the graph in a meaningful way and to 
@@ -132,20 +112,12 @@ We want to predict the message size transmitted between A and B.
 	\caption{
 		An example of link weight prediction in a weighted directed graph -
 		message volume prediction in a social network.
-		There are 3 users - A, B and C - in this network.
-		Each user can send any amount of text messages to every other user.
-		Here is what we know:
-		A sent 4 messages to C,
-		B sent 7 messages to C,
-		and C sent 74 and 11 messages to A and B.
-		What we do not know and what we want to predict is
-		the message volume A and B sent to each other.
 		}
 	\label{fig:example}
 \end{figure}
 \begin{table}[!htb]\centering
 	\caption{
-		The same example as Figure \ref{fig:example}, but with edge list representation for the network.
+		The edge list representation of the example in Figure \ref{fig:example}.
 	}
 	\begin{tabularx}{0.45\textwidth}{|X|X|c|}  \hline \rowcolor{blue!40}
 		Source node & Destination node & Link weight \\ \hline
@@ -227,16 +199,20 @@ s_z = \sum_{u \in N(z)} w_{zu}
 \end{align*}
 These nine forms represent three groups of measures of 2-hop paths connecting those two nodes:
 \begin{itemize}
-	\item Unweighted group \cite{adamic2003friends}: based on path existence - ignoring path weights
-	\item Weighted group \cite{murata2007link}: based on path lengths - sum of path weights
-	\item Reliable route weighted group \cite{taha1982operations}: based on path reliability - product of weights
+	\item Unweighted group \cite{adamic2003friends}:
+	this group is based on path existence and ignore path weights.
+	\item Weighted group \cite{murata2007link}:
+	this group is based on path length, i.e., the sum of path weights.
+	\item Reliable route weighted group \cite{taha1982operations}:
+	this group is based on path reliability, i.e., the product of path weights.
 \end{itemize}
 And each group contains three forms:
 \begin{itemize}
-	\item Common Neighbors: pure path based
-	\item Adamic-Adar: similar to Common Neighbors
-	but depresses the contribution of common neighbors with high degree or high strength
-	\item Resource Allocation: similar to Adamic-Adar but depresses more
+	\item Common Neighbors: this form is based on path and ignore node degrees.
+	\item Adamic-Adar: this form is similar to Common Neighbors,
+	but depresses the contribution of nodes with high degrees or high strengths.
+	\item Resource Allocation: this form is similar to Adamic-Adar,
+	but depresses more than Adamic-Adar does.
 \end{itemize}
 
 \subsection{SBM (Stochastic Block Model)}
@@ -266,19 +242,7 @@ to maximize the probability of observation A:
 	P(A|z, \theta) 
 	= \prod_{ij} \theta_{z_i z_j}^{A_{ij}}(1-\theta_{z_i z_j})^{1-A_{ij}}
 \end{align*}
-which we rewrite as log likelihood of observation A:
-\begin{align*}
-	&\log(P(A|z, \theta))\\
-	=& \sum_{ij} (
-	{A_{ij}} \log (\theta_{z_i z_j})
-	+ (1 - {A_{ij}}) \log(1-\theta_{z_i z_j})
-	)\\
-	=& \sum_{ij} (
-	{A_{ij}} \log (\frac{\theta_{z_i z_j}}{1-\theta_{z_i z_j}})
-	+ \log(1-\theta_{z_i z_j})
-	)
-\end{align*}
-which we rewrite as an exponential family:
+We rewrite the log likelihood of observation A as an exponential family:
 \begin{align*}
 	\log(P(A|z, \theta))
 	= \sum_{ij} (
@@ -299,9 +263,9 @@ is the vector-valued function of natural parameters of the Bernoulli random vari
 The pWSBM is designed for weighted graphs and uses only link weight information \cite{aicher2014learning}.
 So it differs from SBM in a few ways described below.
 Here we choose model link weight with normal distribution.
-Adjacency matrix A becomes the link weight matrix:
+Adjacency matrix A becomes the link weight matrix where the weight of link (i, j)  $ A_{ij} $ is a real random variable following the normal distribution:
 \begin{align*}
-	A_{ij} \in R
+A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
 \end{align*}
 $ \theta_{z_i z_j} $ becomes the weight distribution parameter of bundle ($z_i, z_j$):
 \begin{align*}
@@ -314,19 +278,13 @@ $ T(A_{ij}) $ becomes the vector-valued function of sufficient statistics of the
 $ \eta(\theta) $ becomes the vector-valued function of natural parameters of the normal random variable:
 \begin{align*}
 	\eta(\theta)
-	&= \eta(\mu, \sigma^2)\\
 	&= (\frac{\mu}{\sigma^2}, -\frac{1}{2\sigma^2}, -\frac{\mu^2}{2\sigma^2})
-\end{align*}
-So the weight of link (i, j)  $ A_{ij} $ is a real random variable following the normal distribution:
-\begin{align*}
-	A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
 \end{align*}
 The pWSBM fits parameter z and $ \theta $
 to maximize the log likelihood of observation A:
 \begin{align*}
 \log(P(A|z, \theta))
-&= \log(P(A|z, \mu, \sigma^2))\\
-&= \sum_{ij} (
+= \sum_{ij} (
 A_{ij} \frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
 - A_{ij}^2 \frac{1}{2\sigma_{z_i z_j}^2}
 - \frac{\mu_{z_i z_j}^2}{\sigma_{z_i z_j}^2}
@@ -342,18 +300,8 @@ The hybrid log likelihood becomes:
 =& \alpha \sum_{ij \in E} (T_e(A_{ij}) \eta_e(\theta_{z_i z_j}))\\
 & + (1 - \alpha) \sum_{ij \in W} (T_w(A_{ij}) \eta_w(\theta_{z_i z_j}))
 \end{align*}
-where pair $ (T_e, \eta_e) $ denotes the family of link existence distributions:
-\begin{align*}
-T_e(A_{ij}) &= (A_{ij}, 1)\\
-\eta_e(\theta) &= ( \log(\frac{\theta}{1-\theta}), \log(1-\theta) )
-\end{align*}
-and pair $ (T_w, \eta_w) $ denotes the family of the link weight distributions:
-
-\begin{align*}
-T_w(A_{ij}) &= (A_{ij}, A_{ij}^2, 1)\\
-\eta_w(\theta)
-&= (\frac{\mu}{\sigma^2}, -\frac{1}{2\sigma^2}, -\frac{\mu^2}{2\sigma^2})
-\end{align*}
+where pair $ (T_e, \eta_e) $ denotes the family of link existence distributions in SBM
+and pair $ (T_w, \eta_w) $ denotes the family of the link weight distributions in pWSBM.
 and $ \alpha \in [0, 1]$ is a tuning parameter that determines their relative importance,
 E is the set of observed interactions,
 and W is the set of weighted edges.
@@ -518,9 +466,6 @@ size invariance and illumination invariance.
 		Model R for a weighted graph.
 		Only layers and their connections are shown,
 		while the units in each layer and their connections are not shown.
-		We feed every node to the estimator by feeding the ID.
-		During learning,
-		the estimator learns and populates the vectors in the tables.
 	}
 	\label{fig:model}
 \end{figure*}
@@ -662,7 +607,7 @@ The pseudo code of the experiment process is shown in Figure \ref{fig:code}.
 \subsection{Experiment results}
 In our experiments,
 Model R's error is lower than every other model on every dataset,
-shown in Figure \ref{fig:errors}.
+shown in Figure \ref{fig:errors} and Table \ref{tab:errors}.
 \begin{figure*}[!htb]\centering
 	\includegraphics[width=1\textwidth]{link-weight-errors}
 	\caption{
@@ -686,29 +631,6 @@ For each dataset, we do a t-test for the two variables where the null hypothesis
 \end{align*}
 where $ X_1 $ and $ X_2 $ are ModelRError and BaselineError and
 where $ \overline{X} $ is the mean of variable X.
-The standard deviation $ s $ of variable X is defined as:
-\begin{align*}
-	s_i &= \sqrt{\overline{(X_i - \overline{X_i})^2}}
-\end{align*}
-Welch's t-test defines its statistic t and degrees of freedom v as:
-\begin{align*}
-	t &= \frac{
-		\overline{X_1} - \overline{X_2}
-		}{
-		\sqrt{\frac{s^2_1}{N_1} + \frac{s^2_2}{N_2}}
-		}\\
-	v &= \frac{
-		(\frac{s^2_1}{N_1} + \frac{s^2_2}{N_2})^2
-		}{
-		\frac{s^4_1}{N_1^2(N_1-1)} + \frac{s^4_2}{N_2^2(N_2-1)}
-		}
-\end{align*}
-where $ N_i $ is the sample size of variable $ X_i $.
-The Student's t-distribution defines its probability density function f(x) as:
-\begin{align*}
-f(x) = \frac{\Gamma(\frac{v+1}{2})}{\sqrt{v\pi}\Gamma(\frac{v}{2})}
-((1+\frac{x^2}{v})^{-\frac{v+1}{2}})
-\end{align*}
 Welch's t-test defines its p value as the Student's t-distribution cumulative density function:
 \begin{align*}
 p = 2 \int_{-\infty}^{-|t|} f(x) dx
