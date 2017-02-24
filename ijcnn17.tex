@@ -4,11 +4,9 @@
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{listings}
-\lstset{frame=single, language=python, tabsize=4}
+\lstset{basicstyle=\ttfamily, frame=single, language=python, tabsize=4}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,automata,quotes,positioning,babel}
-\usetikzlibrary{shapes.geometric, arrows}
-
+\usetikzlibrary{arrows.meta, automata, quotes, positioning, babel, shapes.geometric, arrows}
 
 \begin{document}
 	\title{Deep Learning Approach to Link Weight Prediction}
@@ -475,11 +473,11 @@ and the weight of the link connecting the nodes as its output.
 We design the model in the estimator as a fully connected neural net which we call Model R (R as in relation), shown in Figure \ref{fig:model}.
 We have considered a convolutional neural net as an alternative,
 but we decided it would not be a good fit for this application.
-These node vectors do not any spacial property
+These node vectors do not have any spacial property
 for a convolutional neural network to take advantage of,
 compared to the 2D array of an image where the spacial location of each pixel
 has significant meaning (e.g., relative distances of pixels).
-These node vectors do not have any of those invariance properties in image either,
+These node vectors do not have any of the invariance properties of an image either,
 such as translation invariance, rotation invariance,
 size invariance and illumination invariance.
 
@@ -585,7 +583,7 @@ and also some justifications for our choices.
 	the more discriminative the model should be,
 	and consequently higher degrees of freedom,
 	higher dimensions of vectors and larger layer sizes.
-	Empirically, we typically set the layer size as a logarithm function of the dataset size:
+	Empirically, we usually set the layer size as a logarithm function of the dataset size:
 	\[d = log_2(n)\]
 	where d (as in dimension) is the layer size and n is the dataset size.
 	\item The choice of number of layers is related to the complexity of the relation between the input and the output of the model.
@@ -593,13 +591,12 @@ and also some justifications for our choices.
 	no hidden layer is necessary and the model is simply a linear model.
 	If the input and the out put have non-linear relation,
 	the more complex the relation is, the more number of layers are necessary.
-	Empirically, we typically set the the layer size to 4,
-	and occasionally down to 2 and up to 8.
+	Empirically, we usually set the layer size to 4,
+	as a good compromise of learning speed and prediction accuracy.
 \end{itemize}
 We naturally assume the most optimum design parameters are dataset dependent.
 However, we do not know any theoretical way to calculate the most optimum parameters based on the statistic signatures of a specific dataset.
-Therefore, 
-In this work, we evaluate different parameter choices through a few experiments.
+Therefore, in this work, we evaluate different parameter choices through a few experiments.
 We will work on design parameter optimization in our future research.
 
 \section{Experiments}
@@ -749,7 +746,7 @@ These results show that Model R outperforms pWSBM on all these datasets.
 In our experiments, we have not observed any significant (more than 5\%)
 prediction error increase or decrease when we change parameters around the values
 we typically choose.
-Overall, Model R has demonstrated very high level of model robustness.
+Overall, Model R has demonstrated a very high level of model robustness.
 
 \subsection{Reproducibility}
 In order to ensure the reproducibility of the experiment,
@@ -770,8 +767,8 @@ The program is open-source under MIT license hosted on Github \footnote{https://
 so that anyone can use it without any restriction.
 
 \section{Conclusion}
-Model R shows that deep learning can be successfully applied to link weight prediction problem.
-It effectively learns complex and unobservable node information (i.e., node vectors) from simple and observable relations between nodes (i.e., link weight),
+Model R shows that deep learning can be successfully applied to the link weight prediction problem.
+It effectively learns complex and unobservable node information (i.e., node vectors) from simple and observable relations between nodes (i.e., link weights),
 and uses that information to predict unknown link weights.
 We anticipate this new approach will provide effective solutions to more
 graph mining tasks.
@@ -780,15 +777,15 @@ Compared to SBM based approaches, Model R is much more accurate.
 A few possible reasons are:
 \begin{itemize}
 	\item Higher level of discrimination for nodes:
-	SBM based approaches do not differentiate nodes within a same group,
+	SBM based approaches do not differentiate nodes within the same group,
 	and assume the weights of all links connecting two nodes from two groups
-	follow the same distribution;
+	follow the same distribution.
 	Model R does not assume that,
 	but gives every node a unique description - the node vector - so that
 	it can have a more accurate description for every single node.
 	\item Higher level of model flexibility:
 	SBM based approaches assume the weight of every link follows
-	a normal distribution;
+	a normal distribution.
 	Model R does not assume that, but takes advantage of high flexibility of
 	layers of non-linear neural network units,
 	so that it can model very complex weight distributions.
@@ -796,12 +793,11 @@ A few possible reasons are:
 
 \section{Future work}
 There are three aspects we would like to study in our future work on this model.
-In this section, we briefly discuss these three aspects.
 
-The first one is the mapping layer of Model R.
+The first aspect is the mapping layer of Model R.
 In the current model, the mapping layer contains two independent node dictionaries
 to learn the node vectors.
-During learning stage, these two dictionaries learn to map the nodes to two spaces:
+During the learning stage, these two dictionaries learn to map the nodes to two spaces:
 \begin{itemize}
 	\item The source node dictionary maps nodes to source node space.
 	\item The destination node dictionary maps nodes to destination node space.
@@ -813,18 +809,18 @@ However, will this more intuitive approach actually perform better?
 Or does it depend on whether the graph is undirected or directed?
 These are interesting questions we can study in the future.
 
-The second one is to handle more complex graphs
-and especially for social network applications.
+The second aspect is to handle more complex graphs,
+especially for social network applications.
 In particular, we want to handle graphs with node attributes.
-Users can have labels like nationality, and real attributes like age.
+Users can have labels like "nationality", and real attributes like "age" .
 One feasible approach is to append one unit for each of these attributes to the node vector.
 
-The third one is to handle large dynamic graphs.
+The third aspect is to handle large dynamic graphs.
 A social network can have a large volume of links collected continuously by a
 distributed system.
 A potential approach is to deploy an estimator to each computing node of
 the distributed system and analyze a link stream there,
-and let these estimators exchange the knowledge periodically.
+and let these estimators exchange their knowledge periodically.
 
 \section*{Acknowledgements}
 This material is based upon work supported by the National Science Foundation under Grant No. 1646640.
