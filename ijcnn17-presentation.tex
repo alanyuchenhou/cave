@@ -103,9 +103,14 @@
 \end{frame}
 
 \begin{frame}{Existing approach: SBM(Stochastic Block Model)}{Diagram illustration}
+	Partition the graph into L groups so the graph has a 2-tier structure:
+	\begin{itemize}
+		\item Lower tier: each group consists of nodes which were topologically similar in the original graph
+		\item Upper tier: groups are connected by bundles to represent the original graph
+	\end{itemize}
 	\begin{figure}[H]
 		\centering
-		\includegraphics[width=0.7\linewidth]{SBM}
+		\includegraphics[width=0.4\linewidth]{SBM}
 		\caption{ \href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{Social Network Analysis Visualization}(Martin Grandjean / Wikimedia Commons / Attribution-Share Alike 3.0 Unported)}
 		\label{fig:SBM}
 	\end{figure}
