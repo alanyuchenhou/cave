@@ -9,17 +9,20 @@
 \usepackage{hyperref}
 \usepackage{float}
 
-\title{Deep Learning Approach to Link Weight Prediction}
-\author{Yuchen~Hou\inst{1} \and Lawrence~Holder\inst{1}}
-\institute{
-	\inst{1}
-	School of Electrical Engineering and Computer Science\\
-	Washington State University, Pullman, WA 99164
-}
+\title{A Deep Learning Approach to Link Weight Prediction}
+\author{Yuchen Hou \and Lawrence Holder}
+\date{}
 
 \begin{document}
 
-\frame{\titlepage}
+\frame{
+	\titlepage
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.5\linewidth]{WSU}
+		\label{fig:WSU}
+	\end{figure}
+}
 
 \begin{frame}{Introduction: deep learning in different application domains}
 %	\begin{itemize}[<+->]
@@ -29,12 +32,6 @@
 		\item Natural language processing
 		\item Graph mining
 	\end{itemize}
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.5\linewidth]{ann}
-		\caption{ \href{https://en.wikipedia.org/wiki/File:Artificial_neural_network.svg}{Artificial neural network} (Colin Burnett / Wikimedia Commons / Attribution-Share Alike 3.0 Unported)}
-		\label{fig:neural}
-	\end{figure}
 \end{frame}
 
 \begin{frame}{Background: graph mining problems}
@@ -43,7 +40,7 @@
 		\begin{subfigure}{0.49\textwidth}
 			\includegraphics[width=\linewidth]{Social_Network_Analysis_Visualization}
 			\caption{
-				\href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{Link prediction: predicting user connectivities in a social network} (Martin Grandjean / Wikimedia Commons / Attribution-Share Alike 3.0 Unported).
+				\href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{Link prediction: predicting user connectivities in a social network} (Martin Grandjean / Wikimedia Commons / Attribution-Share Alike 3.0 Unported)
 			}
 			\label{fig:Social_Network_Analysis_Visualization}
 		\end{subfigure}
@@ -51,12 +48,12 @@
 			\includegraphics[width=\textwidth]{ProteinStructure}
 			\caption{
 				\href{https://commons.wikimedia.org/wiki/File:ProteinStructure.jpg}
-				{Graph classification: predicting the chemical activity of a macromolecule} (Maksim / Wikimedia Commons / public domain).
+				{Graph classification: predicting the chemical activity of a macromolecule} (Maksim / Wikimedia Commons / public domain)
 			}
 			\label{fig:protein}
 		\end{subfigure}
 		\caption{
-			Example graph mining problems and their application scenarios.
+			Example graph mining problems and their application scenarios
 		}
 		\label{fig:trainnig}
 	\end{figure}
@@ -82,28 +79,9 @@
 		(A) edge[bend left,"4"]   (C)
 		(C) edge[bend left,"11"]  (B);
 		\end{tikzpicture}
-		\caption{
-			An example of link weight prediction in a weighted directed graph -
-			message volume prediction in a social network for friend recommendation.
-		}
+		\caption{Message volume prediction in a social network of 3 users}
 		\label{fig:example}
 	\end{figure}
-\end{frame}
-
-\begin{frame}{Problem: link weight prediction}{Problem example}
-	\begin{table}[H]\centering
-		\caption{The edge list representation of the previous example.}
-		\begin{tabularx}{\textwidth}{|X|X|X|}  \hline
-			Source node & Destination node & Link weight \\ \hline
-			A & B & ? \\ \hline
-			A & C & 74 \\ \hline
-			B & A & ? \\ \hline
-			B & C & 7 \\ \hline
-			C & A & 4 \\ \hline
-			C & B & 11 \\ \hline
-		\end{tabularx}
-		\label{tab:example}
-	\end{table}
 \end{frame}
 
 \begin{frame}{Problem: link weight prediction}{Problem definition}
@@ -177,12 +155,12 @@
 		\node[annot,above of=I-2] {input layer};
 		\node[annot,above of=O-2] {output layer};
 		\end{tikzpicture}	
-		\caption{The skip-gram model with vocabulary size 4 and embedding size 2.}
+		\caption{The skip-gram model with vocabulary size 4 and embedding size 2}
 		\label{fig:skipGram}
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Deep learning approach: Model R}
+\begin{frame}{Deep learning approach: Model R (R as in "relation")}
 	\begin{figure}[H]
 		\centering
 		\begin{tikzpicture}[node distance=1.3cm]
@@ -213,14 +191,16 @@
 		\draw [arrow] (relu) -- (linearRegression);
 		\draw [arrow] (linearRegression) -- (weight);
 		\end{tikzpicture}
-		\caption{The Model R (R as in "relation") for link weight prediction.}
+		\caption{
+			Model R with one or multiple hidden layers (only one layer shown)
+		}
 		\label{fig:model}
 	\end{figure}
 \end{frame}
 
 \begin{frame}{Comparison: pWSBM vs Model R}
 	\begin{table}[H]\centering
-		\caption{Model R has advantages over pWSBM in several aspects.}
+		\caption{The advantages Model R has over pWSBM in several aspects}
 		\begin{tabularx}{\textwidth}{|X|c|c|}  \hline
 			Aspect & pWSBM & Model R \\ \hline
 			model granularity & node group level & node level \\ \hline
@@ -233,7 +213,6 @@
 
 \begin{frame}{Experiments}{Learning techniques}
 	\begin{itemize}
-		\item Backpropagation
 		\item Stochastic gradient descent
 		\item Mini-batch
 		\item Early stopping
@@ -251,7 +230,7 @@
 
 \begin{frame}{Experiments}{Datasets}
 	\begin{table}[H]\centering
-		\caption{The datasets used in experiments.}
+		\caption{The datasets used in experiments with weights scaled to [0, 1]}
 		\begin{tabularx}{\textwidth}{|X|c|c|}  \hline
 			Dataset & Nodes & Link weight semantics \\ \hline
 			Airport & 500 airports & number of passengers delivered \\ \hline
@@ -267,7 +246,7 @@
 	\begin{figure}[H]\centering
 		\includegraphics[width=\textwidth]{link-weight-errors}
 		\caption{
-			Model R has the lower mean squared errors than 4 baseline approaches over 5 datasets consistently.
+			Model R has the lower mean squared errors than 4 baseline approaches over 4 datasets consistently
 		}
 		\label{fig:errors}
 	\end{figure}
