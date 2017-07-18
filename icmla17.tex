@@ -80,10 +80,9 @@ which is a special case of node embedding where the graph is a bipartite graph).
 The deep learning model we use is Model R \cite{hou2017deep},
 a new and much less studied model which is very different from skip-gram model.
 
-\section{Related work}
-In this section,
-we review existing embedding techniques and models for
-images, audios, words, documents, items and nodes.
+
+\section{Entity embedding techniques}
+In this section, we review a few classical embedding techniques and models for images, audios, words, documents, items and nodes.
 A common goal of these techniques is to ensure that
 similar entities are close to each other in the embedding space.
 
@@ -131,7 +130,7 @@ in Figure \ref{fig:audoEncoder}.
 	
 	\foreach \name / \y in {1,...,\vocabularySize}
 	\node(output-\name) [neuron, fill=blue!30, pin={[pin edge={->}]above:}] at(\y, 4*\layersep) {};
-	\node [above of=output-4, xshift = 0.5cm, yshift = -1cm] {expected output = the image pixel values};
+	\node [above of=output-4, xshift = 0.5cm, yshift = -1cm] {output = the image pixel values};
 	
 	\foreach \source in {1,...,\vocabularySize}
 	\foreach \dest in {1,..., 4}
@@ -183,7 +182,6 @@ A small convolutional neural network model is shown in Figure \ref{fig:cnn}.
 	[->, shorten >=1pt,node distance=\layersep]
 	\tikzstyle{every pin edge}=[shorten <=1pt]
 	\tikzstyle{layer} = [rectangle, text centered, draw=black, fill=green!30]
-	\tikzstyle{arrow} = [thick,->,>=stealth]
 	
 	\node (input) [layer, fill=red!30, pin={[pin edge={<-}]below:}] {direct activation layer};
 	\node [below of=input] {input = the audio spectrogram};
@@ -196,7 +194,7 @@ A small convolutional neural network model is shown in Figure \ref{fig:cnn}.
 	\node [right of=hidden5, xshift = 2cm] {embedding layer};
 	
 	\node (output) [layer, fill=blue!30, above of=hidden5, pin={[pin edge={->}]above:}] {fully connected layer};
-	\node [above of=output] {expected output = the target label};
+	\node [above of=output] {output = the target label};
 	
 	\path (input) edge (hidden1);
 	\path (hidden1) edge (hidden2);
@@ -212,6 +210,7 @@ A small convolutional neural network model is shown in Figure \ref{fig:cnn}.
 		Notice that the embedding layer is the last hidden layer.
 		The hidden layers use rectified linear units.
 		The output layer uses softmax units.
+		Only layers and the connections between layers are shown, while the units in each layer and the connections between units are not shown.
 	}
 	\label{fig:cnn}
 \end{figure}
@@ -239,7 +238,7 @@ An example of this encoding is shown in Table \ref{tab:one-hot}.
 \begin{table}[!ht]
 	\centering
 	\caption{One hot encoding example for a dictionary of words.}
-	\begin{tabular}{cc} \hline
+	\begin{tabular}{cc} \hline \rowcolor{blue!30}
 		Word & One-hot encoding \\ \hline
 		$ w_1 $ & [1, 0, 0, 0, ... 0]       \\ \hline
 		$ w_2 $ & [0, 1, 0, 0, ... 0]       \\ \hline
@@ -272,7 +271,7 @@ A small skip-gram neural network model is shown in Figure \ref{fig:skipGram}.
 	
 	\foreach \name / \y in {1,...,\vocabularySize}
 	\node[neuron, fill=red!30, pin={[pin edge={<-}]below:}] (input-\name) at (\y, 0) {};
-	\node [below of=input-4, xshift = 0.5cm, yshift = 1cm] {input = middle-word's one-hot encoding};
+	\node [below of=input-4, xshift = 0.5cm, yshift = 1cm] {input = word's one-hot encoding};
 	
 	\foreach \name / \y in {1,...,\embeddingSize}
 	\path[xshift=2cm]
@@ -313,8 +312,8 @@ For example, given a natural language sentence:
 \end{align*}
 and a context radius:
 \[context\_radius = 2\]
-and a middle-word:
-\[middle\_word = fox\]
+and a word:
+\[word = fox\]
 and the vocabulary:
 \begin{align*}
 	&vocabulary = [\\
@@ -324,13 +323,13 @@ and the vocabulary:
 we have the context of [fox]:
 \[ context(fox) = \{quick, brown, jumps, over\} \]
 A natural language corpus has many sentences,
-therefore, from these sentences we can produce a dataset where each example is a (middle-word, context-word) pair,
+therefore, from these sentences we can produce a dataset where each example is a (word, context-word) pair,
 as shown in Table \ref{tab:words}.
 \begin{table}[!ht]
 	\centering
 	\caption{The words dataset for a natural language corpus.}
-	\begin{tabular}{cc} \hline
-		Middle-word (input) & Context-word (expected output) \\ \hline
+	\begin{tabular}{cc} \hline \rowcolor{blue!30}
+		Input = word & Output = context-word \\ \hline
 		... & ...       \\ \hline
 		brown & fox \\ \hline
 		brown & jumps \\ \hline
@@ -344,7 +343,7 @@ as shown in Table \ref{tab:words}.
 	\end{tabular}
 	\label{tab:words}
 \end{table}
-Given a middle-word, the context word is a random variable with a probability distribution:
+Given a word, its context word is a random variable with a probability distribution:
 \[P(context\_word = x | middel\_word = fox)\]
 where
 \[x \in vocabulary\]
@@ -353,10 +352,10 @@ and the context-word probability distribution sums up to 1 over the vocabulary:
 	&\sum_{x \in vocabulary}P(context\_word = x | middel\_word = fox)\\
 	&= 1\\
 \end{align*}
-During each training step, one training example - a (middle-word, context-word) pair - is used.
+During each training step, one training example - a (word, context-word) pair - is used.
 The input layer is activated by the one-hot encoding of a middle word.
 The output layer is expected to predict the one-hot encoding of the context-word.
-However, as each middle-word can have many possible context-words, there is always a difference between the expected output and the actual output:
+However, as each word can have many possible context-words, there is always a difference between the expected output and the actual output:
 after substantial training, a skip-gram neural network model will eventually output the context-word probability distribution,
 even though it is expected to out the one-hot encoding of the one context-word in the training example.
 The embeddings for all words are technically the weights in the embedding layer.
@@ -380,8 +379,8 @@ An e-commerce platform has many purchase orders, which can produce a dataset whe
 \begin{table}[!ht]
 	\centering
 	\caption{The items dataset for a collection of orders.}
-	\begin{tabular}{cc} \hline
-		Item (input) & Context-item (expected output) \\ \hline
+	\begin{tabular}{cc} \hline \rowcolor{blue!30}
+		Input = item & Output = context-item \\ \hline
 		... & ...       \\ \hline
 		keyboard & mouse \\ \hline
 		keyboard & printer \\ \hline
@@ -407,546 +406,357 @@ graph mining \cite{perozzi2014deepwalk} \cite{grovernode2vec}.
 This technique reduces node embedding problem to word embedding problem and then
 apply word embedding technique.
 For example, given a walk in a social network of users:
-\[ walk = [John, Marry, Alice, Bob, James] \]
+\[ walk = [John, Mary, Alice, Bob, James] \]
 we have the context of [Alice]:
-\[ context(Alice) = \{John, Marry, Bob, James\} \]
+\[ context(Alice) = \{John, Mary, Bob, James\} \]
 A graph has many walks, which can produce a dataset where each example is a (node, context-node) pair.
 By reducing walks to natural language sentences and nodes to words,
 this technique reduces node embedding problem to word embedding problem.
 The final outcome is similar nodes have similar embeddings.
 
-\section{Motivation}
-One drawback of these methods is that they fail to take advantage of 
-the highly organized, regular and repeated structure in their relational data: 
-relations between users and items (i.e., a user gives numeric rating to an 
-item) and relations between nodes (i.e., a source node connects to a 
-destination node through a labeled link).
-This structure is not exploited in natural language processing because it 
-does not exist (i.e., for a neural net, words can simply show up in a sequence 
-from a day-to-day conversation, in many flexible and unpredictable ways, with 
-little structure or regularity).
-Although syntax and semantics exist in natural languages, we have not seen any 
-current neural network models taking advantage of these structures.
-Our work differs from the above methods in that our technique uses a 
-deep learning model designed to take advantage of the structure in the 
-relational data and it is also able to predict a numeric attribute - the rating 
-value.
+\section{Node embedding with Model R}
+Model R is a very different supervised neural network model which has achieved great success in graph link weight prediction applications recently \cite{hou2017deep}.
+A simplified Model R is shown in Figure \ref{fig:model-r}.
 
-\section{Problem}
-The problem we consider in this paper is collaborative rating prediction.
-In this section, we look at an example of the problem and then its definition.
-
-\subsection{Problem example}
-As an example of a collaborative rating prediction problem, consider 
-a set of 6 users who give numeric ratings to a set of 3 items.
-For each user, only a subset of their ratings are known; 
-and we want to predict the unknown ratings.
-The dataset for this example is shown in Table \ref{tab:ratings}.
-In this dataset, a set of 6 users give ratings to a set of 3 items: 
-for User[0], ratings to all 3 items are known; 
-for User[1], ratings to Item[1] and Item[2] are known, 
-but the rating to Item[0] is unknown; and so on.
-Every unknown rating is marked as a question mark.
-The task is to predict the unknown ratings.
-\begin{table}[!ht]
+\subsection{Model R}
+\begin{figure*}[!ht]
 	\centering
-	\caption{Collaborative rating prediction problem example.}
-	\begin{tabular}{cccc} \hline
-		Ratings & Item[0] & Item[1] & Item[2] \\ \hline
-		User[0] & 3       & 5       & 2 \\ \hline
-		User[1] & ?       & 5       & 2 \\ \hline
-		User[2] & 4       & 4       & 5 \\ \hline
-		User[3] & 2       & 4       & ? \\ \hline
-		User[4] & 5       & 5       & 4 \\ \hline
-		User[5] & 4       & ?       & 4 \\ \hline
-	\end{tabular}
-	\label{tab:ratings}
-\end{table}
-
-\subsection{Problem definition}
-Formally, a collaborative rating prediction problem is defined as follows:
-\begin{itemize}
-	\item Given: a 2-D array R[m][n], 
-	where real number R[i][j] is the rating User[i] gives to Item[j],
-	integer i $ \in [0, m-1] $, integer j $ \in [0, n-1] $,
-	and p elements in R are unknown
-	\item Task: predict all unknown elements in R to minimize mean absolute error (MAE), defined as
-	\begin{align*}
-	MAE = \frac{1}{p} \sum_{k = 1}^{p}|f_k - y_k|
-	\end{align*}
-\end{itemize}
-where $ f_k $ is the predicted value, $ y_k $ is the true value, and p is the 
-size of test set.
-Moreover, we define a user as the array of ratings they give to all items: 
-\begin{align*}
-User[i] = R[i]
-\end{align*}
-
-\section{Baseline solutions}
-Among the many methods for the collaborative rating prediction problem,
-the most prevalent one is the neighborhood-based collaborative filtering 
-algorithm \cite{su2009survey}.
-This algorithm also has several variants,
-which we will use as baseline solutions.
-
-\subsection{Algorithm}
-The neighborhood-based collaborative filtering algorithm calculates each 
-unknown R[i][j] as 
-follows \cite{su2009survey}:
-\begin{align*}
-R[i][j] = c \sum_{k = 0}^{m-1} S(i, k) R[k][j]
-\end{align*}
-where S(i, k) is the similarity of User[i] and User[k] to be defined by each 
-variant,
-unknown R[k][j]'s are omitted and c is a normalizing factor:
-\begin{align*}
-c = \frac{1}{\sum_{k = 0}^{m - 1} |S(i, k)|}
-\end{align*}
-It is easy to understand the predicted rating R[i][j] as 
-the sum of ratings each user gives to Item[j],
-weighted by how similar each user is to the target user.
-The algorithm can opt to use only a fixed number of users with highest 
-similarities to the target user in the calculation, instead of using all users.
-
-\subsection{Variants}
-Each variant of the algorithm has a unique definition of the similarity 
-function of User[i] and User[k]:
-\begin{itemize}
-	\item PCC: The Pearson correlation coefficient similarity, defined as 
-	\cite{resnick1994grouplens}:
-	\begin{align*}
-	& S_{PCC}(x, y) \\
-	=& \frac{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})(R[y][i] - 
-		\overline{R[y]})}{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})^2 
-		\sum_{i 
-			\in I_{xy}}(R[y][i] - \overline{R[y]})^2 }
-	\end{align*}
-	where $ I_{x} $ is the set of items rated by User[x],
-	and	$ \overline{R[x]} $ is the average rating User[x] gives to all items,
-	and $ I_{xy} $ is the set of items rated by both User[x] and User[y].
-	PCC measures the linear correlation of two users.
-	\item WPCC: The weighted PCC similarity, defined as 
-	\cite{herlocker1999algorithmic}:
-	\begin{align*}
-	S_{WPCC}(x, y)=
-	\begin{cases}
-	\frac{|I_{xy}|}{T} S_{PCC}(x, y) & |I_{xy}| < T \\
-	S_{PCC}(x, y) & otherwise
-	\end{cases}
-	\end{align*}
-	where T is a threshold of number of items. 
-	WPCC of two users differs from PCC only when the number of items rated by 
-	both users (co-rated items) is less than the threshold. 
-	When the difference occurs, fewer co-rated items results in less similarity 
-	between the two users.
-	\item SPCC: The sigmoid PCC similarity, defined as 	
-	\cite{jamali2009trustwalker}:
-	\begin{align*}
-	S_{SPCC} (x, y)
-	= \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
-	\end{align*}
-	SPCC is very similar to WPCC in the sense two users have lower similarity 
-	if they have a smaller number of co-rated items.
-	\item MPCC: The multi-level PCC similarity \cite{polatidis2016multi}. 
-	This one is also very similar to the previous ones but much more complex.
-	MPCC essentially uses the PCC similarity measure, but increases it 
-	based on the number of co-rated items between the two users,
-	as long as the PCC similarity is sufficiently high.
-	The more co-rated items, the larger the increase.
-	But if the number of co-rated items or the PCC similarity is too low,
-	then a similarity of zero is returned.
-\end{itemize}
-
-\section{Observations}
-Although the methods described in the related work section cannot solve the 
-collaborative rating prediction problem,
-they all have an interesting key process: representing entities as vectors.
-As deep learning techniques become more powerful and standardized, this key 
-process seems to be the most significant part in a domain-specific deep 
-learning approach.
-Here we take a similar approach.
-
-\subsection{Entities and representations}
-First of all, we summarize how a neural net represents various types of 
-entities in different domains with different relations, as shown in 
-Table \ref{tab:domains}.
-An image in image recognition is represented as a 2D light amplitude 
-array with dimensions height and width; an audio in speech recognition 
-is represented as a 2D sound amplitude array with dimensions time and 
-frequency.
-The relation between two images or two audio is not commonly used. 
-Words in natural languages, items in recommendation systems, and nodes 
-in graphs can be represented by vectors (1D numeric arrays).
-The	relations between two words, two items and two nodes are commonly 
-used to learn these vectors.
-It is clear that representations for all the entities are numeric arrays, 
-because neural nets rely on neurons' activations and communications, which 
-are both numeric.
-\begin{table}[!ht]
-	\centering
-	\caption{A summary of various types of entities, their numeric
-		representations and inter-entity relations in different domains.
+	\newcommand{\layersep}{1cm}
+	\begin{tikzpicture}
+	[->, shorten >=1pt,node distance=\layersep]
+	\tikzstyle{every pin edge}=[shorten <=1pt]
+	\tikzstyle{layer} = [rectangle, text centered, draw=black, fill=green!30]
+	
+	\node (input1) [layer, fill=red!30, pin={[pin edge={<-}]below:}] {direct activation layer};
+	\node [below of=input1] {input = (source node's one-hot encoding,};
+	\node (input2) [layer, fill=red!30, pin={[pin edge={<-}]below:}, xshift = 6cm] {direct activation layer};
+	\node [below of=input2] {destination node's one-hot encoding)};
+	
+	\node (hidden11) [layer, above of=input1] {fully connected layer};
+	\node [left of=hidden11, xshift = -2cm] {embedding layer};
+	\node (hidden12) [layer, above of=input2] {fully connected layer};
+	\node [right of=hidden12, xshift = 2cm] {embedding layer};
+	\node (hidden2) [layer, above of=hidden1, xshift=3cm] {fully connected layer};
+	
+	\node (output) [layer, fill=blue!30, above of=hidden2, pin={[pin edge={->}]above:}] {fully connected layer};
+	\node [above of=output] {output = link weight};
+	
+	\path (input1) edge (hidden11);
+	\path (input2) edge (hidden12);
+	\path (hidden11) edge (hidden2);
+	\path (hidden12) edge (hidden2);
+	\path (hidden2) edge (output);
+	
+	\end{tikzpicture}
+	\caption{
+		A simplified Model R with 1 input layer (red), 2 hidden layers (green), and 1 output layer (blue).
+		Notice that the embedding layer is the first hidden layer.
+		The embedding layer and the input layer split into two channels: one channel for source node and one channel for the destination node.
+		The hidden layers use rectified linear units.
+		The output layer uses linear units.
 	}
-	\begin{tabular}{ccc} \hline
-		Entity & Representation               & Relations \\ \hline
-		image  & 2D array[width, height]      & N/A \\ \hline
-		audio  & 2D array[time, frequency]    & N/A \\ \hline
-		word   & 1D array (i.e., word vector) & co-occurrences \\ \hline
-		item   & 1D array (i.e., item vector) & co-purchases \\ \hline
-		node   & 1D array (i.e., node vector) & connections \\ \hline
-	\end{tabular}
-	\label{tab:domains}
-\end{table}
-
-\subsection{Entities to vectors}
-The word2vec technique is famous for using a neural net to learn to map every 
-entity (word in this case) in a vocabulary to a vector without any domain 
-knowledge \cite{mikolov2013efficient}.
-The subsequent techniques item2vec and node2vec use the same skip-gram 
-model used in word2vec to map items and nodes to vectors.
-In a corpus, every word is described/defined only by related words in its 
-contexts, by implicit relations between words in word co-occurrences.
-Nonetheless, the neural net can learn from word co-occurrences and map words to 
-vectors accordingly,
-such that the relations between words are preserved in the word vector space 
-\cite{mikolov2013distributed}.
-The same arguments apply to relations between items and between nodes.
-
-\subsection{Users and items to vectors}
-However, the relation between a user and an item is quite different from that 
-between words:
-\begin{itemize}
-	\item The rating a user gives to an item explicitly tells us how much the 
-	user likes that item;
-	the relation is very specific: one user, one item, one rating.
-	\item The co-occurrences of words [quick, brown, fox, jumps, over] 
-	implicitly tell us these words are related but do not tell us any 
-	specific 
-	relation.
-\end{itemize}
-This observation suggests that a neural net should be able to learn a 
-user-to-vector mapping and an item-to-vector mapping supervised by the rating,
-in a more specific, direct and simply way than it learns word-to-vector 
-mappings supervised by word co-occurrences.
-
-\section{Solution}
-Following the above observations, we can build an estimator with a neural net 
-model using a (user, item) pair as its input and the rating as its output.
-Therefore, we should change the format of the example dataset from the one 
-shown in Table \ref{tab:ratings} to a new one shown in Table \ref{tab:rating}.
-The estimator will train on entries with known ratings (the training set) 
-and predict on the entries with unknown ratings (the test set).
-Of course our testing program knows the unknown ratings in order to calculate 
-the model's prediction error.
+	\label{fig:model-r}
+\end{figure*}
+Model R was proposed to solve link weight prediction problems for weighted graphs.
+Given a weighted graph, from its link list we can produce a dataset where each example is a (source node, destination node, link weight) triplet.
+For example, given a social network where nodes are users and link weights are numbers of messages users send to other users, we have its link list dataset as shown in Table \ref{tab:link-list-dataset}.
 \begin{table}[!ht]
 	\centering
-	\caption{The reformatted dataset of the problem example.}
-	\begin{tabular}{cc}  \hline
-		Input = (User ID, Item ID) & Output = Rating \\ \hline
-		(0, 0)                     & 3 \\ \hline
-		(0, 1)                     & 5 \\ \hline
-		(0, 2)                     & 2 \\ \hline
-		(1, 0)                     & ? \\ \hline
-		(1, 1)                     & 5 \\ \hline
-		(1, 2)                     & 2 \\ \hline
+	\caption{The link list dataset for a social network.}
+	\begin{tabular}{cc}  \hline \rowcolor{blue!30}
+		Input = (source node, destination node) & Output = link weight \\ \hline
 		...                        & ... \\ \hline
-		(5, 2)                     & 4 \\ \hline
+		(Mary, John) & 8645 \\ \hline
+		(John, Mary) & 9346 \\ \hline
+		(John, Alice) & 2357 \\ \hline
+		(John, Bob) & 9753 \\ \hline
+		(Alic, Bob) & 1238 \\ \hline
+		...                        & ... \\ \hline
 	\end{tabular}
-	\label{tab:rating}
+	\label{tab:link-list-dataset}
 \end{table}
+The input layer is activated by the one-hot encodings of a (source node, destination node) pair. The output layer uses a linear unit to predict the link weight.
 
-\subsection{Conceptual deep learning model}
-The model in the estimator is a fully connected neural net which we call Model 
-R (R as in relation), shown in Figure \ref{fig:conceptural}.
-\begin{figure*}[!ht]
+\subsection{Model R based node embedding technique}
+Although Model R is designed for link weight prediction applications,
+it can also be used just for the purpose of node embedding because node embeddings are valuable in other machine learning applications such as node classification.
+Model R based node embedding technique is very different from those skip-gram based techniques.
+One potential advantage of Model R based node embedding technique is that it takes advantage of the highly organized, regular and repeated structure in the relational dataset representing a graph: 
+relations between nodes (i.e., a source node connects to a destination node through one and only one weighted link).
+The skip-gram model does not exploit this structure in natural language processing because this structure does not exist (i.e., for a neural net, words can simply show up in a sequence from a day-to-day conversation, in many flexible and unpredictable ways, with little structure or regularity).
+
+\section{Motivation}
+Seeing the good performance of Model R, we are interested in this question: what exactly does Model R learn?
+Even though Model R works very well and outperforms some of the latest link weight prediction techniques by a large margin, the knowledge it learns is not well explained.
+The original Model R paper claims that Model R learns knowledge of nodes (in the form of node embeddings) from the known link weights and uses that knowledge to predict unknown link weights \cite{hou2017deep}.
+This claim is plausible and similar to the claim in the original word2vec paper \cite{mikolov2013efficient}.
+There have been ample amount of studies on word2vec focusing on the analysis and visualization of the word embeddings \cite{mikolov2013distributed} \cite{mikolov2013linguistic}.
+These studies have provided strong evidences that the word embeddings learned by the skip-gram model are meaningful knowledge about words.
+However, the Model R paper does not provide any evidence that the node embeddings are the meaning knowledge of nodes the model learns.
+Furthermore, no study about this model has been done yet, leaving the claim of node embedding being knowledge of nodes a speculation.
+If we can have more in-depth study on those node embeddings similar to the studies on word embeddings, we can have a much better understanding of what Model R learns and why it performs well.
+
+\section{Objective}
+The purpose of this paper is to find out what knowledge Model R learns during training and how this knowledge allows it to outperform other techniques in prediction tasks.
+Our hypothesis is that the knowledge it learns are meaningful node embeddings where similar nodes are close to each other in the node embedding space.
+We make this hypothesis based on the following observations:
+\begin{itemize}
+	\item Model R and skip-gram model have similar architecture in their one-hot encoding input layer and linear embedding layer;
+	\item Skip-gram model produces word embeddings where similar words are close to each other in the word embedding space.
+\end{itemize}
+This hypothesis also agrees with the claim in the original Model R paper.
+Our goal is to verify this hypothesis by analyzing and visualizing the node embeddings produced by Model R in a few datasets.
+If the hypothesis is correct - the knowledge of nodes is represented as points in the embedding space - there should be a way to visualize them and they should match any knowledge we have on the particular domain the dataset is concerned.
+We will use real world datasets from well understood domains to make the results obvious to most readers.
+
+\section{Methods}
+The experiments uses the training method described in the original Model R paper \cite{hou2017deep} and additional embedding logging and visualization methods.
+The main experiment process is shown in Figure \ref{fig:process}.
+\begin{figure}[!ht]
 	\centering
-	\begin{tikzpicture}[node distance=2cm]
-	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
-	angle=110, minimum width=1cm, minimum height=1cm, text centered, 
-	draw=black, fill=blue!30]
-	\tikzstyle{process} = [rectangle, minimum width=1cm, minimum height=1cm, 
-	text centered, draw=black, fill=green!30]
-	\tikzstyle{arrow} = [thick,->,>=stealth]
-	\node (linearRegression) [io] {linear regression};
-	\node (relu3) [process, below of=linearRegression] {ReLU[d=64]};
-	\node (linear1) [process, below of=relu3, xshift=-3cm] {linear[d=64]};
-	\node (linear2) [process, below of=relu3, xshift=3cm] {linear[d=64]};
-	\node (oneHot2) [io, below of=linear2] {one-hot[d=1700]};
-	\node (oneHot1) [io, below of=linear1] {one-hot[d=1000]};
-	\node (rating) [above of=linearRegression] {rating};
-	\node (output) [left of=linearRegression, xshift=-5cm] {output layer};
-	\node (hidden1) [below of=output] {hidden layers};
-	\node (mapping) [below of=hidden1] {mapping layer};
-	\node (input) [below of=mapping] {input layer};
-	\node (user) [below of=oneHot1] {user};
-	\node (item) [below of=oneHot2] {item};
-	\draw [arrow] (user) -- (oneHot1);
-	\draw [arrow] (item) -- (oneHot2);
-	\draw [arrow] (oneHot1) -- (linear1);
-	\draw [arrow] (oneHot2) -- (linear2);
-	\draw [arrow] (linear1) -- (relu3);
-	\draw [arrow] (linear2) -- (relu3);
-	\draw [arrow] (relu3) -- (linearRegression);
-	\draw [arrow] (linearRegression) -- (rating);
+	\newcommand{\layersep}{2cm}
+	\begin{tikzpicture}
+	[->, shorten >=1pt,node distance=\layersep]
+	\tikzstyle{every pin edge}=[shorten <=1pt]
+	\tikzstyle{data} = [cylinder, text centered, shape border rotate=90, aspect=0.25, draw=black, fill=red!30]
+	\tikzstyle{process} = [rectangle, minimum width=4cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+	\tikzstyle{output} = [trapezium, trapezium left angle=80, trapezium right 
+	angle=100, minimum height=1cm, text centered, draw=black, fill=blue!30]
+	
+	\node (dataset) [data] {dataset};
+	\node (model) [process, above of=dataset] {model training};
+	\node (embeddings) [data, above of=model] {embeddings};	
+	\node (visualizer) [process, above of=embeddings] {embedding visualization};
+	\node (metadata) [data, right of=visualizer, xshift=2cm] {metadata};
+	\node (visualization) [output, above of=visualizer] {visualizaton result};
+	
+	\path (dataset) edge (model);
+	\path (model) edge (embeddings);
+	\path (embeddings) edge (visualizer);
+	\path (metadata) edge (visualizer);
+	\path (visualizer) edge (visualization);
 	\end{tikzpicture}
-	\caption{The conceptual model R for a dataset with 1700 items and 1000 
-		users:
-		The d in the bracket (d as in dimension) is the layer's size (number of 
-		units in the layer).
-		We keep all non-input layers the same size for simplicity, although 
-		layers of different sizes have shown better results.
-		The text before the bracket refers to the activation function of the 
-		units in the layer.
-		Only layers and their connections are shown, while the units in each 
-		layer and their connections are not shown.
+	\caption{
+		The main experiment process involves 3 data files (red), 2 main procedures (green), and 1 output (blue).
+		This main experiment process runs once for each dataset.
 	}
-	\label{fig:conceptural}
-\end{figure*}
-The model contains the following layers:
-\begin{itemize}
-	\item An input layer with one-hot activations.
-	It has 1 channel for items and 1 channel for users.
-	This layer is directly activated by the testing program (
-	e.g., to feed the 1200th item, the testing program sets 1 at the 1200th 
-	unit and 0 at other units in the item channel).
-	\item A mapping layer with linear units. It has one channel to map each 
-	entity to a vector.
-	The activations of these two channels are the two vectors.
-	It is the most critical layer as it gradually learns to map users and 
-	items to vectors,
-	which are complex and unobservable user and item attributes.
-	\item Multiple fully connected hidden layers (only one layer is shown in the
-	figure, but	multiple numbers of layers and layer sizes are evaluated in 
-	the experiments) of ReLU (rectified linear units).
-	These units have non-linear activation functions to give the model 
-	sufficient complexity.
-	These layers learn to extract more and more abstract rating-relevant 
-	information.
-	\item An output layer with a linear regression unit.
-	It learns to predict the rating based on abstracted information.
-\end{itemize}
-In this problem, ratings provide the information about users and items.
-We fully take this property into account and design this model to learn 
-complex and unobservable user and item attributes (i.e., user and item vectors) 
-supervised by a simple observable rating.
+	\label{fig:process}
+\end{figure}
+The model trains on the datasets and produces node embeddings.
+The visualizer reduces the dimension of the embeddings, attach the metadata to it and produces the final visualization.
+The knowledge obtained by the model is not logical, but statistical.
+Therefore, the best way to analyze and verify it is through visualization.
 
-\subsection{Actual deep learning model}
-In practice, Model R uses more efficient mapping tables instead of a 
-one-hot input layer in order to handle a dataset with an increasing number of 
-users and items, as shown in Figure \ref{fig:actural}.
-The actual model has two modifications from the conceptual model:
+\subsection{Datasets}
+In order to verify the knowledge of nodes learned by the model is meaningful (agrees with our domain knowledge), the experiments use real world datasets from two well known domains:
 \begin{itemize}
-	\item The input layer is replaced by two mapping tables: one for users and 
-	one for items.
-	Their inputs are user and item IDs and their outputs are user and item 
-	vectors.
-	\item The mapping layer is replaced by a 2-channel input layer. It is 
-	directly activated by the outputs of the mapping tables.
-	\item If we need to add a new user or item into the dataset
-	after the model finishes learning,
-	we can add the new entry into the table and let the model learn
-	only the new user or item vector using the newly introduced data,
-	by fixing all other weights in the model.
-	In this way the model can avoid relearning on the entire dataset.
+	\item Collaboration \cite{pan2012world}: This dataset records the academic collaboration activities between countries.
+	It contains 226 nodes and 20616 links, where each node is a country and the link weight is the number of collaborations between two countries (measured by the amount of papers written by authors from these two countries).
+	\item MovieLens100K \cite{harper2015movielens}: This dataset records movie rating activities on a recommender system.
+	It contains 2700 nodes and 100000 links, where 1000 nodes are users and 1700 nodes are items, i.e., movies, and the link weight is the rating score a user has given to a movie.
+	This dataset is a recommendation dataset, and also a bipartite graph dataset.
 \end{itemize}
-\begin{figure*}[!ht]
-	\centering
-	\begin{tikzpicture}[node distance=2cm]
-	\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right 
-	angle=110, minimum width=1cm, minimum height=1cm, text centered, 
-	draw=black, fill=blue!30]
-	\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=1cm, 
-	minimum height=1cm, text centered, draw=black, fill=red!30]
-	\tikzstyle{process} = [rectangle, minimum width=1cm, minimum height=1cm, 
-	text centered, draw=black, fill=green!30]
-	\tikzstyle{arrow} = [thick,->,>=stealth]
-	\node (linearRegression) [io] {linear regression};
-	\node (relu3) [process, below of=linearRegression] {ReLU[d=64]};
-	\node (linear1) [io, below of=relu3, xshift=-3cm] {user vector[d=64]};
-	\node (linear2) [io, below of=relu3, xshift=3cm] {item vector[d=64]};
-	\node (oneHot1) [startstop, below of=linear1] {user table[d=1000]};
-	\node (oneHot2) [startstop, below of=linear2] {item table[d=1700]};
-	\node (rating) [above of=linearRegression] {rating};
-	\node (output) [left of=linearRegression, xshift=-5cm] {output layer};
-	\node (hidden1) [below of=output] {hidden layers};
-	\node (input) [below of=hidden1] {input layer};
-	\node (mapping) [below of=input] {mapping tables};
-	\node (user) [below of=oneHot1] {user ID};
-	\node (item) [below of=oneHot2] {item ID};
-	\draw [arrow] (user) -- (oneHot1);
-	\draw [arrow] (item) -- (oneHot2);
-	\draw [arrow] (oneHot1) -- (linear1);
-	\draw [arrow] (oneHot2) -- (linear2);
-	\draw [arrow] (linear1) -- (relu3);
-	\draw [arrow] (linear2) -- (relu3);
-	\draw [arrow] (relu3) -- (linearRegression);
-	\draw [arrow] (linearRegression) -- (rating);
-	\end{tikzpicture}
-	\caption{The actual model with two modifications:
-		We factor the entity vector mapping process out of the neural net into 
-		two mapping tables.
-		We feed every item or user to the estimator by feeding their ID.
-		During learning, the estimator updates the vectors in the tables the 
-		same way it updates weights in the conceptual model.}
-	\label{fig:actural}
-\end{figure*}
-
-\subsection{Learning techniques}
-The estimator uses the above model and a number of popular deep learning 
-techniques:
-\begin{itemize}
-	\item Backpropagation: propagation of the error gradients from output layer 
-	back to each earlier layer \cite{rumelhart1988learning}
-	\item Stochastic gradient descent: the optimization that minimizes 
-	the error (descending against the error gradient in weight space) for a 
-	random sample in each gradient decent step \cite{lecun2012efficient}
-	\item Mini-batch: the modification to stochastic gradient descent to 
-	accelerate and smooth the descent by minimizing the error for a small 
-	random batch of samples in each gradient decent step \cite{mairal2010online}
-\end{itemize}
-
-\section{Experiments}
-We evaluated Model R and the baseline solutions experimentally,
-and the results show that Model R achieved much lower prediction error than 
-the baseline solutions.
-
-\subsection{Experiment settings}
-We evaluated Model R in the same settings used in a recent experimental 
-evaluation of the baseline solutions \cite{polatidis2016multi} on four datasets:
-\begin{itemize}
-	\item ML100K: MovieLens100K \cite{harper2015movielens}
-	\item ML1M: MovieLens1M \cite{harper2015movielens}
-	\item EP: Epinions \cite{massa2007trust}
-	\item MT: MovieTweetings \cite{dooms2013movietweetings}
-\end{itemize}
-The specifications of the datasets are summarized in Table \ref{tab:dataset}.
-The experiments use MAE as the prediction accuracy metric,
-and split each dataset randomly into 2 parts: 20\% into the test set and 80\% 
-into the training set.
+A snippet of MovieLens100K dataset is shown in Table \ref{tab:movielens100k} as an example.
 \begin{table}[!ht]
 	\centering
-	\caption{The dataset specs: 
-		The three columns are the dataset, number of users, items and ratings 
-		of the dataset.
-	}
-	\begin{tabular}{cccc}  \hline
-		Dataset & Users   & Items   & Ratings \\ \hline
-		ML100K  & 1,000   & 1,700   & 100,000 \\ \hline
-		ML1M    & 6,000   & 4,000   & 1,000,000 \\ \hline
-		EP      & 49,290  & 139,738 & 664,824 \\ \hline
-		MT      & 39,363  & 22,610  & 431,780 \\ \hline
+	\caption{A snippet of MovieLens100K dataset.}
+	\begin{tabular}{ccc}  \hline \rowcolor{blue!30}
+		User ID & Item ID & rating \\ \hline
+		196 & 272 & 3 \\ \hline
+		186 & 302 & 3 \\ \hline
+		22 & 377 & 1 \\ \hline
+		244 & 51 & 2 \\ \hline
+		166 & 346 & 1 \\ \hline
+		... & ... & ... \\ \hline
 	\end{tabular}
-	\label{tab:dataset}
+	\label{tab:movielens100k}
 \end{table}
 
-\subsection{Experiment process}
-At the beginning of an experiment on a dataset,
-the estimator sets aside 10\% of the training set as a validation set.
-A larger or smaller validation set did not reduce the prediction error in the 
-experiments.
-Then the estimator learns for several epochs:
-in each epoch,
-it learns on the training set,
-predicts on the validation set,
-and logs the validation error.
-In order to reduce over-fitting,
-the estimator stops learning when the validation error has not decreased for 3 
-epochs.
-At the end, the testing program lets the estimator predict on the test set 
-and record its testing error as its prediction error on that dataset.
+\subsection{Embeddings}
+The embeddings are the vectors the model maps the nodes to, and the vectors these experiments produce for us to visualize and analyze.
+Technically, these embeddings are the weights of the embedding layer of Model R shown in Figure \ref{fig:model-r}.
 
-\subsection{Experiment results}
-In our experiments, Model R's prediction error is 18\% to 8\% lower than
-the best baseline solution (i.e., MPCC) on all datasets, as shown in Table 
-\ref{tab:errors}.
-The error reduction from MPCC to Model R is calculated as:
-\begin{align*}
-\delta = \frac{MPCCError - ModelRError}{MPCCError}
-\end{align*}
+\subsection{Metadata}
+The metadata provides domain specific information about the datasets necessary to verify the embeddings match our understanding about the specific domain. A snippet of MovieLens100K dataset metadata is shown in Table \ref{tab:movielens100kmeta} as an example.
 \begin{table}[!ht]
 	\centering
-	\caption{The comparison of prediction errors (measured by MAE): 
-		the four baseline solutions are represented by their first letters (P, W, S, M).
-		Model R's (represented by letter R) prediction error is 18\% to 9\% 
-		lower than the best baseline 
-		solution (MPCC) on all datasets.
-	}
-	\begin{tabular}{ccccccc} \hline
-		Dataset & P    & W    & S    & M    & R    & $ \delta $ \\ \hline
-		ML100K  & 0.83 & 0.82 & 0.83 & 0.82 & 0.69 & 16\% \\ \hline
-		ML1M    & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 & 18\% \\ \hline
-		EP      & 1.00 & 1.02 & 1.00 & 0.93 & 0.76 & 18\% \\ \hline
-		MT      & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 & 9\%  \\ \hline
+	\caption{A snippet of MovieLens100K dataset metadata.}
+	\begin{tabular}{ccc} \hline \rowcolor{blue!30}
+		Item ID & Title & Release date \\ \hline
+		1 & Toy Story & 01-Jan-1995 \\ \hline
+		2 & GoldenEye & 01-Jan-1995 \\ \hline
+		3 & Four Rooms & 01-Jan-1995 \\ \hline
+		4 & Shanghai Triad & 01-Jan-1995 \\ \hline
+		5 & Twelve Monkeys & 01-Jan-1995 \\ \hline
+		... & ... & ... \\ \hline
 	\end{tabular}
-	\label{tab:errors}
+	\label{tab:movielens100kmeta}
 \end{table}
-Model R is also very robust in a wide range of parameter settings, shown in 
-Table \ref{tab:robust}.
-\begin{table}[!ht]
-	\centering
-	\caption{High robustness of Model R against parameter changes:
-		The estimator maintains its prediction error in range [0.68, 0.73] for 
-		a wide range of parameter settings. The batch size is the size of the 
-		batch of samples used in a single gradient descent step.
-		These experiments are on MovieLens 100K dataset with learning rate set 
-		at 0.01.
-	}
-	\begin{tabular}{cccc}  \hline
-		batch size & layer size & hidden layers \# & MAE \\ \hline
-		16 & 16 & 2 & 0.714 \\ \hline
-		16 & 16 & 8 & 0.710 \\ \hline
-		16 & 64 & 2 & 0.687 \\ \hline
-		16 & 64 & 8 & 0.706 \\ \hline
-		64 & 16 & 2 & 0.703 \\ \hline
-		64 & 16 & 8 & 0.724 \\ \hline
-		64 & 64 & 2 & 0.703 \\ \hline
-		64 & 64 & 8 & 0.713 \\ \hline
-	\end{tabular}
-	\label{tab:robust}
-\end{table}
+
+\subsection{Model training}
+The model training process is similar to the one documented in the original Model R paper with the exception of the step to log embedding layer weights.
+The training uses popular deep learning techniques including back propagation, stochastic gradient descent, mini-batch and early stopping.
+The specific training parameters are listed below:
+\begin{itemize}
+	\item batch size: 8
+	\item learning rate: 0.1
+	\item error metric: mean squared error
+	\item number of hidden layers: 2
+	\item number of units in each hidden layer: 16
+\end{itemize}
+
+\subsection{Embedding visualization}
+The embedding visualization process plays an important role in the final knowledge representation. It needs to reduce the dimensions of the vectors, i.e., to project the embeddings from a high dimensional space to a 2-dimensional space so that we can visualize them.
+It also needs to attach the related information provided by the metadata to each point in the low dimensional space so we can see what nodes those points represent.
+This embedding visualization process has two steps:
+\begin{itemize}
+	\item Perform PCA (principal component analysis) on the embeddings to project these points from high dimension to 2-dimensional space.
+	\item Join the metadata and the embeddings on the ID to attach the metadata information to the embeddings.
+	\item Display all embeddings in an image.
+\end{itemize}
 
 \subsection{Computing resources}
-We ran our experiments on a Lenovo ThinkCentre M83 machine with the following specifications:
+The program is coded in Python3 runs on a workstation with the following specifications:
 \begin{itemize}
 	\item Python implementation: CPython 3.5
-	\item Operating system: Ubuntu 16.10 64-bit
+	\item Deep learning package: TensorFlow \cite{abadi2016tensorflow}
+	\item Embedding visualization package: TensorBoard \cite{abadi2016tensorflow}
+	\item Operating system: Ubuntu 17.04 64-bit
 	\item Memory: 16 GB
-	\item Processor: Intel Core i7-4770 CPU @ 3.40GHz $ \times $ 8
+	\item Processor: Intel Core i7-4770 CPU
 \end{itemize}
-The program uses all 8 threads of the processor.
-Each run (learning and prediction) takes 2 to 8 minutes,
-depending on the dataset and parameters in the learning algorithm.
-The program is coded in Python
-with popular deep learning package TensorFlow \cite{abadi2016tensorflow}.
+The model training process takes 2 minutes on Collaboration dataset and 90 minutes on MovieLens100K dataset. The embedding visualization process takes less than 1 minute.
 
-\section{Future work}
-We designed Model R for the collaborative rating prediction problem,
-but we would like to incorporate a content-based capability to improve its 
-prediction accuracy.
-For example, in order to better predict the rating a user gives to an article,
-the model can append units at the mapping layer to receive a content vector 
-mapped from the text of the article by another neural net.
-The model can also append one unit for each numeric attribute of the user or 
-item (e.g., the age of a user, the price of a product) at the mapping layer.
-In this way, it will take advantage of not only relation data but also content 
-data, and therefore make more accurate predictions.
-We have an open source Python implementation under MIT license hosted on Github.
-The main deep learning package we use is TensorFlow 
-\cite{abadi2016tensorflow}.
+\section{Data analysis and visualization}
+The experiment results meet our expectation - nodes similar to each other have their corresponding points closer to each other in the embedding space.
+The experiment process runs once for each of the two datasets: MovieLens100K and Collaboration.
+We present the experiment results through analyses on a few well known cases and visualizations on the entire datasets as well.
+The analysis for each dataset has the following steps:
+\begin{enumerate}
+	\item select a well known reference node in the domain satisfying two conditions: first, it is well known so most readers should be familiar with it; second, it has two similar nodes that are easy to identify
+	\item select two similar nodes to the reference node
+	\item sort all nodes with respect to their distances to the reference
+	\item assert that the distances from the two similar nodes to the reference node are much shorter than that of the median point.
+\end{enumerate}
+
+\subsection{MovieLens100K}
+For this dataset, we select the movie Star Wars: The Empire Strikes Back (1980) as the reference movie and the other two movies in the original Star Wars trilogy as the two similar movies, i.e., Star Wars: A New Hope and Star Wars: Return of the Jedi.
+Notice that we do not need to assume which attributes of a movie have the most influence in users' preferences on movies because these two movies are similar to the reference movie in many attributes such as genre, and storyline.
+The distances of a number of closest 1000 movies to the reference movie are shown in Table \ref{tab:movielens100k-distance}.
+\begin{table}[!ht]
+	\centering
+	\caption{
+		The distances of movies to the reference movie for MovieLens100K dataset.
+	}
+	\begin{tabular}{ccc} \hline \rowcolor{blue!30}
+		Movie & Distance & Similarity \\ \hline
+		The Empire Strikes Back (1980) & 0 & self (reference) \\ \hline
+		Raiders of the Lost Ark (1981) & 0.012 & most similar \\ \hline
+		... & ... & ... \\ \hline
+		Star Wars (1977) & 0.047 & more similar \\ \hline
+		Return of the Jedi (1983) & 0.063 & more similar \\ \hline
+		... & ... & ... \\ \hline
+		Children of the Revolution (1996) & 0.256 & median point \\ \hline
+		... & ... & ... \\ \hline
+		Tomorrow Never Dies (1997) & 0.295 & less similar \\ \hline
+		Ayn Rand: A Sense of Life(1997) & 0.296 & less similar \\ \hline
+		... & ... & ... \\ \hline
+		101 Dalmatians (1996) & 0.335 & least similar \\ \hline
+	\end{tabular}
+	\label{tab:movielens100k-distance}
+\end{table}
+The data strongly suggest that the distances from similar movies to the reference movie are much shorter than that from the median point.
+The embeddings of all movies are shown in Figure \ref{fig:movies}.
+\begin{figure}[!ht]\centering
+	\includegraphics[width=0.49\textwidth]{movies}
+	\caption{
+		The embeddings of all movies in MovieLens100K dataset:
+		The Empire Strikes Back is the reference movie, highlighted in red.
+		The 1000 closest movies are highlighted in orange.
+		A portion of movies have their titles displayed.
+		This embedding shows the overall distribution of movies where similar movies such as Star Wars (1997) are closer to the reference movie.
+	}
+	\label{fig:movies}
+\end{figure}
+
+\subsection{Collaboration}
+For this dataset, we select the country United States as the reference country and other two countries with similar education and culture backgrounds as the two similar countries: United Kingdom and Germany.
+Notice that we assume education and culture background have the most influence in international collaboration patterns.
+The distances of a number of all countries to the reference country are shown in Table \ref{tab:countries-distance}.
+\begin{table}[!ht]
+	\centering
+	\caption{
+		The distances of countries to the reference country for Collaboration dataset.
+	}
+	\begin{tabular}{ccc} \hline \rowcolor{blue!30}
+		Country & Distance & Similarity \\ \hline
+		United States & 0 & self (reference) \\ \hline
+		China & 0.216 & most similar \\ \hline
+		... & ... & ... \\ \hline
+		United Kingdom & 0.411 & more similar \\ \hline
+		Germany & 0.483 & more similar \\ \hline
+		... & ... & ... \\ \hline
+		Jamaica & 29.531 & median point \\ \hline
+		... & ... & ... \\ \hline
+		Senegal & 31.018 & less similar \\ \hline
+		Peru & 31.259 & less similar \\ \hline
+		... & ... & ... \\ \hline
+		Zimbabwe & 32.283 & least similar \\ \hline
+	\end{tabular}
+	\label{tab:countries-distance}
+\end{table}
+The data strongly suggest that the distances from similar countries to the reference country are much shorter than that from the median point.
+The embeddings of all countries are shown in Figure \ref{fig:countries}.
+
+\begin{figure}[!ht]\centering
+	\includegraphics[width=0.49\textwidth]{countries}
+	\caption{
+		The embeddings of countries in Collaboration dataset:
+		The United States is the reference country, highlighted in red.
+		A portion of the countries have their names displayed.
+		This embedding shows the overall distribution of countries where similar countries such as Italy are closer to the reference country.
+	}
+	\label{fig:countries}
+\end{figure}
 
 \section{Conclusions}
-Model R shows that deep learning can be successfully applied to the 
-collaborative rating prediction problem
-and it can achieve higher prediction accuracy than a state-of-the-art 
-collaborative filtering method.
-The estimator powered by Model R effectively learns complex and unobservable 
-user and item attributes from simple and observable relations (i.e., users rate 
-items).
-The estimator learns both to map each entity to a vector, and to predict 
-the rating using these vectors.
+These experiment results support our hypothesis that the knowledge Model R learns are indeed meaningful node embeddings where similar nodes are close to each other in the node embedding space.
+Moreover, these results provide strong evidences for the claim in the original Model R paper that Model R learns knowledge of nodes (in the form of node embeddings) from the known link weights and uses that knowledge to predict unknown link weights.
+On a broader scope of deep learning application domains, this paper provides direct evidences that deep learning based embedding techniques are effective through embedding analyses and visualizations for two other application domains after natural language processing: recommender systems and graph mining.
+
+\section{Future work}
+The most important aspect we should work on in the future about this work is the metrics of node embedding.
+As embeddings are ubiquitous and valuable in deep learning and the popularity of deep learning is on the rise, we believe an important question is: what are good embeddings?
+An direct and naive answer can be: embeddings that match humans' perceptions of the nodes are good embeddings.
+But humans' perceptions are, by nature, very complicated and subjective.
+A few possible desirable metrics of good embeddings are discussed below.
+
+\subsection{Similarity measurement}
+Similar nodes should have their embeddings close to each other.
+This is an obvious one and also the one we tried to use intuitively for this work.
+The distance measurement for embeddings is relatively easy but the similarity measurement for nodes is relatively hard.
+One possible way to measure similarity is some type of statistics measurement of the behaviors of nodes.
+For example, in recommender systems, it is natural to assume two users are very similar if they always give the same ratings to each of the movies.
+But this is not easy to measure if the movies sets the two users rate do not have a big intersection.
+Another possible way to measure similarity is some type of measurement of the distance of their attribute vectors.
+For example, the attribute vector of a user can be [age, gender, occupation, location] as exposed by the metadata.
+But it is hard to know what are the attributes most relevant to users' movie preferences.
+
+\subsection{Relation measurement}
+Node pairs with the same logical relation should have their embeddings with same spacial relation.
+This one is less obvious and the logical relation measurement for nodes is hard.
+In natural language processing, words can have very clear logical relations such as (male, female) relation in word pairs including [(gentleman, lady), (king, queen), (father, mother), (uncle, aunt)].
+We have not identified any way to measure the logical relations for nodes.
+For example, it is rather difficult to define any logical relation for two users or countries.
+
+\subsection{Prediction accuracy measurement}
+Good embeddings should produce good prediction accuracy, despite of what type of nodes the datasets are concerned of.
+This one is very obvious because eventually some other machine learning system is to use these embeddings to do predictions.
+Therefore, good metrics should have positive correlation with prediction accuracy of the later stages of the deep learning system the embeddings are supplied to.
+This does not require any work with respect to the actual nodes but it is still hard to measure: some embeddings might work well on some models but not on other models so it is hard to decide which model should be used as the evaluation reference.
 
 \section*{Acknowledgements}
-This material is based upon work supported by Grant No.
+This material is based upon work supported by Grant No. number.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
