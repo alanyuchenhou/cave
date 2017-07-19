@@ -77,10 +77,8 @@ that converts a high dimensional raw input vector to a low dimensional vector
 containing more abstract knowledge about the input entity.
 
 \subsubsection{Image embedding with auto-encoders}
-This is an unsupervised embedding technique commonly used in feature learning
-or representation learning \cite{liou2008modeling}.
-A small auto-encoder neural network model is shown
-in Figure \ref{fig:audoEncoder}.
+This is an unsupervised embedding technique commonly used in image recognition  \cite{vincent2008extracting}.
+A small auto-encoder neural network model is shown in Figure \ref{fig:audoEncoder}.
 \begin{figure}[!ht]	
 	\centering
 	\newcommand{\layersep}{2cm}
@@ -139,17 +137,15 @@ in Figure \ref{fig:audoEncoder}.
 The model is a feed-forward neural network.
 The output layer and the input layer have the same size.
 The hidden layers closer to the input or output layers have larger sizes.
-This technique is unique because during training,
-the input activation and the expected output activation are always
-the same vector of pixel values of the image.
-From the input layer to the embedding layer, the layer size decreases,
-compressing the information.
+This technique is unique because during training, the input activation and the expected output activation are always the same vector of pixel values of the image.
+From the input layer to the embedding layer, the layer size decreases, compressing the information.
 It can effectively reduce a high dimensional vector (the activation of a large number of input units with raw pixel values)
 to a low dimensional vector (the activations of a small number of hidden units with abstracted meanings)
 \cite{hinton2006reducing}.
+This technique applies to not only images for image recognition, but also audio spectrogram for speech recognition \cite{feng2014speech} and words for natural language processing \cite{liou2014autoencoder}.
 
 \subsubsection{Audio embedding with convolutional neural network}
-This is a supervised deep learning technique commonly used in audio classification.
+This is a supervised deep learning technique commonly used in speech recognition \cite{abdel2014convolutional}.
 A small convolutional neural network model is shown in Figure \ref{fig:cnn}.
 \begin{figure}[!ht]
 	\centering
@@ -191,12 +187,9 @@ A small convolutional neural network model is shown in Figure \ref{fig:cnn}.
 	\label{fig:cnn}
 \end{figure}
 The model is a feed-forward neural network.
-The input layer is activated by
-an image,
-an audio spectrogram \cite{van2013deep} or
-a letter tri-gram vector of a document \cite{elkahky2015multi}.
+The input activation is the vector of pixel values of the audio spectrogram.
 The output layer uses softmax units to predict the target label,
-such as the genre, instrumentation of a song or the topic of an article.
+such as the genre of a song \cite{van2013deep} or the word of an utterance \cite{abdel2014convolutional}.
 From the input layer upward,
 each convolutional and pooling layer combo extracts more abstract information
 than the previous layer.
@@ -205,6 +198,9 @@ at the fully connected layer and uses it to predict the target label.
 Most of the studies on convolutional neural networks focus on accurately
 predicting the target attributes,
 and the concept of entity embedding is under-explored.
+This technique applies to not only audio spectrogram for speech recognition, but also images for image recognition \cite{krizhevsky2012imagenet},
+letter trigram for natural language processing \cite{collobert2008unified}
+and items for recommender systems \cite{elkahky2015multi}.
 
 \subsection{Relation-based embedding techniques}
 Techniques in this group extract knowledge about an entity from its relations 
@@ -228,12 +224,12 @@ The similarity of these techniques is that each entity does not contain any
 information about itself and therefore its one-hot encoding vector is also
 a meaningless vector.
 In other words, each entity is only defined by its relations with other entities.
-Therefore, the embedding process is a process where the neural network gradually
-forms understanding on the meanings of each entity by observing the relations
+Therefore, in the embedding process, the neural network gradually
+forms understanding on the meaning of all entities by observing the relations
 between all entities.
+
 \subsubsection{Word embedding with skip-gram model}
-This is an unsupervised embedding technique commonly used in
-natural language processing \cite{mikolov2013linguistic}.
+This is an unsupervised embedding technique commonly used in natural language processing \cite{mikolov2013linguistic}.
 A small skip-gram neural network model is shown in Figure \ref{fig:skipGram}.
 \begin{figure}[!ht]
 	\centering
@@ -279,7 +275,7 @@ A small skip-gram neural network model is shown in Figure \ref{fig:skipGram}.
 	\label{fig:skipGram}
 \end{figure}
 The model is a feed-forward neural network.
-The definition of context is the set of words close to the middle word.
+The definition of context is the set of words close to the given word.
 For example, given a natural language sentence:
 \begin{align*}
 	&sentence = [\\
@@ -320,20 +316,19 @@ as shown in Table \ref{tab:words}.
 	\label{tab:words}
 \end{table}
 Given a word, its context word is a random variable with a probability distribution:
-\[P(context\_word = x | middle\_word = fox)\]
+\[P(context\_word = x | given\_word = fox)\]
 where
 \[x \in vocabulary\]
 and the context-word probability distribution sums up to 1 over the vocabulary:
 \begin{align*}
-	&\sum_{x \in vocabulary}P(context\_word = x | middle\_word = fox)\\
+	&\sum_{x \in vocabulary}P(context\_word = x | given\_word = fox)\\
 	&= 1\\
 \end{align*}
 During each training step, one training example - a (word, context-word) pair - is used.
-The input layer is activated by the one-hot encoding of the middle word.
+The input layer is activated by the one-hot encoding of the given word.
 The output layer is expected to predict the one-hot encoding of the context-word.
 However, as each word can have many possible context-words, there is always a difference between the expected output and the actual output.
-After substantial training, a skip-gram neural network model will eventually output the context-word probability distribution,
-even though it is expected to output the one-hot encoding of the one context-word in the training example.
+After substantial training, a skip-gram neural network model will eventually output the context-word probability distribution.
 The embeddings for all words are technically the weights in the embedding layer.
 For any natural language corpus and any two words X and Y in this corpus, we have the following equivalent statements:
 \begin{itemize}
@@ -342,7 +337,9 @@ For any natural language corpus and any two words X and Y in this corpus, we hav
 	\item X and Y have similar embeddings
 \end{itemize}
 The final outcome is similar words have similar embeddings.
-These embeddings are valuable in many natural language processing tasks.
+Acquiring these embeddings is often the first step in many natural language processing tasks such as paraphrasing detection \cite{socher2012deep}, constituency parsing \cite{socher2013parsing},
+sentiment analysis \cite{socher2013recursive}, and
+information retrieval \cite{shen2014latent}.
 
 \subsubsection{Item embedding with skip-gram model}
 This is an embedding technique similar to word embedding, commonly used in recommender systems \cite{barkan2016item2vec}.
@@ -374,16 +371,15 @@ By reducing purchase orders to natural language sentences and items to words,
 this technique reduces the item embedding problem to the word embedding problem.
 Applying the word embedding technique will produce the desired item embeddings.
 The final outcome is similar items have similar embeddings.
-These embeddings are valuable in many recommender systems tasks.
 
 \subsubsection{Node embedding with skip-gram model}
 This is an embedding technique similar to item embedding, commonly used in
 graph mining \cite{perozzi2014deepwalk} \cite{grover2016node2vec}.
 This technique reduces the node embedding problem to the word embedding problem and then applies the word embedding technique.
 For example, given a walk in a social network of users:
-\[ walk = [John, Mary, Alice, Bob, James] \]
-we have the context of [Alice]:
-\[ context(Alice) = \{John, Mary, Bob, James\} \]
+\[ walk = [John, Mary, James, Alice, Bob] \]
+we have the context of [James]:
+\[ context(James) = \{John, Mary, Alice, Bob\} \]
 A graph has many walks, which can produce a dataset where each example is a (node, context-node) pair.
 By reducing walks to natural language sentences and nodes to words,
 this technique reduces the node embedding problem to the word embedding problem.
@@ -391,7 +387,8 @@ The final outcome is similar nodes have similar embeddings.
 
 \section{Node embedding with Model R}
 Model R is a different supervised neural network model which has shown superior performance in graph link weight prediction applications recently \cite{hou2017deep}.
-A simplified Model R is shown in Figure \ref{fig:model-r}.
+A simplified version of Model R is shown in Figure \ref{fig:model-r}.
+In this section, we describe the architecture of Model R and the node embedding technique based on this model.
 
 \subsection{Model R}
 \begin{figure*}[!ht]
@@ -424,9 +421,9 @@ A simplified Model R is shown in Figure \ref{fig:model-r}.
 	
 	\end{tikzpicture}
 	\caption{
-		A simplified Model R with 1 input layer (red), 2 hidden layers (green), and 1 output layer (blue).
+		A simplified version of Model R with 1 input layer (red), 2 hidden layers (green), and 1 output layer (blue).
 		Notice that the embedding layer is the first hidden layer.
-		The embedding layer and the input layer split into two channels: one channel for source node and one channel for the destination node.
+		The embedding layer and the input layer each has two channels: one channel for the source node and one channel for the destination node.
 		The hidden layers use rectified linear units.
 		The output layer uses linear units.
 	}
@@ -455,15 +452,14 @@ The input layer is activated by the one-hot encodings of a (source node, destina
 \subsection{Model R based node embedding technique}
 Although Model R is designed for link weight prediction applications,
 it can also be used just for the purpose of node embedding, because node embeddings are valuable in other machine learning applications such as node classification.
-The Model R based node embedding technique is very different from those skip-gram based techniques.
-One potential advantage of the Model R based node embedding technique is that it takes advantage of the highly organized, regular and repeated structure in the relational dataset representing a graph: 
-relations between nodes (i.e., a source node connects to a destination node through one and only one weighted link).
-The skip-gram model does not exploit this structure in natural language processing because this structure does not exist (i.e., for a neural net, words can simply show up in a sequence from a day-to-day conversation, in many flexible and unpredictable ways, with little structure or regularity).
+The Model R based node embedding technique is different from those skip-gram based techniques.
+One potential advantage of the Model R based node embedding technique is that it takes advantage of the highly organized, regular and repeated structure in the relational dataset representing a graph, i.e., a source node connects to a destination node through one and only one weighted link.
+The skip-gram model does not exploit this structure in natural language processing because this structure does not exist, i.e., words can simply show up in a sequence, in many flexible and unpredictable ways, with little structure or regularity.
 
 \section{Motivation}
 Seeing the good performance of Model R, we are interested in this question: what exactly does Model R learn?
 Even though Model R outperforms some of the latest link weight prediction techniques by a large margin, the knowledge it learns is not well explained.
-The original Model R paper claims that Model R learns knowledge of nodes (in the form of node embeddings) from the known link weights and uses that knowledge to predict unknown link weights \cite{hou2017deep}.
+The original Model R paper claims that Model R learns knowledge of nodes in the form of node embeddings from the known link weights and uses that knowledge to predict unknown link weights \cite{hou2017deep}.
 This claim is plausible and similar to the claim in the original word2vec paper \cite{mikolov2013linguistic}.
 There have been ample amount of studies on word2vec focusing on the analysis and visualization of the word embeddings \cite{mikolov2013distributed} \cite{mikolov2013linguistic}.
 These studies have provided strong evidences that the word embeddings learned by the skip-gram model are meaningful knowledge about words.
@@ -472,13 +468,9 @@ Furthermore, no study about this model has been done yet, leaving the claim of n
 If we can have more in-depth study on those node embeddings similar to the studies on word embeddings, we can have a much better understanding of what Model R learns and why it performs well.
 
 \section{Objective}
-The purpose of this paper is to find out what knowledge Model R learns during training and how this knowledge allows it to outperform other techniques in prediction tasks.
+The purpose of this paper is to find out what knowledge Model R learns during training.
 Our hypothesis is that the knowledge it learns are meaningful node embeddings where similar nodes (according to our own (human) semantics associated with the domain's entities) are close to each other in the node embedding space.
-We make this hypothesis based on the following observations:
-\begin{itemize}
-	\item Model R and skip-gram model have similar architecture in their one-hot encoding input layer and linear embedding layer;
-	\item Skip-gram model produces word embeddings where similar words are close to each other in the word embedding space.
-\end{itemize}
+We make this hypothesis based on the following observations that Model R and skip-gram model have similar architecture in their one-hot encoding input layer and linear embedding layer, and that Skip-gram model produces word embeddings where similar words are close to each other in the word embedding space.
 This hypothesis also agrees with the claim in the original Model R paper.
 Our goal is to verify this hypothesis by analyzing and visualizing the node embeddings produced by Model R in a few datasets.
 If the hypothesis is correct - the knowledge of nodes is represented as points in the embedding space - there should be a way to visualize them and they should match any knowledge we have on the particular domain the dataset is concerned.
@@ -518,16 +510,17 @@ The main experiment process is shown in Figure \ref{fig:process}.
 	\label{fig:process}
 \end{figure}
 The model trains on the datasets and produces node embeddings.
-The visualizer reduces the dimension of the embeddings, attaches the metadata to it and produces the final visualization.
+The visualizer reduces the dimension of the embeddings, attaches the metadata to the embeddings and produces the final visualization.
 The knowledge obtained by the model is not logical, but statistical.
 Therefore, the best way to analyze and verify it is through visualization.
+This section describes the experiment process design in detail.
 
 \subsection{Datasets}
 In order to verify the knowledge of nodes learned by the model is meaningful (agrees with our domain knowledge), the experiments use real world datasets from two well known domains:
 \begin{itemize}
 	\item Collaboration \cite{pan2012world}: This dataset records the academic collaboration activities between countries.
-	It contains 226 nodes and 20616 links, where each node is a country and the link weight is the number of collaborations between two countries (measured by the amount of papers written by authors from these two countries).
-	\item MovieLens100K \cite{harper2015movielens}: This dataset records movie rating activities on a recommender system.
+	It contains 226 nodes and 20616 links, where each node is a country and the link weight is the number of collaborations between two countries (measured by the amount of papers written by authors from both of these two countries).
+	\item MovieLens100K \cite{harper2015movielens}: This dataset records movie rating activities on a movie review platform.
 	It contains 2700 nodes and 100000 links, where 1000 nodes are users and 1700 nodes are items, i.e., movies, and the link weight is the rating score a user has given to a movie.
 	This dataset is a recommendation dataset, and also a bipartite graph dataset.
 \end{itemize}
@@ -570,7 +563,7 @@ The metadata provides domain specific information about the datasets necessary t
 
 \subsection{Model training}
 The model training process is similar to the one documented in the original Model R paper with the exception of the step to log embedding layer weights.
-The training uses popular deep learning techniques including back propagation, stochastic gradient descent, mini-batch and early stopping.
+The training uses popular deep learning techniques including back propagation, stochastic gradient descent and mini-batch.
 The specific training parameters are listed below:
 \begin{itemize}
 	\item batch size: 8
@@ -581,14 +574,14 @@ The specific training parameters are listed below:
 \end{itemize}
 
 \subsection{Embedding visualization}
-The embedding visualization process plays an important role in the final knowledge representation. It needs to reduce the dimensions of the vectors, i.e., to project the embeddings from a high dimensional space to a 2-dimensional space so that we can visualize them.
-It also needs to attach the related information provided by the metadata to each point in the low dimensional space so we can see what nodes those points represent.
-This embedding visualization process has two steps:
-\begin{itemize}
-	\item Perform PCA (principal component analysis) on the embeddings to project these points from high dimension to 2-dimensional space.
-	\item Join the metadata and the embeddings on the ID to attach the metadata information to the embeddings.
+The embedding visualization process plays an important role in the final knowledge representation.
+This embedding visualization process has the following steps:
+\begin{enumerate}
+	\item Join the metadata and the embeddings on the node ID to attach the related information provided by the metadata to each node.
+	\item Calculate the Euclidean distances between pairs of nodes.
+	\item Dimensionality reduction through PCA (principal component analysis) on the embeddings to project these points from the high dimensional embedding space to a 2-dimensional space so that we can visualize them.
 	\item Display all embeddings in an image.
-\end{itemize}
+\end{enumerate}
 
 \subsection{Computing resources}
 The program is coded in Python3 runs on a workstation with the following specifications:
@@ -603,16 +596,16 @@ The program is coded in Python3 runs on a workstation with the following specifi
 The model training process takes 2 minutes on Collaboration dataset and 90 minutes on MovieLens100K dataset. The embedding visualization process takes less than 1 minute.
 
 \section{Data analysis and visualization}
-The experiment results meet our expectation - nodes similar to each other (based on their semantics associated with the specific domain) have their corresponding points closer to each other in the embedding space.
+The experiment results meet our expectation - nodes more similar to each other (based on their semantics associated with the specific domain) have their corresponding points closer to each other in the embedding space.
 The experiment process runs once for each of the two datasets: MovieLens100K and Collaboration.
-We present the experiment results through analyses on a few well known cases and visualizations on the entire datasets as well.
+We present the data analyses on a few well known cases and visualizations on the entire datasets as well.
 The analysis for each dataset has the following steps:
 \begin{enumerate}
-	\item select a well known reference node in the domain satisfying two conditions: first, it is well known so most readers should be familiar with it; second, it has two similar nodes that are easy to identify
-	\item select two similar nodes to the reference node
+	\item select a well known reference node in the domain with two similar nodes that are easy to identify
 	\item sort all nodes with respect to their distances to the reference
 	\item assert that the distances from the two similar nodes to the reference node are much shorter than that of the median point.
 \end{enumerate}
+In this section, we perform data analysis on the experiment results for both datasets.
 
 \subsection{MovieLens100K}
 For this dataset, we select the movie Star Wars: The Empire Strikes Back (1980) as the reference movie and the other two movies in the original Star Wars trilogy as the two similar movies, i.e., Star Wars: A New Hope and Star Wars: Return of the Jedi.
@@ -640,7 +633,7 @@ The distances of a number of closest 1000 movies to the reference movie are show
 	\end{tabular}
 	\label{tab:movielens100k-distance}
 \end{table}
-The data strongly suggest that the distances from similar movies to the reference movie are much shorter than that from the median point.
+The data indicate that the distances from similar movies to the reference movie are much shorter than that from the median point.
 The embeddings of all movies are shown in Figure \ref{fig:movies}.
 \begin{figure}[!ht]\centering
 	\includegraphics[width=0.49\textwidth]{movies}
@@ -656,7 +649,7 @@ The embeddings of all movies are shown in Figure \ref{fig:movies}.
 
 \subsection{Collaboration}
 For this dataset, we select the country United States as the reference country and two other countries with similar economy, education and culture backgrounds as the two similar countries: United Kingdom and Germany.
-Notice that we assume education and culture background have the most influence in international collaboration patterns.
+Notice that we assume economy, education and culture background have the most influence in international collaboration patterns.
 The distances of a number of all countries to the reference country are shown in Table \ref{tab:countries-distance}.
 \begin{table}[!ht]
 	\centering
@@ -680,7 +673,7 @@ The distances of a number of all countries to the reference country are shown in
 	\end{tabular}
 	\label{tab:countries-distance}
 \end{table}
-The data strongly suggest that the distances from similar countries to the reference country are much shorter than that from the median point.
+The data indicate that the distances from similar countries to the reference country are much shorter than that from the median point.
 The embeddings of all countries are shown in Figure \ref{fig:countries}.
 
 \begin{figure}[!ht]\centering
@@ -697,36 +690,37 @@ The embeddings of all countries are shown in Figure \ref{fig:countries}.
 \section{Conclusions}
 These experiment results support our hypothesis that the knowledge Model R learns is indeed meaningful node embeddings where similar nodes (based on their semantics associated with the specific domain) are close to each other in the node embedding space.
 Moreover, these results provide strong evidences for the claim in the original Model R paper that Model R learns knowledge of nodes (in the form of node embeddings) from the known link weights and uses that knowledge to predict unknown link weights.
-On a broader scope of deep learning application domains, this paper provides direct evidences that deep learning based embedding techniques are effective through embedding analyses and visualizations for two other application domains after natural language processing: recommender systems and graph mining.
+On a broader scope, this work provides direct evidences that deep learning based embedding techniques are effective in two other application domains beside natural language processing: recommender systems and graph mining.
 
 \section{Future work}
 The most important aspect we should work on in the future about this work is the metrics of node embedding.
 As embeddings are ubiquitous and valuable in deep learning and the popularity of deep learning is on the rise, we believe an important question is: what are good embeddings?
-A direct and naive answer can be: embeddings that match humans' perceptions of the nodes are good embeddings.
+A direct answer can be: embeddings that match humans' perceptions of the nodes are good embeddings.
 But humans' perceptions are, by nature, very complicated and subjective.
-A few possible desirable metrics of good embeddings are discussed below.
+In this section, we discuss a few possible directions to we can work on in the future and the challenges of each of them.
 
-\subsection{Similarity measurement}
-Similar nodes should have their embeddings close to each other.
+\subsection{Similarity and distance measurement}
+As similar nodes should have their embeddings close to each other, a possible metric is the distances of the embeddings of similar nodes.
 This is an obvious metric and also the one we tried to use intuitively for this work.
 The distance measurement for embeddings is relatively easy but the similarity measurement for nodes is relatively hard.
 One possible way to measure similarity is some type of statistics measurement of the behaviors of nodes.
-For example, in recommender systems, it is natural to assume two users are very similar if they always give the same ratings to each of the movies.
-But this is not easy to measure if there are few movies rated by both users.
+For example, in recommender systems, it is natural to assume two users are very similar if they always give the same ratings to each one of the movies.
+The challenge is this measurement is not easy to measure if there are few movies rated by both users.
 Another possible way to measure similarity is some type of measurement of the distance of their attribute vectors.
 For example, the attribute vector of a user can be [age, gender, occupation, location] as exposed by the metadata.
-But it is hard to know what are the attributes most relevant to users' movie preferences.
+In order for this measure to be useful, we need to know what attributes are the most relevant to users' movie preferences.
 
 \subsection{Relation measurement}
 Node pairs with the same logical relation should have their embeddings with same spacial relation.
 This one is less obvious and the logical relation measurement for nodes is hard.
-In natural language processing, words can have very clear logical relations such as (male, female) relation in word pairs including [(gentleman, lady), (king, queen), (father, mother), (uncle, aunt)].
+In natural language processing, words can have very clear logical relations.
+For example, (male, female) relation exists in word pairs such as [(gentleman, lady), (king, queen), (father, mother), (uncle, aunt)].
 We have not identified any way to measure the logical relations for nodes.
-For example, it is rather difficult to define any logical relation for two users or countries.
+For example, it is rather difficult to define any logical relation of two users or countries.
 
 \subsection{Prediction accuracy measurement}
 Good embeddings should produce good prediction accuracy, despite the type of node targeted for prediction.
-This one is very obvious because eventually some other machine learning system is to use these embeddings to do predictions.
+This one is very obvious because eventually some other machine learning system should use these embeddings to do valuable predictions.
 Therefore, good metrics should have positive correlation with prediction accuracy of the later stages of the deep learning system whose inputs are the embeddings.
 This does not require any work with respect to the actual nodes but it is still hard to measure: some embeddings might work well on some models but not on other models so it is hard to decide which model should be used as the evaluation reference.
 
