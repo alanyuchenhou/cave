@@ -1,0 +1,26 @@
+\documentclass{article}
+\usepackage{fullpage}
+
+\begin{document}
+\title{Summary of extensions}
+\maketitle
+
+This manuscript is an extension of our previous IJCNN conference paper
+Y. Hou and L. B. Holder, “Deep learning approach to link weight
+prediction,” in Neural Networks (IJCNN), 2017 International Joint
+Conference on. IEEE, 2017, pp. 1855–1862.
+This submission includes the following improvements:
+\begin{enumerate}
+	\item A more in depth review of existing embedding techniques.
+	The conference paper briefly mentions the existence of a few embedding techniques.
+	This manuscript provides a detailed review and classification of those techniques: content based embedding techniques (image embedding and audio embedding) and relation based embedding techniques (node embedding, item embedding and node embedding).
+	This makes understanding Model R embedding technique much easier.
+	\item A simplified version of Model R.
+	The conference paper uses a concept of node dictionary and mapping layer to describe the input layers of the neural network model, which confuses many readers.
+	This manuscript changes those to more standard one-hot encoding input layer and embedding layer concepts introduced in famous node2vec technique.
+	This the model R architecture much clearer.
+	\item A detailed node embedding analysis.
+	The conference paper assumes that Model R has the ability to extract knowledge of nodes (i.e., node embeddings) from the relations between nodes (i.e., links), but does not provide evidence to justify that assumption.
+	This manuscript presents a detailed node embedding analysis to provide strong evidence support that assumption.
+\end{enumerate}
+\end{document}
