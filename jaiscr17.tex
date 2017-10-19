@@ -594,7 +594,7 @@ A small skip-gram neural network model is shown in Figure \ref{fig:skipGram}.
 \end{figure}
 The model is a feed-forward neural network.
 The definition of context is the set of words close to the given word.
-For example, given the natural language vocabulary \{the, quick, brown, fox, jumps, over, lazy, dog\} sentence ``the quick brown fox jumps over the lazy dog", a context radius of 2, and the word ``fox", we have the context of fox \{quick, brown, jumps, over\}.
+For example, given the natural language vocabulary \{the, quick, brown, fox, jumps, over, lazy, dog\}, the sentence ``the quick brown fox jumps over the lazy dog", a context radius of 2, and the word ``fox", we have the context of fox \{quick, brown, jumps, over\}.
 A natural language corpus has many sentences,
 therefore, from these sentences we can produce a dataset where each example is a (word, context-word) pair,
 as shown in Table \ref{tab:words}.
@@ -675,18 +675,7 @@ The final outcome is similar items have similar embeddings.
 This is an embedding technique similar to item embedding, commonly used in
 graph mining \cite{perozzi2014deepwalk} \cite{grover2016node2vec}.
 This technique reduces the node embedding problem to the word embedding problem and then applies the word embedding technique.
-For example, given a walk in a social network of users:
-\begin{align*}
-	&walk = [\\
-	&John, Mary, James, Alice, Bob\\
-	&]
-\end{align*}
-we have the context of [James]:
-\begin{align*}
-	&context(James) = \{\\
-	&John, Mary, Alice, Bob\\
-	&\}
-\end{align*}
+For example, given a walk in a social network of users \{John, Mary, James, Alice, Bob\}, we have the context of James \{John, Mary, Alice, Bob\}.
 A graph has many walks, which can produce a dataset where each example is a (node, context-node) pair.
 By reducing walks to natural language sentences and nodes to words,
 this technique reduces the node embedding problem to the word embedding problem.
@@ -1120,7 +1109,7 @@ The distances of a number of closest movies to the reference movie are shown in 
 The data indicate that the distances from similar movies to the reference movie are much shorter than that from the median point.
 The embeddings of all movies are shown in Figure \ref{fig:movies}.
 \begin{figure*}[!ht]\centering
-	\includegraphics[width=\textwidth]{movies}
+	\includegraphics[width=0.8\textwidth]{movies-annotation}
 	\caption{
 		The embeddings of all movies in MovieLens100K dataset:
 		``The Empire Strikes Back" is the reference movie, highlighted in red.
@@ -1159,7 +1148,7 @@ The distances of a number of all countries to the reference country are shown in
 The data indicate that the distances from similar countries to the reference country are much shorter than that from the median point.
 The embeddings of all countries are shown in Figure \ref{fig:countries}.
 \begin{figure*}[!ht]\centering
-	\includegraphics[width=\textwidth]{countries}
+	\includegraphics[width=0.8\textwidth]{countries-annotation}
 	\caption{
 		The embeddings of countries in Collaboration dataset:
 		The United States is the reference country, highlighted in red.
