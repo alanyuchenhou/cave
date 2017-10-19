@@ -20,15 +20,15 @@
 \begin{document}
 \title{Model R: Link Weight Prediction with Deep Learning}
 \author{
-	name\\
-	address1 \\
-	address2 \\
-	email \\
+	Yuchen Hou\\
+	School of Electrical Engineering and Computer Science \\
+	Washington State University, Pullman, WA 99164 \\
+	yuchen.hou@wsu.edu
 	\and
-	name\\
-	address1 \\
-	address2 \\
-	email \\
+	Lawrence B. Holder\\
+	School of Electrical Engineering and Computer Science \\
+	Washington State University, Pullman, WA 99164 \\
+	holder@wsu.edu
 }
 \maketitle
 
@@ -39,22 +39,22 @@ processing.
 However, the research on its application in graph mining is 
 still in an early stage.
 Here we present Model R, a neural network model created to provide a deep 
-learning approach to link weight prediction problem.
-This model uses a node embedding technique that extracts node embeddings(
-knowledge of nodes) from known links' weights (relations between nodes) and 
-uses this knowledge to predict unknown links' weights.
+learning approach to the link weight prediction problem.
+This model uses a node embedding technique that extracts node embeddings (
+knowledge of nodes) from the known links' weights (relations between nodes) and 
+uses this knowledge to predict the unknown links' weights.
 We demonstrate the power of Model R through experiments and compare it with 
-stochastic block model and its derivatives.
+the stochastic block model and its derivatives.
 Model R shows that deep learning can be successfully applied to 
 link weight prediction and it outperforms stochastic block model and its derivatives by up to 73\% in terms of prediction accuracy.
-We also present a brief node embedding analysis.
-We anticipate this new approach to provide effective solutions to more
+We analyze the node embeddings to confirm that closeness in embedding space correlates with stronger relationships as measured by the link weight.
+We anticipate this new approach will provide effective solutions to more
 graph mining tasks.
 \end{abstract}
 
 \section{Introduction}
 Both academia and industry have seen pervasive adoption of deep learning 
-techniques powered by neural network models since early 2010s,
+techniques powered by neural network models since the early 2010s,
 when they began to outperform other machine learning techniques in various 
 application domains, e.g.,
 speech recognition \cite{hannun2014deep},
@@ -71,32 +71,47 @@ graph mining is a new and active application area for deep learning.
 An important task in graph mining is link prediction \cite{liben2007link} 
 \cite{al2006link}, i.e., link existence prediction:
 to predict the existence of a link.
-A less well-known problem is the link weight prediction: to predict the weight of a link.
+A less well-known problem is link weight prediction: to predict the weight of a link.
 Link weight prediction is more informative in many scenarios.
 For example, when describing the connection of two users in a social network,
-a description "Alice texts Bob 128 times per day" is more informative than
-"Alice likes Bob".
+a description ``Alice texts Bob 128 times per day" is more informative than
+``Alice texts Bob".
 
 We want to create a technique to predict link weights in a graph using a 
 neural net model.
-The estimator should learn to represent the graph in a meaningful way and to 
-learn to predict the target link weights using the representation it learns.
+The estimator should learn to represent the graph in a meaningful way and learn to predict the target link weights using the representation it learns.
+
 The contribution of this paper is
-a deep learning approach to link weight prediction problem.
+a first deep learning approach to the link weight prediction problem.
+We introduce Model R - the first deep neural network model specifically designed to solve the link weight prediction problem.
+We systematically study Model R's node embedding technique and illustrate its uniqueness compared to other embedding techniques.
+We also show that Model R significantly outperforms the state of the art non-deep learning approach to the link weight prediction problem - the stochastic block model.
+
+The rest of the paper includes the following sections:
+\begin{itemize}
+	\item Problem: a description of the link weight prediction problem, including a social network message volume prediction example and a formal definition.
+	\item Existing approaches: a review of the state of the art approaches to the link weight prediction problem, including Node Similarity Model, Stochastic Block Model and models derived from Stochastic Block Models.
+	\item Deep learning and embeddings: a review of latest deep learning embedding techniques including content based techniques and relation based techniques.
+	\item Approach: an introduction to Model R, including its neural network architecture, node embedding technique, deep learning techniques, design parameters and choices.
+	\item Experiments: an experimental evaluation of the performance of Model R, with comparison to 4 baseline approaches on 4 datasets.
+	\item Node embedding analysis: an analysis of the node embeddings Model R produces to confirm that closeness of nodes in embedding space correlates with strength of node relations.
+	\item Conclusion: Model R outperforming Stochastic Block Model shows deep learning can be applied to the link weight prediction problem and achieve better performance than the state of the art non-deep learning approaches.
+	\item Future work: a brief discussion of possible future directions of this work.
+\end{itemize}
 
 \section{Problem}
 We consider the problem of link weight prediction in a weighted directed graph.
-We first take a look at an example of the problem,
-and then give the problem a definition.
+We first show an example of the problem,
+and then give the problem definition.
 An undirected graph can be reduced to a directed graph by converting each weighted undirected link to two directed links with the same weight and opposite directions,
 so the prediction for a weighted undirected graph is a special case of the problem we consider.
 
 \subsection{Problem example}
-Let us look at an example of link weight prediction - message volume prediction in a social network, shown in Figure \ref{fig:example} and Table \ref{tab:example}.
+Let us look at an example of link weight prediction, message volume prediction in a social network, shown in Figure \ref{fig:example}.
 In this example, there are 3 users in a social network: A, B and C.
 Each user can send any amount of text messages to every other user.
-We know the message size transmitted between A and C, B and C, but not A and B.
-We want to predict the message size transmitted between A and B.
+We know the number of messages transmitted between A and C, B and C, but not A and B.
+We want to predict the number of messages transmitted between A and B.
 \begin{figure}[!htb]\centering
 	\begin{tikzpicture}[
 	node distance = 4cm,
@@ -109,11 +124,11 @@ We want to predict the message size transmitted between A and B.
 	\node[state] (C) [below right=of B] {C};
 	\node[state] (A) [above right=of C] {A};
 	\path[->]   
-	(A) edge[bend left,"?"]   (B)
-	(B) edge[bend left,"7"]   (C)
+	(A) edge["?"]   (B)
+	(B) edge["7"]   (C)
+	(C) edge["74"]  (A)
 	(B) edge[bend left,"?"]   (A)
 	(A) edge[bend left,"4"]   (C)
-	(C) edge[bend left,"74"]  (A)
 	(C) edge[bend left,"11"]  (B);
 	\end{tikzpicture}
 	\caption{
@@ -123,27 +138,12 @@ We want to predict the message size transmitted between A and B.
 	\label{fig:example}
 \end{figure}
 
-\begin{table}[!ht]\centering
-	\caption{
-		The link list representation of the example in Figure \ref{fig:example}.
-	}
-	\begin{tabular}{ccc}  \hline \rowcolor{blue!30}
-		Source node & Destination node & Link weight \\ \hline
-		A & B & ? \\ \hline
-		A & C & 74 \\ \hline
-		B & A & ? \\ \hline
-		B & C & 7 \\ \hline
-		C & A & 4 \\ \hline
-		C & B & 11 \\ \hline
-	\end{tabular}
-	\label{tab:example}
-\end{table}
 This is a simplified network similar to many real social networks, where every user interacts with other users by posting, sharing, following or liking them.
 There can not be any logical approach to derive the unknown message volumes,
 as they have randomness.
 But there can be statistical approaches to build models to predict them.
 The ability to predict these interactions potentially allows us to recommend new connections to users:
-if A is predicted/expected to send a large amount of messages to B by some model,
+if A is predicted/expected to send a large number of messages to B by some model,
 and A is not connected to B yet,
 we can recommend B as a new connection to A.
 
@@ -155,18 +155,18 @@ Now we define the link weight prediction problem in a weighted directed graph.
 \end{itemize}
 For every possible link (1 out of $ n^2 $, where n is the number of nodes), 
 if we know its weight, we know it exists;
-if we do not know its weight, we do not know it exists.
+if we do not know its weight, we do not know if it exists.
 This is a very practical point when we handle streaming graphs:
 for any possible link,
 we either know it exists and know its weight (if it has been streamed in), or we do not know if the link will ever exist, nor know its weight.
 
 \section{Existing approaches}
 In our literature study on previous research in the link weight prediction problem,
-we have found few existing approaches and no deep learning ones.
+we have found some existing approaches, but none use deep learning.
 In this section,
 we review these existing approaches.
 
-\subsection{Node similarity model}
+\subsection{Node Similarity Model}
 This approach is designed for undirected graphs.
 It assumes the weight of a link between two nodes 
 is proportional to the similarity of those two nodes.
@@ -216,7 +216,7 @@ These nine forms represent three groups of measures of 2-hop paths connecting th
 \end{itemize}
 And each group contains three forms:
 \begin{itemize}
-	\item Common Neighbors: this form is based on path and ignore node degrees.
+	\item Common Neighbors: this form is based on paths and ignores node degrees.
 	\item Adamic-Adar: this form is similar to Common Neighbors,
 	but depresses the contribution of nodes with high degrees or high strengths.
 	\item Resource Allocation: this form is similar to Adamic-Adar,
@@ -324,7 +324,7 @@ by replacing pair $ (T_e, \eta_e) $ in the bWSBM with:
 \end{align*}
 where $ d_i $ is the degree of node i \cite{aicher2014learning}.
 
-\section{Observations}
+\section{Deep Learning and Embeddings}
 As deep learning techniques become more powerful and standardized,
 a key process of a domain-specific deep learning application
 is converting entities to points in an embedding space, or equivalently,
@@ -332,7 +332,7 @@ mapping entities to vectors in a vector space,
 because a neural net needs vectors as inputs.
 These vectors are called embeddings and this process is called embedding.
 Embeddings are ubiquitous in deep learning,
-appearing in natural language processing (embeddings for word embeddings), recommender systems (embeddings for users and items),
+appearing in natural language processing (embeddings for words), recommender systems (embeddings for users and items),
 graph mining (embeddings for nodes) and other applications.
 In this section, we review a few classical embedding techniques and models for images, audio, words, documents, items and nodes.
 A common goal of these techniques is to ensure that
@@ -344,8 +344,8 @@ First of all, we summarize how a neural net represents various types of
 entities in different domains with different relations, as shown in 
 Table \ref{tab:domains}.
 An image in image recognition is represented as
-a 2D light amplitude array with dimensions height and width;
-an audio/spectrogram in speech recognition is represented as
+a 2D light amplitude array with dimensions height and width.
+An audio/spectrogram in speech recognition is represented as
 a 2D sound amplitude array with dimensions time and frequency.
 The relation between two images or two audio is not commonly used. 
 Words in natural languages, items in recommendation systems, and nodes 
@@ -385,7 +385,7 @@ doc2vec \cite{le2014distributed},
 item2vec \cite{barkan2016item2vec},
 node2vec \cite{grover2016node2vec} and
 deep walk \cite{perozzi2014deepwalk}.
-All these techniques have achieved high prediction accuracies in their various applications including language modeling, document classification, item rating prediction, node classification.
+All these techniques have achieved high prediction accuracies in their various applications including language modeling, document classification, item rating prediction, and node classification.
 
 \subsection{Content-based embedding techniques}
 Techniques in this group extract knowledge about an entity from its content, 
@@ -544,7 +544,7 @@ information about itself and therefore its one-hot encoding vector is also
 a meaningless vector.
 In other words, each entity is only defined by its relations with other entities.
 Therefore, in the embedding process, the neural network gradually
-forms understanding on the meaning of all entities by observing the relations
+forms an understanding of the meaning of all entities by observing the relations
 between all entities.
 
 \subsubsection{Word embedding with skip-gram model}
@@ -594,29 +594,7 @@ A small skip-gram neural network model is shown in Figure \ref{fig:skipGram}.
 \end{figure}
 The model is a feed-forward neural network.
 The definition of context is the set of words close to the given word.
-For example, given a natural language sentence:
-\begin{align*}
-	&sentence = [\\
-	&the, quick, brown, fox, jumps, over, the, lazy, dog\\
-	&]\\
-\end{align*}
-and a context radius:
-\[context\_radius = 2\]
-and a word:
-\[word = fox\]
-and the vocabulary:
-\begin{align*}
-	&vocabulary = [\\
-	&the, quick, brown, fox, jumps, over, lazy, dog\\
-	&]\\
-\end{align*}
-we have the context of [fox]:
-\begin{align*}
-	&context(fox) = \{\\
-	&quick, brown, jumps, over\\
-	&\}
-\end{align*}
-
+For example, given the natural language vocabulary \{the, quick, brown, fox, jumps, over, lazy, dog\} sentence ``the quick brown fox jumps over the lazy dog", a context radius of 2, and the word ``fox", we have the context of fox \{quick, brown, jumps, over\}.
 A natural language corpus has many sentences,
 therefore, from these sentences we can produce a dataset where each example is a (word, context-word) pair,
 as shown in Table \ref{tab:words}.
@@ -638,11 +616,11 @@ as shown in Table \ref{tab:words}.
 	\end{tabular}
 	\label{tab:words}
 \end{table}
-Given a word, its context word is a random variable with a probability distribution:
+Given a word fox, its context word is a random variable with a probability distribution:
 \[P(context\_word = x | given\_word = fox)\]
 where
 \[x \in vocabulary\]
-and the context-word probability distribution sums up to 1 over the vocabulary:
+and the context-word probability distribution sums to 1 over the vocabulary:
 \begin{align*}
 	&\sum_{x \in vocabulary}P(context\_word = x | given\_word = fox)\\
 	&= 1\\
@@ -656,7 +634,7 @@ The embeddings for all words are technically the weights in the embedding layer.
 For any natural language corpus and any two words X and Y in this corpus, we have the following equivalent statements:
 \begin{itemize}
 	\item X and Y have similar meanings
-	\item X and Y have similar context-word possibility distribution 
+	\item X and Y have similar context-word probability distributions
 	\item X and Y have similar embeddings
 \end{itemize}
 The final outcome is similar words have similar embeddings.
@@ -667,19 +645,9 @@ information retrieval \cite{shen2014latent}.
 \subsubsection{Item embedding with skip-gram model}
 This is an embedding technique similar to word embedding, commonly used in recommender systems \cite{barkan2016item2vec}.
 This technique reduces the item embedding problem to the word embedding problem and then applies the word embedding technique.
-For example, given a purchase order:
-\begin{align*}
-	&order = \{\\
-	&monitor, keyboard, mouse, printer, scanner\\
-	&\}
-\end{align*}
-we have the context of [mouse]:
-\begin{align*}
-	&context(mouse) = \{\\
-	&monitor, keyboard, printer, scanner\\
-	&\}
-\end{align*}
-An e-commerce platform has many purchase orders, which can produce a dataset where each example is a (item, context-item) pair as shown in Table \ref{tab:items}.
+For example, given a purchase order \{monitor, keyboard, mouse, printer, scanner\},
+we have the context of mouse \{monitor, keyboard, printer, scanner\}.
+An e-commerce platform has many purchase orders, which can produce a dataset where each example is an (item, context-item) pair as shown in Table \ref{tab:items}.
 \begin{table}[!ht]
 	\centering
 	\caption{The items dataset for a collection of orders.}
@@ -732,10 +700,10 @@ The relation between nodes is quite different from that between words:
 	this type of relation has regular and explicit form:
 	entity - relation - entity.
 	\item On the other hand, the co-occurrences of words 
-	(e.g., in the context [The quick brown fox jumps over the lazy dog])
+	(e.g., in the context ``The quick brown fox jumps over the lazy dog")
 	implicitly tell us these words are related
 	but do not tell us any specific relations
-	(e.g., Are [quick] and [brown] related? What is the relation between [fox] and [jumps]? Is [over] a relation or entity?).
+	(e.g., Are ``quick" and ``brown" related? What is the relation between ``fox" and ``jumps"? Is ``over" a relation or entity?).
 \end{itemize}
 Natural languages do not have the notion that
 all information can be described as entities and their relations, as in graphs.
@@ -753,11 +721,11 @@ mappings supervised by word co-occurrences.
 Following the above observations,
 we build an estimator with a neural net model using a node pair as its input
 and the weight of the link connecting the nodes as its output.
-Given a weighted graph, from its link list we can produce a dataset where each example is a (source node, destination node, link weight) triplet.
-For example, given a social network where nodes are users and link weights are numbers of messages users send to other users, we have its link list dataset as shown in Table \ref{tab:link-list-dataset}.
+Given a weighted graph, from its adjacency list we can produce a dataset where each example is a (source node, destination node, link weight) triplet.
+For example, given a social network where nodes are users and link weights are numbers of messages users send to other users, we have its adjacency list dataset as shown in Table \ref{tab:link-list-dataset}.
 \begin{table}[!ht]
 	\centering
-	\caption{The link list dataset for a social network.}
+	\caption{The adjacency list dataset for a social network.}
 	\begin{tabular}{cc}  \hline \rowcolor{blue!30}
 		Input = (source, destination) & Output = weight \\ \hline
 		...                        & ... \\ \hline
@@ -775,7 +743,7 @@ For example, given a social network where nodes are users and link weights are n
 We design the model in the estimator as a fully connected neural network model which we call Model R (R as in relation), shown in Figure \ref{fig:model-r}.
 We have considered a convolutional neural net as an alternative,
 but we decided it would not be a good fit for this application.
-The reason is these node vectors do not have any spacial property
+The reason is that these node vectors do not have any spacial property
 for a convolutional neural network to take advantage of,
 compared to the 2D array of an image where the spacial location of each pixel
 has significant meaning (e.g., relative distances of pixels).
@@ -845,13 +813,13 @@ The model contains the following layers:
 \end{itemize}
 
 \subsection{Model R node embedding technique}
-The Model R based node embedding technique is different from those skip-gram based techniques.
-One potential advantage of the Model R based node embedding technique is that it takes advantage of the highly organized, regular and repeated structure in the relational dataset representing a graph, i.e., a source node connects to a destination node through one and only one weighted link.
+The Model R based node embedding technique is different from the skip-gram based techniques.
+One advantage of the Model R based node embedding technique is that it takes advantage of the highly organized, regular and repeated structure in the relational dataset representing a graph, i.e., a source node connects to a destination node through one and only one weighted link.
 The skip-gram model does not exploit this structure in natural language processing because this structure does not exist.
 Link weights provide the information about nodes.
 We fully take this property into account and design this model to learn 
 complex and unobservable node information (i.e., node vectors) 
-supervised by a simple and observable relations between nodes (i.e., link weight).
+supervised by a simple and observable relation between nodes (i.e., link weight).
 
 \subsection{Model R learning techniques}
 The estimator uses the above model and a number of popular deep learning 
@@ -889,10 +857,10 @@ and also some justifications for our choices.
 	\[d = log_2(n)\]
 	where d (as in dimension) is the layer size and n is the dataset size.
 	\item The choice of number of hidden layers is related to the complexity of the relation between the input and the output of the model.
-	As a trivial example, if the input and the output have linear relation,
+	As a trivial example, if the input and the output have a linear relation,
 	no hidden layer is necessary and the model is simply a linear model.
-	If the input and the out put have non-linear relation,
-	the more complex the relation is, the more number of layers are necessary.
+	If the input and the output have a non-linear relation,
+	the more complex the relation is, the more layers are necessary.
 	Empirically, we usually set the number of hidden layers to 4,
 	as a good compromise of learning speed and prediction accuracy.
 \end{itemize}
@@ -901,7 +869,7 @@ However, we do not know any theoretical way to calculate the most optimum parame
 Therefore, in this work, we evaluate different parameter choices through a few experiments.
 We will work on design parameter optimization in our future research.
 
-\section{Experiments}
+\section{Experiments} \label{section:experiments}
 We evaluate Model R experimentally with SBM, pWSBM, bWSBM and DCWBM as baselines,
 and compare their prediction errors on several datasets.
 We use the same datasets and experiment process used in a recent study of these baselines \cite{aicher2014learning}.
@@ -911,42 +879,20 @@ that Model R can achieve much lower prediction error than the baseline models.
 \subsection{Datasets}
 The experiments use four datasets:
 \begin{itemize}
-	\item Airport \cite{colizza2007reaction}. Nodes represent 500 busiest airports in the United States, and each of the 5960 directed edges is weighted by the number of passengers traveling from one airport to another.
-	\item Collaboration \cite{pan2012world}. Nodes represent 226 nations on Earth, and each of the 20616 edges	is weighted by a normalized count of academic papers whose author lists include that pair of nations.
-	\item Congress \cite{porter2005network}. Nodes represent the 163 committees in the 102nd United States Congress, and each of the 26569 edges is weighted by the pairwise normalized interlock value of shared members.
-	\item Forum \cite{opsahl2009clustering}. Nodes represent 1899 users of a student social network at UC Irvine, and each of	the 20291 directed edges is weighted by the number of messages sent between users.
+	\item Airport \cite{colizza2007reaction}. Nodes represent the busiest airports in the United States, and each of the directed edges is weighted by the number of passengers traveling from one airport to another.
+	\item Collaboration \cite{pan2012world}. Nodes represent nations on Earth, and each of the edges	is weighted by a zed count of academic papers whose author lists include that pair of nations.
+	\item Congress \cite{porter2005network}. Nodes represent the committees in the 102nd United States Congress, and each of the edges is weighted by the number of shared members.
+	\item Forum \cite{opsahl2009clustering}. Nodes represent users of a student social network at UC Irvine, and each of the directed edges is weighted by the number of messages sent between users.
 \end{itemize}
-The statistics of these datasets are summarized in
-Figure \ref{fig:statistics} and Table \ref{tab:datasets}.
-\begin{figure}[!ht]\centering
-	\begin{subfigure}{0.4\textwidth}
-		\includegraphics[width=\textwidth]{number-of-nodes}
-		\caption{Number of nodes}
-		\label{fig:number-of-nodes}
-	\end{subfigure}
-	\begin{subfigure}{0.4\textwidth}
-		\includegraphics[width=\textwidth]{number-of-edges}
-		\caption{Number of links}
-		\label{fig:number-of-edges}
-	\end{subfigure}
-	\begin{subfigure}{0.4\textwidth}
-		\includegraphics[width=\textwidth]{average-degree}
-		\caption{Average degree}
-		\label{fig:average-degree}
-	\end{subfigure}
-	\caption{
-		The statistics of the graph datasets used in experiments.
-	}
-	\label{fig:statistics}
-\end{figure}
+The statistics of these datasets are summarized in Table \ref{tab:datasets}.
 \begin{table}[!ht]\centering
 	\caption{The statistics of the graph datasets used in experiments.}
 	\begin{tabular}{cccc} \hline \rowcolor{blue!30}
 		Dataset & Node \# & Link \# & Degree \\ \hline
 		Airport & 500 & 5960 & 11.92 \\ \hline
 		Collaboration & 226 & 20616 & 91.22 \\ \hline
-		Congress & 163  & 26569 & 36.54 \\ \hline
-		Forum  & 1899 & 20291 & 14.57 \\ \hline
+		Congress & 163 & 26569 & 163 \\ \hline
+		Forum  & 1899 & 20291 & 10.68 \\ \hline
 	\end{tabular}
 	\label{tab:datasets}
 \end{table}
@@ -962,50 +908,26 @@ In each trial, we split the dataset randomly into 3 subsets:
 	\item 20\% into testing set
 \end{itemize}
 We use mean squared error as the prediction accuracy metric.
+For each trial we learn using the training set until error on the validation set increases. We then evaluate the error of the learned model on the testing set.
 For each experiment, we report the mean and standard deviation of the errors from 25 trials.
-The pseudo code of the experiment process is shown in Figure \ref{fig:code}.
-\begin{figure*}[!ht]\centering
-	\begin{lstlisting}
-		def main():
-			for dataset in [Airport, Collaboration, Congress, Forum]:
-				error = do_experiment(dataset)
-		def do_experiment(dataset):
-			errors = list()
-			for trial in range(25):
-				testing_error = append(evaluate_model_on(dataset))
-				errors.append(testing_error)
-			return (errors.mean(), errors.standard_deviation())
-		def evaluate_model_on(dataset):
-			(train_set, validation_set, test_set) = split(dataset)
-			while validation_error decreases:
-				train_error = estimator.learn(train_set)
-				validation_error = estimator.predict(validation_set)
-			testing_error = estimator.predict(testing_set)
-			return testing_error
-	\end{lstlisting}
-	\caption{
-		The pseudo code of the experiment process.
-		The estimator.learn() method learns for one epoch through the training set, updating the weights after each example batch.
-	}
-	\label{fig:code}
-\end{figure*}
 
 \subsection{Experiment results}
 In our experiments,
 Model R's error is lower than all other models on all datasets,
-shown in Figure \ref{fig:errors} and Table \ref{tab:errors}.
+as shown in Figure \ref{fig:errors} and Table \ref{tab:errors}.
 \begin{figure*}[!ht]\centering
 	\includegraphics[width=1\textwidth]{link-weight-errors}
 	\caption{
 		The mean squared errors of 5 models on 4 datasets:
 		Model R has lower error than every other model on every dataset.
-		Every error value shown here is the mean errors for the 25 trials in the experiment.
+		Every error value shown here is the mean error for the 25 trials in the experiment.
 	}
 	\label{fig:errors}
 \end{figure*}
 \begin{table*}[!htb]\centering
 	\caption{
 		The mean squared errors with standard deviations of 5 models on 4 datasets.
+		Welch's t-test defines its p value as the Student's t-distribution cumulative density function $ p = 2 \int_{-\infty}^{-|t|} f(x) dx $.
 	}
 	\begin{tabularx}{\textwidth}{|c|X|X|X|X|X|c|c|} \hline \rowcolor{blue!30}
 		Dataset & pWSBM & bWSBM & SBM & DCWBM & Model R & Reduction & p \\ \hline
@@ -1020,7 +942,7 @@ In this section we compare Model R with the baseline models on every dataset.
 Given the dataset,
 we regard ModelRError (as well as BaselineError) as a random variable
 so each trial generates an example of it.
-We can do a t-test to justify the significance of difference between the means of variables ModelRError and BaselineError.
+We can do a t-test to justify the significance of the difference between the means of variables ModelRError and BaselineError.
 The mean of a variable is not the same as the mean of a sample of the variable.
 More specifically, a variable can generate two samples with different sample means,
 therefore two samples with different means do not imply the two variables generating them have different means.
@@ -1070,77 +992,42 @@ we specify the implementation details in this section:
 The program uses all 8 threads of the processor.
 Each experiment takes about one hour to finish,
 depending on the dataset and parameters in the learning algorithm.
-The program is open-source under MIT license hosted on Github
-so that anyone can use it without any restriction.
+The program is open-source under MIT license hosted on Github \footnote{https://github.com/yuchenhou/elephant}
+so that everyone can use it without any restriction.
 
 \section{Node embedding analysis}
 The purpose of this section is to find out what knowledge Model R learns during training.
-Our hypothesis is that the knowledge it learns are meaningful node embeddings where similar nodes (according to our own (human) semantics associated with the domain's entities) are close to each other in the node embedding space.
-We make this hypothesis based on the following observations that Model R and skip-gram model have similar architecture in their one-hot encoding input layer and linear embedding layer, and that Skip-gram model produces word embeddings where similar words are close to each other in the word embedding space.
-Our goal is to verify this hypothesis by analyzing and visualizing the node embeddings produced by Model R in a few datasets.
-If the hypothesis is correct - the knowledge of nodes is represented as points in the embedding space - there should be a way to visualize them and they should match any knowledge we have on the particular domain the dataset is concerned.
-We will use real world datasets from well understood domains to make the results obvious to most readers.
+Our hypothesis is that the knowledge it learns consists of meaningful node embeddings where similar nodes (according to our own (human) semantics associated with the domain's entities) are close to each other in the node embedding space.
+We make this hypothesis based on the following observations that Model R and the skip-gram model have similar architecture in their one-hot encoding input layer and linear embedding layer, and that the skip-gram model produces word embeddings where similar words are close to each other in the word embedding space.
+Our goal is to verify this hypothesis by analyzing and visualizing the node embeddings produced by Model R in real world datasets from well understood domains to make the results obvious to most readers.
 
 \subsection{Motivation}
 Seeing the good performance of Model R, we are interested in this question: what exactly does Model R learn?
-Even though Model R outperforms some of the latest link weight prediction techniques by a large margin, the knowledge it learns is not clear yet.
+Even though Model R outperforms some of the latest link weight prediction techniques by a large margin, the knowledge it learns is not apparent.
 We claim that Model R learns knowledge of nodes in the form of node embeddings from the known link weights and uses that knowledge to predict unknown link weights.
 This claim is plausible and similar to the claim in the original word2vec paper \cite{mikolov2013linguistic}.
-There have been ample amount of studies on word2vec focusing on the analysis and visualization of the word embeddings \cite{mikolov2013distributed} \cite{mikolov2013linguistic}.
-These studies have provided strong evidences that the word embeddings learned by the skip-gram model are meaningful knowledge about words.
-However, we need to provide evidence that the node embeddings are the meaning knowledge of nodes the model learns.
+There have been several studies on word2vec focusing on the analysis and visualization of the word embeddings \cite{mikolov2013distributed} \cite{mikolov2013linguistic}.
+These studies have provided strong evidences that the word embeddings learned by the skip-gram model represent meaningful knowledge about words.
+However, we need to provide evidence that the node embeddings learned by Model R represent knowledge consistent with our understanding of the domain.
 If we can have more in-depth study on those node embeddings similar to the studies on word embeddings, we can have a much better understanding of what Model R learns and why it performs well.
 
 \subsection{Methods}
 In order to perform node embedding analysis,
 the experiment needs additional embedding logging and visualization methods.
-The main experiment process is shown in Figure \ref{fig:process}.
-\begin{figure}[!ht]
-	\centering
-	\newcommand{\layersep}{2cm}
-	\begin{tikzpicture}
-	[->, shorten >=1pt,node distance=\layersep]
-	\tikzstyle{every pin edge}=[shorten <=1pt]
-	\tikzstyle{data} = [cylinder, text centered, shape border rotate=90, aspect=0.25, draw=black, fill=red!30]
-	\tikzstyle{process} = [rectangle, minimum width=4cm, minimum height=1cm, text centered, draw=black, fill=green!30]
-	\tikzstyle{output} = [trapezium, trapezium left angle=80, trapezium right 
-	angle=100, minimum height=1cm, text centered, draw=black, fill=blue!30]
-	
-	\node (dataset) [data] {dataset};
-	\node (model) [process, above of=dataset] {model training};
-	\node (embeddings) [data, above of=model] {embeddings};	
-	\node (visualizer) [process, above of=embeddings] {embedding visualization};
-	\node (metadata) [data, right of=visualizer, xshift=2cm] {metadata};
-	\node (visualization) [output, above of=visualizer] {visualizaton result};
-	
-	\path (dataset) edge (model);
-	\path (model) edge (embeddings);
-	\path (embeddings) edge (visualizer);
-	\path (metadata) edge (visualizer);
-	\path (visualizer) edge (visualization);
-	\end{tikzpicture}
-	\caption{
-		The main experiment process involves 3 data files (red), 2 main procedures (green), and 1 output (blue).
-		This main experiment process runs once for each dataset.
-	}
-	\label{fig:process}
-\end{figure}
 The model trains on the datasets and produces node embeddings.
 The visualizer reduces the dimension of the embeddings,
-attaches the metadata to the embeddings and produces the final visualization.
-The knowledge obtained by the model is not logical, but statistical.
-Therefore, the best way to analyze and verify it is through visualization.
-This section describes the experiment process design in detail.
+attaches domain metadata to the embeddings and produces the final visualization.
+The visualization is then analyzed to confirm closeness of semantically-similar nodes.
 
 \subsubsection{Datasets}
 In order to verify the knowledge of nodes learned by the model is meaningful (agrees with our domain knowledge), the experiments use real world datasets from two well known domains:
 \begin{itemize}
 	\item Collaboration \cite{pan2012world}.	
-	Nodes represent 226 nations on Earth, and each of the 20616 edges is weighted by a normalized count of academic papers whose author lists include that pair of nations.
-	The previous experiment uses this dataset in prediction accuracy evaluation.
+	Nodes represent 226 nations on Earth, and each of the 20616 edges is weighted by the number of academic papers whose author lists include that pair of nations.
+	This is the same dataset used in Section \ref{section:experiments} to evaluate the prediction error of Model R.
 	\item MovieLens100K \cite{harper2015movielens}.
 	This dataset is a recommendation dataset, and also a bipartite graph dataset.
-	Nodes represent 1000 users and 1700 items, i.e., movies, and each of the 100000 edges is weighted by the rating score a user has given to a movie.
+	Nodes represent 1000 users and 1700 movies, and each of the 100000 edges is weighted by the rating score a user has given to a movie.
 \end{itemize}
 A snippet of MovieLens100K dataset is shown in Table \ref{tab:movielens100k} as an example.
 \begin{table}[!ht]
@@ -1181,7 +1068,7 @@ The metadata provides domain specific information about the datasets necessary t
 
 \subsubsection{Model training}
 The model training process is the same as the previous experiment,
-with an extra the step to log embedding layer weights.
+with an extra step to log embedding layer weights.
 
 \subsubsection{Embedding visualization}
 The embedding visualization process plays an important role in the final knowledge representation.
@@ -1190,7 +1077,7 @@ This embedding visualization process has the following steps:
 	\item Join the metadata and the embeddings on the node ID to attach the related information provided by the metadata to each node.
 	\item Calculate the Euclidean distances between pairs of nodes.
 	\item Dimensionality reduction through PCA (principal component analysis) on the embeddings to project these points from the high dimensional embedding space to a 2-dimensional space so that we can visualize them.
-	\item Display all embeddings in an image.
+	\item Display all embeddings in an image, e.g., Figure \ref{fig:movies} and Figure \ref{fig:countries}.
 \end{enumerate}
 
 \subsection{Data analysis and visualization}
@@ -1199,16 +1086,16 @@ The experiment process runs once for each of the two datasets: MovieLens100K and
 We present the data analyses on a few well known cases and visualizations on the entire datasets as well.
 The analysis for each dataset has the following steps:
 \begin{enumerate}
-	\item select a well known reference node in the domain with two similar nodes that are easy to identify
-	\item sort all nodes with respect to their distances to the reference
-	\item assert that the distances from the two similar nodes to the reference node are much shorter than that of the median point.
+	\item Select a well known reference node in the domain with two similar nodes that are easy to identify.
+	\item Sort all nodes with respect to their distances to the reference.
+	\item Verify that the distances from the two similar nodes to the reference node are much shorter than that of the median point.
 \end{enumerate}
 In this section, we perform data analysis on the experiment results for both datasets.
 
 \subsubsection{MovieLens100K}
-For this dataset, we select the movie Star Wars: The Empire Strikes Back (1980) as the reference movie and the other two movies in the original Star Wars trilogy as the two similar movies, i.e., Star Wars: A New Hope and Star Wars: Return of the Jedi.
-Notice that we do not need to assume which attributes of a movie have the most influence in users' preferences on movies because these two movies are similar to the reference movie in many attributes such as genre, actors, screenwriter, distributor and storyline.
-The distances of a number of closest 1000 movies to the reference movie are shown in Table \ref{tab:movielens100k-distance}.
+For this dataset, we select the movie ``Star Wars: The Empire Strikes Back" as the reference movie and the other two movies in the original Star Wars trilogy as the two similar movies, i.e., ``Star Wars: A New Hope" and ``Star Wars: Return of the Jedi".
+Notice that we do not need to assume which attributes of a movie have the most influence in users' preferences for movies, because these two movies are similar to the reference movie in many attributes such as genre, actors, screenwriter, distributor and storyline.
+The distances of a number of closest movies to the reference movie are shown in Table \ref{tab:movielens100k-distance}.
 \begin{table*}[!ht]\centering
 	\caption{
 		The distances of movies to the reference movie for MovieLens100K dataset.
@@ -1236,10 +1123,10 @@ The embeddings of all movies are shown in Figure \ref{fig:movies}.
 	\includegraphics[width=\textwidth]{movies}
 	\caption{
 		The embeddings of all movies in MovieLens100K dataset:
-		The Empire Strikes Back is the reference movie, highlighted in red.
+		``The Empire Strikes Back" is the reference movie, highlighted in red.
 		The 1000 closest movies are highlighted in orange.
 		A portion of movies have their titles displayed.
-		This embedding shows the overall distribution of movies where similar movies such as Star Wars (1997) are closer to the reference movie.
+		This embedding shows the overall distribution of movies where similar movies such as ``Star Wars" are closer to the reference movie.
 	}
 	\label{fig:movies}
 \end{figure*}
@@ -1312,33 +1199,30 @@ graph mining tasks.
 There are a few directions we would like to study in our future work on this model.
 
 \subsection{Node embedding metrics}
-The most important aspect we should work on in the future about this work is the metrics of node embedding.
+An important direction for this work is to identify metrics for evaluating the learned node embeddings.
 As embeddings are ubiquitous and valuable in deep learning and the popularity of deep learning is on the rise, we believe an important question is: what are good embeddings?
 A direct answer can be: embeddings that match humans' perceptions of the nodes are good embeddings.
 But humans' perceptions are, by nature, very complicated and subjective.
-In this section, we discuss a few possible directions to we can work on in the future and the challenges of each of them.
 
-\subsubsection{Similarity and distance measurement}
 As similar nodes should have their embeddings close to each other, a possible metric is the distances of the embeddings of similar nodes.
 This is an obvious metric and also the one we tried to use intuitively for this work.
 The distance measurement for embeddings is relatively easy but the similarity measurement for nodes is relatively hard.
 One possible way to measure similarity is some type of statistics measurement of the behaviors of nodes.
 For example, in recommender systems, it is natural to assume two users are very similar if they always give the same ratings to each one of the movies.
-The challenge is this measurement is not easy to measure if there are few movies rated by both users.
+The challenge is this metric is not easy to measure if there are few movies rated by both users.
 Another possible way to measure similarity is some type of measurement of the distance of their attribute vectors.
 For example, the attribute vector of a user can be [age, gender, occupation, location] as exposed by the metadata.
 In order for this measure to be useful, we need to know what attributes are the most relevant to users' movie preferences.
 
-\subsubsection{Prediction accuracy measurement}
 Good embeddings should produce good prediction accuracy, despite the type of node targeted for prediction.
 This one is very obvious because eventually some other machine learning system should use these embeddings to do valuable predictions.
 Therefore, good metrics should have positive correlation with prediction accuracy of the later stages of the deep learning system whose inputs are the embeddings.
-This does not require any work with respect to the actual nodes but it is still hard to measure: some embeddings might work well on some models but not on other models so it is hard to decide which model should be used as the evaluation reference.
+This does not require any work with respect to the actual nodes but it is still hard to measure: some embeddings might work well on some models but not on other models, so it is hard to decide which model should be used as the evaluation reference.
 
 \subsection{Complex graphs}
 This direction is especially appealing for social network applications.
 In particular, we want to handle graphs with node attributes.
-Users can have labels like "nationality", and real attributes like "age" .
+Users can have labels like ``nationality", and real attributes like ``age".
 One feasible approach is to append one unit for each of these attributes to the node vector.
 
 \subsection{Large dynamic graphs}
@@ -1349,7 +1233,7 @@ the distributed system and analyze a link stream there,
 and let these estimators exchange their knowledge periodically.
 
 \section*{Acknowledgements}
-This material is based upon work supported by the National Science Foundation under Grant No. number.
+This material is based upon work supported by the National Science Foundation under Grant No. 164640.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
