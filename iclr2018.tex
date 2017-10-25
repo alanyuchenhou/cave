@@ -407,6 +407,7 @@ The experiments use the following datasets:
 \begin{itemize}
 	\item Airport \citep{colizza2007reaction}. Nodes represent the 500 busiest airports in the United States, and each of the 5960 edges is weighted by the number of passengers traveling from one airport to another.
 	\item Authors \citep{newman2001structure}. Nodes represent 16726 authors and each of the 47594 edges is weighted by the number of papers posted by two authors to Condensed Matter section of arXiv E-Print Archive between 1995 and 1999.
+	\item Collaboration \citep{pan2012world}. Nodes represent 226 nations on Earth, and each of the 20616 edges is weighted by the number of academic papers whose author lists include that pair of nations.
 	\item Congress \citep{porter2005network}. Nodes represent the 163 committees in the 102nd United States Congress, and each of the 26569 edges is weighted by the number of shared members.
 	\item Facebook \citep{opsahl2013triadic}. Nodes represent 899 users of a Facebook-like forum, and each of the 71380 edges is weighted by the number of messages posted by two users on same topics.
 	\item Forum \citep{opsahl2009clustering}. Nodes represent 1899 users of a student social network at UC Irvine, and each of the 20291 edges is weighted by the number of messages sent between users.
@@ -415,6 +416,7 @@ We split each dataset into training set (80\%) and testing set (20\%).
 We normalize the link weights in each dataset to range [-1, 1] after applying a logarithm function.
 
 \subsection{Evaluation process}
+We do the same experiment for each dataset.
 We use mean squared error as the prediction accuracy metric.
 Each experiment consists of 25 independent trials.
 For each trial we train the model using the training set and evaluates the model on the testing set.
@@ -424,19 +426,18 @@ so that everyone can use it without any restriction
 \footnote{https://github.com/xxxxxx}.
 
 \subsection{Model prediction accuracy}
-We evaluate Model S's prediction accuracy and compare it with two baselines SBM and pWSBM on 3 datasets (Airport, Congress and Forum).
-Model S (with different embedding techniques) performs better than the two baselines.
+We evaluate the performance of Model S and compare it with two baselines SBM and pWSBM on 4 datasets (Airport, Collaboration, Congress and Forum).
+The Model S's prediction accuracy is better than baselines on 3 out of 4 datasets.
 Among all Model S variants,
 the one with Model R embedding technique performs the best,
 as shown in Figure \ref{fig:errors}.
 \begin{figure}[h] \centering
 	\includegraphics[width=1\linewidth]{weight-errors}
 	\caption{
-		Model S generally performs better when using 3 different embedding techniques (LLE, Model R and node2vec) on 3 datasets (Airport, Congress and Forum).
+		Model S performs better when using 3 different embedding techniques (LLE, Model R and node2vec) on 3 out of 4 datasets (Airport, Collaboration, Congress and Forum).
 	}
 	\label{fig:errors}
 \end{figure}
-
 A few possible reasons why Model S variants can outperform baselines are:
 \begin{itemize}
 	\item Higher level of discrimination for nodes:
