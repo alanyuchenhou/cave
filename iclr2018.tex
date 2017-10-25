@@ -2,6 +2,11 @@
 \usepackage{iclr2018,times}
 \usepackage{hyperref}
 \usepackage{url}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, automata, quotes, positioning, babel, shapes.geometric, arrows}
 
 
 \title{Link Weight Prediction with Node Embeddings}
@@ -50,232 +55,442 @@ Address \\
 
 \begin{abstract}
 The applications of deep learning have been successful in various domains 
-including image recognition, speech recognition and natural language 
+such as image recognition, speech recognition and natural language 
 processing.
 However, the research on its application in graph mining is 
 still in an early stage.
-Here we present a generic deep learning approach to the graph link weight prediction problem.
-This approach depends on meaningful node embeddings,
-and it is virtually compatible with any node embedding technique.
-We evaluate this approach with 3 different node embedding techniques experimentally and compare its performances with 4 state-of-the-art non deep learning baseline approaches on 4 real world datasets.
-Our experiment results suggest that this deep learning approach outperforms the baselines significantly by 20\% to 70\% depending on the specific dataset and embedding technique applied.
-This generic approach shows that deep learning can be successfully applied to 
-link weight prediction to improve prediction accuracy by a large margin.
-We analyze the time complexity and scalability of this approach to confirm that this approach can be scaled to large datasets as long as the underling node embedding technique can scale.
-We anticipate this new approach will provide effective solutions to more
-graph mining tasks.
+Here we present the first generic deep learning approach to the graph link weight prediction problem based on node embeddings.
+We evaluate this approach with 3 different node embedding techniques experimentally and compare its performance with 2 state-of-the-art non deep learning baseline approaches.
+Our experiment results suggest that this deep learning approach outperforms the baselines by up to 70\% depending on the dataset and embedding technique applied.
+This approach shows that deep learning can be successfully applied to 
+link weight prediction to improve prediction accuracy.
 \end{abstract}
 
-\section{Submission of conference papers to ICLR 2018}
+\section{Introduction}
+Deep learning has outperformed other machine learning techniques in various 
+application domains, e.g., speech recognition, image recognition,
+and natural language processing \citep{simonyan2014very} \citep{yao2013recurrent}.
+Deep learning can not only achieve higher prediction accuracy than other machine learning techniques,
+but also require less domain knowledge and feature engineering.
+Graph mining is a new and active domain for deep learning \citep{grover2016node2vec}.
+An important problem in graph mining is the link weight prediction.
+This problem has state of the art non deep learning solution Stochastic Block Model (SBM) \citep{aicher2014learning}.
 
-ICLR requires electronic submissions, processed by
-\url{https://openreview.net/}. See ICLR's website for more instructions.
+The contribution of this paper is to introduce
+the first generic deep learning approach to the link weight prediction problem based on node embeddings.
+This approach requires an effective node embedding technique to produce node embeddings.
+We demonstrate how this approach works with various embedding techniques including locally linear embedding \citep{roweis2000nonlinear}, skip-gram model \citep{grover2016node2vec} and Model R \citep{hou2017deep}.
+We also show that this generic deep learning approach outperforms the SBM through experiments.
 
-If your paper is ultimately accepted, the statement {\tt
-  {\textbackslash}iclrfinalcopy} should be inserted to adjust the
-format to the camera ready requirements.
+\section{Problem}
+We consider the problem of link weight prediction in a weighted directed graph.
+We first show an example of the problem,
+and then give the problem definition.
+An undirected graph can be reduced to a directed graph by converting each weighted undirected link to two directed links with the same weight and opposite directions,
+so the prediction for a weighted undirected graph is a special case of the problem we consider.
 
-The format for the submissions is a variant of the NIPS format.
-Please read carefully the instructions below, and follow them
-faithfully.
+\subsection{Problem example}
+Let us look at an example of link weight prediction, message volume prediction in a social network.
+In this example, there are 3 users in a social network: A, B and C.
+Each user can send any amount of text messages to every other user.
+We know the number of messages transmitted between A and C, B and C, but not A and B.
+We want to predict the number of messages transmitted between A and B.
+The ability to predict these interactions potentially allows us to recommend new connections to users:
+if A is predicted/expected to send a large number of messages to B by some model,
+and A is not connected to B yet,
+we can recommend B as a new connection to A.
 
-\subsection{Style}
+\subsection{Problem definition}
+Now we define the link weight prediction problem in a weighted directed graph.
+\begin{itemize}
+	\item Given a weighted directed graph with the node set V and link subset E
+	\item Build a model w = f(x, y) where x and y are nodes and w is the weight of link (x, y) that can predict the weight of any link
+\end{itemize}
+For every possible link (1 out of $ n^2 $, where n is the number of nodes), 
+if we know its weight, we know it exists;
+if we do not know its weight, we do not know if it exists.
+This is a very practical point when we handle streaming graphs:
+for any possible link,
+we either know it exists and know its weight (if it has been streamed in), or we do not know if the link will ever exist, nor know its weight.
 
-Papers to be submitted to ICLR 2018 must be prepared according to the
-instructions presented here.
+\section{Existing approaches}
+In our literature study on previous research in the link weight prediction problem,
+we have found some existing approaches.
+In this section, we review these existing approaches.
 
-%% Please note that we have introduced automatic line number generation
-%% into the style file for \LaTeXe. This is to help reviewers
-%% refer to specific lines of the paper when they make their comments. Please do
-%% NOT refer to these line numbers in your paper as they will be removed from the
-%% style file for the final version of accepted papers.
+\subsection{SBM (Stochastic Block Model)}
+The SBM uses link existence information \citep{holland1983stochastic}.
+The main idea is to partition nodes into L groups and connect groups with bundles.
+Each group consists of nodes which are topologically similar in the original graph, and groups are connected by bundles to represent the original graph.
+The SBM has the following parameters:
+\begin{itemize}
+	\item z: the group vector,
+	where $ z_i \in \{ 1 ... L \} $ is the group label of node i
+	\item $ \theta $: the bundle existence probability matrix,
+	where $ \theta_{z_i z_j} $ is the existence probability of bundle ($z_i, z_j$)
+\end{itemize}
+Given a graph with adjacency matrix A, the existence of link (i, j) $ A_{ij} $ is a binary random variable following the Bernoulli distribution:
+\begin{align*}
+A_{ij} \sim B(1, \theta_{z_i z_j})
+\end{align*}
+The SBM fits parameters z and $ \theta $
+to maximize the probability of observation A:
+\begin{align*}
+P(A|z, \theta) 
+= \prod_{ij} \theta_{z_i z_j}^{A_{ij}}(1-\theta_{z_i z_j})^{1-A_{ij}}
+\end{align*}
+We rewrite the probability of observation A as a log likelihood:
+\begin{align*}
+\log(P(A|z, \theta))
+= \sum_{ij} (A_{ij} \log(\frac{\theta_{z_i z_j}}{1-\theta_{z_i z_j}}) + \log(1-\theta_{z_i z_j}))
+\end{align*}
 
-Authors are required to use the ICLR \LaTeX{} style files obtainable at the
-ICLR website. Please make sure you use the current files and
-not previous versions. Tweaking the style files may be grounds for rejection.
+\subsection{pWSBM (pure Weighted Stochastic Block Model)}
+The pWSBM is derived from SBM but it uses link weight information \citep{aicher2014learning}.
+So it differs from SBM in a few ways described below.
+Adjacency matrix A becomes the link weight matrix where the weight of link (i, j)  $ A_{ij} $ is a real random variable following the normal distribution:
+\begin{align*}
+A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
+\end{align*}
+$ \theta_{z_i z_j} $ becomes the weight distribution parameter of bundle ($z_i, z_j$):
+\begin{align*}
+\theta_{z_i z_j} = (\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
+\end{align*}
+The pWSBM fits parameters z and $ \theta $
+to maximize the log likelihood of observation A:
+\begin{align*}
+\log(P(A|z, \theta))
+= \sum_{ij} (
+A_{ij} \frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
+- A_{ij}^2 \frac{1}{2\sigma_{z_i z_j}^2}
+- \frac{\mu_{z_i z_j}^2}{\sigma_{z_i z_j}^2}
+)
+\end{align*}
 
-\subsection{Retrieval of style files}
-
-The style files for ICLR and other conference information are available on the World Wide Web at
-\begin{center}
-   \url{http://www.iclr.cc/}
-\end{center}
-The file \verb+iclr2018_conference.pdf+ contains these
-instructions and illustrates the
-various formatting requirements your ICLR paper must satisfy.
-Submissions must be made using \LaTeX{} and the style files
-\verb+iclr2018_conference.sty+ and \verb+iclr2018_conference.bst+ (to be used with \LaTeX{}2e). The file
-\verb+iclr2018_conference.tex+ may be used as a ``shell'' for writing your paper. All you
-have to do is replace the author, title, abstract, and text of the paper with
-your own.
-
-The formatting instructions contained in these style files are summarized in
-sections \ref{gen_inst}, \ref{headings}, and \ref{others} below.
-
-\section{General formatting instructions}
-\label{gen_inst}
-
-The text must be confined within a rectangle 5.5~inches (33~picas) wide and
-9~inches (54~picas) long. The left margin is 1.5~inch (9~picas).
-Use 10~point type with a vertical spacing of 11~points. Times New Roman is the
-preferred typeface throughout. Paragraphs are separated by 1/2~line space,
-with no indentation.
-
-Paper title is 17~point, in small caps and left-aligned.
-All pages should start at 1~inch (6~picas) from the top of the page.
-
-Authors' names are
-set in boldface, and each name is placed above its corresponding
-address. The lead author's name is to be listed first, and
-the co-authors' names are set to follow. Authors sharing the
-same address can be on the same line.
-
-Please pay special attention to the instructions in section \ref{others}
-regarding figures, tables, acknowledgments, and references.
-
-\section{Headings: first level}
-\label{headings}
-
-First level headings are in small caps,
-flush left and in point size 12. One line space before the first level
-heading and 1/2~line space after the first level heading.
-
-\subsection{Headings: second level}
-
-Second level headings are in small caps,
-flush left and in point size 10. One line space before the second level
-heading and 1/2~line space after the second level heading.
-
-\subsubsection{Headings: third level}
-
-Third level headings are in small caps,
-flush left and in point size 10. One line space before the third level
-heading and 1/2~line space after the third level heading.
-
-\section{Citations, figures, tables, references}
-\label{others}
-
-These instructions apply to everyone, regardless of the formatter being used.
-
-\subsection{Citations within the text}
-
-Citations within the text should be based on the \texttt{natbib} package
-and include the authors' last names and year (with the ``et~al.'' construct
-for more than two authors). When the authors or the publication are
-included in the sentence, the citation should not be in parenthesis (as
-in ``See \citet{hou2017deep} for more information.''). Otherwise, the citation
-should be in parenthesis (as in ``Deep learning shows promise to make progress towards AI \citep{hou2017deep}. \cite{hou2017deep}'').
-
-The corresponding references are to be listed in alphabetical order of
-authors, in the \textsc{References} section. As to the format of the
-references themselves, any style is acceptable as long as it is used
-consistently.
-
-\subsection{Footnotes}
-
-Indicate footnotes with a number\footnote{Sample of the first footnote} in the
-text. Place the footnotes at the bottom of the page on which they appear.
-Precede the footnote with a horizontal rule of 2~inches
-(12~picas).\footnote{Sample of the second footnote}
-
-\subsection{Figures}
-
-All artwork must be neat, clean, and legible. Lines should be dark
-enough for purposes of reproduction; art work should not be
-hand-drawn. The figure number and caption always appear after the
-figure. Place one line space before the figure caption, and one line
-space after the figure. The figure caption is lower case (except for
-first word and proper nouns); figures are numbered consecutively.
-
-Make sure the figure caption does not get separated from the figure.
-Leave sufficient space to avoid splitting the figure and figure caption.
-
-You may use color figures.
-However, it is best for the
-figure captions and the paper body to make sense if the paper is printed
-either in black/white or in color.
-\begin{figure}[h]
-\begin{center}
-%\framebox[4.0in]{$\;$}
-\fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
-\end{center}
-\caption{Sample figure caption.}
+\subsection{Model R}
+This model is a fully connected neural network \citep{hou2017deep}. It uses an end-to-end supervised learning approach to predict link weight, shown in Figure \ref{fig:model-r}.
+\begin{figure}[h]\centering
+	\newcommand{\layersep}{1cm}
+	\begin{tikzpicture}
+	[->, shorten >=1pt,node distance=\layersep]
+	\tikzstyle{every pin edge}=[shorten <=1pt]
+	\tikzstyle{layer} = [rectangle, text centered, draw=black, fill=green!30]
+	
+	\node (input1) [layer, fill=red!30, pin={[pin edge={<-}]below:}] {direct activation layer};
+	\node [below of=input1, xshift = -1cm] {input = (source node's one-hot encoding,};
+	\node (input2) [layer, fill=red!30, pin={[pin edge={<-}]below:}, xshift = 4cm] {direct activation layer};
+	\node [below of=input2, xshift = 1cm] {destination node's one-hot encoding)};
+	
+	\node (hidden11) [layer, above of=input1] {fully connected layer};
+	\node [left of=hidden11, xshift = -2cm] {embedding layer};
+	\node (hidden12) [layer, above of=input2] {fully connected layer};
+	\node [right of=hidden12, xshift = 2cm] {embedding layer};
+	
+	\node (hidden2) [layer, above of=hidden11, xshift=2cm] {fully connected layer};
+	\node (hidden3) [layer, above of=hidden2] {fully connected layer};
+	
+	\node (output) [layer, fill=blue!30, above of=hidden3, pin={[pin edge={->}]above:}] {fully connected layer};
+	\node [above of=output] {output = link weight};
+	
+	\path (input1) edge (hidden11);
+	\path (input2) edge (hidden12);
+	\path (hidden11) edge (hidden2);
+	\path (hidden12) edge (hidden2);
+	\path (hidden2) edge (hidden3);
+	\path (hidden3) edge (output);
+	
+	\end{tikzpicture}
+	\caption{
+		A simplified version of Model R with 1 input layer (red), 3 hidden layers (green), and 1 output layer (blue).
+		The embedding layer and the input layer each has two channels: one channel for the source node and one channel for the destination node.
+		Only layers and their connections are shown,
+		while the units in each layer and their connections are not shown.
+	}
+	\label{fig:model-r}
 \end{figure}
 
-\subsection{Tables}
+The model contains the following layers:
+\begin{itemize}
+	\item An input layer directly activated by the one-hot encodings of a (source node, destination node) pair.
+	\item A hidden embedding layer of linear units.
+	This layer maps each node from its one-hot encoding to the corresponding node vector.
+	\item Multiple fully connected hidden layers of rectified linear units
+	($ f(x) = \max (0, x) $, only two layers are shown in the figure).
+	\item An output layer with a linear regression unit($ f(x) = kx $).
+\end{itemize}
 
-All tables must be centered, neat, clean and legible. Do not use hand-drawn
-tables. The table number and title always appear before the table. See
-Table~\ref{sample-table}.
 
-Place one line space before the table title, one line space after the table
-title, and one line space after the table. The table title must be lower case
-(except for first word and proper nouns); tables are numbered consecutively.
+\section{Observations and motivation}
+We are particularly interested in decoupling two learning processes in Model R to generalize it and design a generic deep learning approach.
+Model R attempts to accomplish two learning tasks at the same time:
+the first task is to learn to predict the link weight given a (source node, destination node) pair; the second task is to learn to embed each node in an embedding space.
+In other words, it mixes two learning processes into one single learning process.
+On the other hand, there are several other general purpose node embedding techniques such as Node2vec \citep{grover2016node2vec}.
+So we wonder if the node embeddings produced by those general purpose node embedding techniques are better than node embeddings produced by Model R.
+More specifically, we want to know if we can have more accurate link weight prediction if we use the node embeddings produced by a general purpose node embedding technique.
+If we can decouple the two learning processes in Model R (node embedding learning and link weight prediction learning), we can substitute the node embedding with any other node embedding technique.
+This plug-and-play idea, if it works, is very appealing because every time a new node embedding technique comes out, we can easily use the embeddings it produces in link weight prediction and see if it can improve the prediction accuracy.
 
-\begin{table}[t]
-\caption{Sample table title}
-\label{sample-table}
-\begin{center}
-\begin{tabular}{ll}
-\multicolumn{1}{c}{\bf PART}  &\multicolumn{1}{c}{\bf DESCRIPTION}
-\\ \hline \\
-Dendrite         &Input terminal \\
-Axon             &Output terminal \\
-Soma             &Cell body (contains cell nucleus) \\
-\end{tabular}
-\end{center}
+\section{Approach}
+We want to create a generic link weight prediction approach that uses the node embeddings produced by any node embedding technique.
+Given a weighted graph, from its adjacency list we can produce a dataset where each example is a (source node, destination node, link weight) triplet.
+For example, given a social network where nodes are users and link weights are numbers of messages users send to other users, we have its adjacency list dataset as shown in Table \ref{tab:link-list-dataset}, on which we will train the model.
+\begin{table}[h] \centering
+	\caption{The adjacency list dataset for a social network.}
+	\begin{tabular}{cc} \\ \hline
+		\textbf{Input = (source, destination)} & \textbf{Output = weight} \\ \hline
+		...                        & ... \\ \hline
+		(Mary, John) & 8645 \\ \hline
+		(John, Mary) & 9346 \\ \hline
+		(John, Alice) & 2357 \\ \hline
+		(John, Bob) & 9753 \\ \hline
+		(Alic, Bob) & 1238 \\ \hline
+		...                        & ... \\ \hline
+	\end{tabular}
+	\label{tab:link-list-dataset}
 \end{table}
 
-\section{Final instructions}
-Do not change any aspects of the formatting parameters in the style files.
-In particular, do not modify the width or length of the rectangle the text
-should fit into, and do not change font sizes (except perhaps in the
-\textsc{References} section; see below). Please note that pages should be
-numbered.
+\subsection{Embedding techniques}
+As deep learning techniques become more powerful and standardized,
+a key process of a domain-specific deep learning application
+is mapping entities to vectors in an embedding space,
+because a neural net needs vectors as inputs.
+These vectors are called embeddings and this process is called embedding.
+Embeddings are ubiquitous in deep learning,
+appearing in natural language processing (embeddings for words),
+graph mining (embeddings for nodes) and other applications.
+Embedding techniques learn these vectors from relations between words and nodes.
+A common goal of these techniques is to ensure that
+similar entities are close to each other in the embedding space.
 
-\section{Preparing PostScript or PDF files}
+\subsubsection{Word2vec: word embedding with skip-gram model}
+Word2vec is an unsupervised embedding technique commonly used in natural language processing \citep{mikolov2013linguistic}.
+It maps every word in a vocabulary to a vector without any domain knowledge.
+A small skip-gram neural network model is shown in Figure \ref{fig:skipGram}.
+\begin{figure}[h]
+	\centering
+	\newcommand{\layersep}{2cm}
+	\newcommand{\vocabularySize}{4}
+	\newcommand{\embeddingSize}{2}
+	
+	\begin{tikzpicture}
+	[->, shorten >=1pt,node distance=\layersep]
+	\tikzstyle{every pin edge}=[shorten <=1pt]
+	\tikzstyle{neuron}=[circle, draw=black, minimum size=16pt, fill=green!30]
+	
+	\foreach \name / \y in {1,...,\vocabularySize}
+	\node[neuron, fill=red!30, pin={[pin edge={<-}]below:}] (input-\name) at (\y, 0) {};
+	\node [below of=input-3, yshift = 1cm] {input = word's one-hot encoding};
+	
+	\foreach \name / \y in {1,...,\embeddingSize}
+	\path[xshift=1cm]
+	node[neuron] (hidden-\name) at (\y, 1*\layersep) {};
+	\node [right of=hidden-2] {embedding layer};
+	
+	\foreach \name / \y in {1,...,\vocabularySize}
+	\node[neuron, fill=blue!30, pin={[pin edge={->}]above:}] (output-\name) at (\y, 2*\layersep) {};
+	\node [above of=output-3, yshift = -1cm] {output = context-word probability distribution};
+	
+	\foreach \source in {1,...,\vocabularySize}
+	\foreach \dest in {1,...,\embeddingSize}
+	\path (input-\source) edge (hidden-\dest);
+	
+	\foreach \source in {1,...,\embeddingSize}
+	\foreach \dest in {1,...,\vocabularySize}
+	\path (hidden-\source) edge (output-\dest);	
+	\end{tikzpicture}
+	\caption{
+		A small skip-gram neural network model with
+		1 input layer (red), 1 hidden layer (green), and 1 output layer (blue),
+		vocabulary size 4 and embedding size 2.
+		The hidden layer uses linear units.
+		The output layer uses softmax units.
+	}
+	\label{fig:skipGram}
+\end{figure}
+A natural language corpus has many sentences,
+therefore, from these sentences we can produce a dataset where each example is a (word, context-word) pair.
+For example, given the sentence ``the quick brown fox jumps over the lazy dog", a context radius of 2, and the word ``fox", we have the context of fox \{quick, brown, jumps, over\}.
+During each training step, one training example - a (word, context-word) pair - is used.
+The input layer is activated by the one-hot encoding of the given word.
+The output layer activation is the context-word probability distribution.
+The embeddings for all words are technically the weights in the embedding layer.
+The final outcome is similar words have similar context-word probability distributions and similar embeddings.
+Acquiring these embeddings is often the first step in many natural language processing tasks such as sentiment analysis \citep{socher2013recursive} and
+information retrieval \citep{shen2014latent}.
 
-Please prepare PostScript or PDF files with paper size ``US Letter'', and
-not, for example, ``A4''. The -t
-letter option on dvips will produce US Letter files.
+\subsubsection{Node2vec: node embedding with skip-gram model}
+Node2vec is a node embedding technique similar to word embedding \citep{grover2016node2vec}.
+This technique reduces the node embedding problem to the word embedding problem and then applies the word embedding technique.
+It is a generalization of an earlier node embedding technique DeepWalk \citep{perozzi2014deepwalk}.
+More specifically, DeepWalk is a special case of Node2vec where the inbound parameter p and outbound parameter q are both set to 1.
+A graph has many walks, which can produce a dataset where each example is a (node, context-node) pair.
+For example, given a walk in a social network of users \{John, Mary, James, Alice, Bob\}, we have the context of James \{John, Mary, Alice, Bob\}.
+By reducing walks (sequences of nodes) to natural language sentences (sequences of words) and nodes to words,
+this technique reduces the node embedding problem to the word embedding problem.
+The final outcome is similar nodes have similar embeddings.
 
-Consider directly generating PDF files using \verb+pdflatex+
-(especially if you are a MiKTeX user).
-PDF figures must be substituted for EPS figures, however.
+\subsubsection{Model R: node embedding supervised by link weights}
+Model R not only learns to predict link weight,
+but also has its own node embedding technique,
+as we have shown in the previous section.
+In fact, Model R produces its own node embeddings.
+Model R based node embedding technique is different from the skip-gram based Node2vec technique.
+One advantage of the Model R based node embedding technique is that it takes advantage of the highly organized, regular and repeated structure in the relational dataset representing a graph, i.e., a source node connects to a destination node through one and only one weighted link.
+The skip-gram model does not exploit this structure in natural language processing because this structure does not exist.
 
-Otherwise, please generate your PostScript and PDF files with the following commands:
-\begin{verbatim}
-dvips mypaper.dvi -t letter -Ppdf -G0 -o mypaper.ps
-ps2pdf mypaper.ps mypaper.pdf
-\end{verbatim}
+\subsubsection{LLE (locally linear embedding): nonlinear dimensionality reduction}
+LLE is a member of the family of manifold learning approach \citep{roweis2000nonlinear}.
+This technique is not specifically designed for any embedding task, but for dimensionality reduction task.
+This technique comprises two steps.
+The first step is linear approximation of data points in the original high dimensional space, an optimization process where the cost function is
+\begin{align*}
+	cost(W) = \sum_i |X_i - \sum_jW_{ij}X_j|^2
+\end{align*}
+where each data point (high dimensional vector) $ X_i $ is linearly approximated by its k nearest neighbors $ X_j $'s and the weight matrix W is the linear approximation parameter to be optimized.
+The weight matrix $ W $ is determined by the intrinsic geometric properties of the neighborhoods instead of the coordinate system, therefore it obeys an important symmetry: $ W $ is invariant to rotations, scalings, and translations in the coordinate system.
+The second step is reconstruction of data points in a new low dimensional space, an optimization process where the cost function is
+\begin{align*}
+	cost(Y) = \sum_i |Y_i - \sum_jW_{ij}Y_j|^2
+\end{align*}
+where each data point (low dimensional vector) $ Y_i $ is linearly approximated by its k nearest neighbors $ Y_j $'s with the same weight matrix W produced in the previous linear approximation step. Now the new coordinates Y is the parameter to be optimized.
+To apply this method, we use each row in the adjacency matrix of the graph as a data point in the high dimensional space, and then use LLE to map all rows to node embeddings in the low dimensional space.
 
-\subsection{Margins in LaTeX}
+\subsection{Model S: link weight prediction with node embeddings}
+We introduce model S, a neural net model that predicts link weight using a pair of node embeddings (produced by any node embedding technique) as its input.
+Model S is a generalization of Model R. More specifically, Model R is a special case of Model S when the pair of node embeddings is produced by itself.
+\begin{figure}[h]\centering
+	\newcommand{\layersep}{1cm}
+	\begin{tikzpicture}
+	[->, shorten >=1pt,node distance=\layersep]
+	\tikzstyle{every pin edge}=[shorten <=1pt]
+	\tikzstyle{layer} = [rectangle, text centered, draw=black, fill=green!30]
+	
+	\node (input1) [layer, fill=red!30, pin={[pin edge={<-}]below:}] {direct activation layer};
+	\node [below of=input1, xshift = -1cm] {input = (source node's embedding,};
+	\node (input2) [layer, fill=red!30, pin={[pin edge={<-}]below:}, xshift = 4cm] {direct activation layer};
+	\node [below of=input2, xshift = 1cm] {destination node's embedding)};
+	
+	\node (hidden2) [layer, above of=input1, xshift=2cm] {fully connected layer};
+	\node (hidden3) [layer, above of=hidden2] {fully connected layer};
+	
+	\node (output) [layer, fill=blue!30, above of=hidden3, pin={[pin edge={->}]above:}] {fully connected layer};
+	\node [above of=output] {output = link weight};
+	
+	\path (input1) edge (hidden2);
+	\path (input2) edge (hidden2);
+	\path (hidden2) edge (hidden3);
+	\path (hidden3) edge (output);
+	
+	\end{tikzpicture}
+	\caption{
+		Model S with 1 input layer (red), 2 hidden layers (green), and 1 output layer (blue).
+		The input layer has two channels: one channel for the source node and one channel for the destination node.
+		Only layers and their connections are shown,
+		while the units in each layer and their connections are not shown.
+	}
+	\label{fig:model-s}
+\end{figure}
 
-Most of the margin problems come from figures positioned by hand using
-\verb+\special+ or other commands. We suggest using the command
-\verb+\includegraphics+
-from the graphicx package. Always specify the figure width as a multiple of
-the line width as in the example below using .eps graphics
-\begin{verbatim}
-   \usepackage[dvips]{graphicx} ...
-   \includegraphics[width=0.8\linewidth]{myfile.eps}
-\end{verbatim}
-or % Apr 2009 addition
-\begin{verbatim}
-   \usepackage[pdftex]{graphicx} ...
-   \includegraphics[width=0.8\linewidth]{myfile.pdf}
-\end{verbatim}
-for .pdf graphics.
-See section~4.4 in the graphics bundle documentation (\url{http://www.ctan.org/tex-archive/macros/latex/required/graphics/grfguide.ps})
+The approach uses well-known deep learning techniques back propagation \citep{rumelhart1988learning} and stochastic gradient descent \citep{lecun2012efficient} in model training.
+Empirically, we usually use 2 hidden layers where each layer contains $ d = log_2(n) $ hidden units where d (as in dimension) is the number of units in each hidden layer and n is the dataset size.
 
-A number of width problems arise when LaTeX cannot properly hyphenate a
-line. Please give LaTeX hyphenation hints using the \verb+\-+ command.
+\section{Experiments} \label{section:experiments}
+We evaluate Model S experimentally with SBM with pWSBM as baselines,
+and compare their prediction errors on several datasets.
+We use three different techniques to produce node embeddings: node2vec, LLE and Model R.
+The results show 
+that Model S has lower prediction error than the baselines.
 
+\subsection{Datasets}
+The experiments use the following datasets:
+\begin{itemize}
+	\item Airport \citep{colizza2007reaction}. Nodes represent the 500 busiest airports in the United States, and each of the 5960 edges is weighted by the number of passengers traveling from one airport to another.
+	\item Authors \citep{newman2001structure}. Nodes represent 16726 authors and each of the 47594 edges is weighted by the number of papers posted by two authors to Condensed Matter section of arXiv E-Print Archive between 1995 and 1999.
+	\item Congress \citep{porter2005network}. Nodes represent the 163 committees in the 102nd United States Congress, and each of the 26569 edges is weighted by the number of shared members.
+	\item Facebook \citep{opsahl2013triadic}. Nodes represent 899 users of a Facebook-like forum, and each of the 71380 edges is weighted by the number of messages posted by two users on same topics.
+	\item Forum \citep{opsahl2009clustering}. Nodes represent 1899 users of a student social network at UC Irvine, and each of the 20291 edges is weighted by the number of messages sent between users.
+\end{itemize}
+We split each dataset into training set (80\%) and testing set (20\%).
+We normalize the link weights in each dataset to range [-1, 1] after applying a logarithm function.
+
+\subsection{Evaluation process}
+We use mean squared error as the prediction accuracy metric.
+Each experiment consists of 25 independent trials.
+For each trial we train the model using the training set and evaluates the model on the testing set.
+For each experiment, we report the mean of the errors from 25 trials.
+The program is open-source under MIT license hosted on Github
+so that everyone can use it without any restriction
+\footnote{https://github.com/xxxxxx}.
+
+\subsection{Model prediction accuracy}
+We evaluate Model S's prediction accuracy and compare it with two baselines SBM and pWSBM on 3 datasets (Airport, Congress and Forum).
+Model S (with different embedding techniques) performs better than the two baselines.
+Among all Model S variants,
+the one with Model R embedding technique performs the best,
+as shown in Figure \ref{fig:errors}.
+\begin{figure}[h] \centering
+	\includegraphics[width=1\linewidth]{weight-errors}
+	\caption{
+		Model S generally performs better when using 3 different embedding techniques (LLE, Model R and node2vec) on 3 datasets (Airport, Congress and Forum).
+	}
+	\label{fig:errors}
+\end{figure}
+
+A few possible reasons why Model S variants can outperform baselines are:
+\begin{itemize}
+	\item Higher level of discrimination for nodes:
+	SBM based approaches assume nodes within the same group are the same in terms of link weight distributions;
+	Model S does not assume that,
+	but gives every node a unique description - the node embedding - so that
+	it has a more accurate description for each node.
+	\item Higher level of model flexibility:
+	SBM based approaches assume the weight of every link follows
+	a normal distribution.
+	Model S does not assume that, but takes advantage of high flexibility of
+	layers of non-linear neural network units,
+	so that it can model very complex weight distributions.
+\end{itemize}
+A possible reason why the Model R with Model S embedding outperforms other two variants with node2vec and LLE embedding is Model S embedding is specifically designed for link weight prediction task.
+
+\subsection{Model robustness}
+In our experiments, the model S is very robust against model parameter changes. Adding or removing a hidden layer or several units in a hidden layer usually do not change the prediction accuracy dramatically.
+For example, when we set the number of hidden units in each hidden layer to a same constant value 20 and change the number of hidden layers,
+the prediction error has little fluctuation (less than 10\%) over a wide range of values for the number of hidden layers,
+as shown in Figure \ref{fig:robust}.
+\begin{figure}[h] \centering
+	\begin{subfigure}{0.49 \linewidth}
+		\includegraphics[width=\linewidth]{authors}
+		\caption{Evaluation on Authors dataset.}
+		\label{fig:movieLens100K}
+	\end{subfigure}
+	\begin{subfigure}{0.49 \linewidth}
+		\includegraphics[width=\linewidth]{facebook}
+		\caption{Evaluation on Facebook dataset.}
+		\label{fig:movieLens1M}
+	\end{subfigure}
+	\caption{
+		Model S is robust against changes of the model parameter number of hidden layers when using 3 different embedding techniques (LLE, Model R and node2vec) on 2 datasets (Authors and Facebook).
+		We have similar results on other datasets and with other parameters like number of units in each hidden layer.
+	}
+	\label{fig:robust}
+\end{figure}
+
+\section{Conclusion}
+Model S is the first generic deep learning approach to the link weight prediction problem based on node embeddings.
+It requires an effective node embedding technique to supply it node embeddings.
+It works with various embedding techniques including locally linear embedding \citep{roweis2000nonlinear}, skip-gram model \citep{grover2016node2vec} and the Model R \citep{hou2017deep}.
+In most cases, its prediction accuracy is better than the state-of-the-art non deep learning approaches SBM and pWSBM.
+
+\section{Future work}
+A potential direction for this work is to identify metrics for evaluating the learned node embeddings.
+A possible metric is the distances of the embeddings of similar nodes.
+Ultimately, good embeddings should produce good prediction accuracy,
+because eventually some other machine learning system should use these embeddings to do valuable predictions.
+Therefore, good metrics should have positive correlation with prediction accuracy of the later stages of the deep learning system whose inputs are the embeddings.
 
 \subsubsection*{Acknowledgments}
-
-Use unnumbered third level headings for the acknowledgments. All
-acknowledgments, including those to funding agencies, go at the end of the paper.
+This material is based upon work supported by the National Science Foundation under Grant No. xxxxxx.
 
 \bibliographystyle{iclr2018}
 \bibliography{references}
