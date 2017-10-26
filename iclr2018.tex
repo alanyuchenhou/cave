@@ -54,13 +54,13 @@ Address \\
 \maketitle
 
 \begin{abstract}
-The applications of deep learning have been successful in various domains 
+Application of deep learning has been successful in various domains 
 such as image recognition, speech recognition and natural language 
 processing.
 However, the research on its application in graph mining is 
 still in an early stage.
 Here we present the first generic deep learning approach to the graph link weight prediction problem based on node embeddings.
-We evaluate this approach with 3 different node embedding techniques experimentally and compare its performance with 2 state-of-the-art non deep learning baseline approaches.
+We evaluate this approach with three different node embedding techniques experimentally and compare its performance with two state-of-the-art non deep learning baseline approaches.
 Our experiment results suggest that this deep learning approach outperforms the baselines by up to 70\% depending on the dataset and embedding technique applied.
 This approach shows that deep learning can be successfully applied to 
 link weight prediction to improve prediction accuracy.
@@ -73,25 +73,25 @@ and natural language processing \citep{simonyan2014very} \citep{yao2013recurrent
 Deep learning can not only achieve higher prediction accuracy than other machine learning techniques,
 but also require less domain knowledge and feature engineering.
 Graph mining is a new and active domain for deep learning \citep{grover2016node2vec}.
-An important problem in graph mining is the link weight prediction.
-This problem has state of the art non deep learning solution Stochastic Block Model (SBM) \citep{aicher2014learning}.
+An important problem in graph mining is link weight prediction.
+This problem has a state of the art non deep learning solution called Stochastic Block Model (SBM) \citep{aicher2014learning}.
 
 The contribution of this paper is to introduce
 the first generic deep learning approach to the link weight prediction problem based on node embeddings.
 This approach requires an effective node embedding technique to produce node embeddings.
 We demonstrate how this approach works with various embedding techniques including locally linear embedding \citep{roweis2000nonlinear}, skip-gram model \citep{grover2016node2vec} and Model R \citep{hou2017deep}.
-We also show that this generic deep learning approach outperforms the SBM through experiments.
+We also show that this generic deep learning approach outperforms the SBM approach.
 
 \section{Problem}
 We consider the problem of link weight prediction in a weighted directed graph.
 We first show an example of the problem,
 and then give the problem definition.
-An undirected graph can be reduced to a directed graph by converting each weighted undirected link to two directed links with the same weight and opposite directions,
-so the prediction for a weighted undirected graph is a special case of the problem we consider.
+An undirected graph can be reduced to a directed graph by converting each weighted undirected link to two directed links with the same weight and opposite directions.
+So the prediction for a weighted undirected graph is a special case of the problem we consider.
 
 \subsection{Problem example}
-Let us look at an example of link weight prediction, message volume prediction in a social network.
-In this example, there are 3 users in a social network: A, B and C.
+Let us look at an example of link weight prediction: message volume prediction in a social network.
+In this example, there are three users in a social network: A, B and C.
 Each user can send any amount of text messages to every other user.
 We know the number of messages transmitted between A and C, B and C, but not A and B.
 We want to predict the number of messages transmitted between A and B.
@@ -168,7 +168,7 @@ A_{ij} \frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
 \end{align*}
 
 \subsection{Model R}
-This model is a fully connected neural network \citep{hou2017deep}. It uses an end-to-end supervised learning approach to predict link weight, shown in Figure \ref{fig:model-r}.
+This model is a fully connected neural network \citep{hou2017deep}. It uses an end-to-end supervised learning approach to predict link weights, as shown in Figure \ref{fig:model-r}.
 \begin{figure}[h]\centering
 	\newcommand{\layersep}{1cm}
 	\begin{tikzpicture}
@@ -315,7 +315,7 @@ During each training step, one training example - a (word, context-word) pair - 
 The input layer is activated by the one-hot encoding of the given word.
 The output layer activation is the context-word probability distribution.
 The embeddings for all words are technically the weights in the embedding layer.
-The final outcome is similar words have similar context-word probability distributions and similar embeddings.
+The final outcome is that similar words have similar context-word probability distributions and similar embeddings.
 Acquiring these embeddings is often the first step in many natural language processing tasks such as sentiment analysis \citep{socher2013recursive} and
 information retrieval \citep{shen2014latent}.
 
@@ -340,20 +340,20 @@ One advantage of the Model R based node embedding technique is that it takes adv
 The skip-gram model does not exploit this structure in natural language processing because this structure does not exist.
 
 \subsubsection{LLE (locally linear embedding): nonlinear dimensionality reduction}
-LLE is a member of the family of manifold learning approach \citep{roweis2000nonlinear}.
-This technique is not specifically designed for any embedding task, but for dimensionality reduction task.
+LLE is a member of the family of manifold learning approaches \citep{roweis2000nonlinear}.
+This technique is not specifically designed for any embedding task, but for dimensionality reduction.
 This technique comprises two steps.
 The first step is linear approximation of data points in the original high dimensional space, an optimization process where the cost function is
 \begin{align*}
 	cost(W) = \sum_i |X_i - \sum_jW_{ij}X_j|^2
 \end{align*}
-where each data point (high dimensional vector) $ X_i $ is linearly approximated by its k nearest neighbors $ X_j $'s and the weight matrix W is the linear approximation parameter to be optimized.
+where each data point (high dimensional vector) $ X_i $ is linearly approximated by its k nearest neighbors $ X_j $'s, and the weight matrix W is the linear approximation parameter to be optimized.
 The weight matrix $ W $ is determined by the intrinsic geometric properties of the neighborhoods instead of the coordinate system, therefore it obeys an important symmetry: $ W $ is invariant to rotations, scalings, and translations in the coordinate system.
 The second step is reconstruction of data points in a new low dimensional space, an optimization process where the cost function is
 \begin{align*}
 	cost(Y) = \sum_i |Y_i - \sum_jW_{ij}Y_j|^2
 \end{align*}
-where each data point (low dimensional vector) $ Y_i $ is linearly approximated by its k nearest neighbors $ Y_j $'s with the same weight matrix W produced in the previous linear approximation step. Now the new coordinates Y is the parameter to be optimized.
+where each data point (low dimensional vector) $ Y_i $ is linearly approximated by its k nearest neighbors $ Y_j $'s with the same weight matrix W produced in the previous linear approximation step. Now the new coordinates Y are the parameters to be optimized.
 To apply this method, we use each row in the adjacency matrix of the graph as a data point in the high dimensional space, and then use LLE to map all rows to node embeddings in the low dimensional space.
 
 \subsection{Model S: link weight prediction with node embeddings}
@@ -392,15 +392,18 @@ Model S is a generalization of Model R. More specifically, Model R is a special 
 	\label{fig:model-s}
 \end{figure}
 
-The approach uses well-known deep learning techniques back propagation \citep{rumelhart1988learning} and stochastic gradient descent \citep{lecun2012efficient} in model training.
-Empirically, we usually use 2 hidden layers where each layer contains $ d = log_2(n) $ hidden units where d (as in dimension) is the number of units in each hidden layer and n is the dataset size.
+The approach uses the well-known deep learning techniques of back propagation \citep{rumelhart1988learning} and stochastic gradient descent \citep{lecun2012efficient} in model training.
+Empirically, we use multiple hidden layers where each layer contains $ d = log_2(n) $ hidden units where d (as in dimension) is the number of units in each hidden layer and n is the dataset size.
+We will vary the number of hidden layers to assess impact on performance.
+This approach updates the model at each training step so Model S is an online learning method as long as the node embedding technique it depends on is also an online learning method (every embedding method we discussed in this section except LLE is an online learning method).
+Therefore, by using an online embedding method, Model S can nicely handle streaming graphs.
 
 \section{Experiments} \label{section:experiments}
 We evaluate Model S experimentally with SBM with pWSBM as baselines,
 and compare their prediction errors on several datasets.
 We use three different techniques to produce node embeddings: node2vec, LLE and Model R.
-The results show 
-that Model S has lower prediction error than the baselines.
+The results show that Model S outperforms the baselines with all three embedding techniques on three out of four datasets.
+Model S with Model R embedding technique performs the best on four out of four datasets.
 
 \subsection{Datasets}
 The experiments use the following datasets:
@@ -414,12 +417,14 @@ The experiments use the following datasets:
 \end{itemize}
 We split each dataset into training set (80\%) and testing set (20\%).
 We normalize the link weights in each dataset to range [-1, 1] after applying a logarithm function.
+As mentioned in previous section, Model S is suitable as a online learning method for steaming graphs so it scales nicely with dataset size.
+More specifically, the time complexity of the training stage is n(E), where E is the number of links in the graph.
 
 \subsection{Evaluation process}
 We do the same experiment for each dataset.
 We use mean squared error as the prediction accuracy metric.
 Each experiment consists of 25 independent trials.
-For each trial we train the model using the training set and evaluates the model on the testing set.
+For each trial we train the model using the training set and evaluate the model on the testing set.
 For each experiment, we report the mean of the errors from 25 trials.
 The program is open-source under MIT license hosted on Github
 so that everyone can use it without any restriction
@@ -455,10 +460,11 @@ A few possible reasons why Model S variants can outperform baselines are:
 A possible reason why the Model R with Model S embedding outperforms other two variants with node2vec and LLE embedding is Model S embedding is specifically designed for link weight prediction task.
 
 \subsection{Model robustness}
-In our experiments, the model S is very robust against model parameter changes. Adding or removing a hidden layer or several units in a hidden layer usually do not change the prediction accuracy dramatically.
-For example, when we set the number of hidden units in each hidden layer to a same constant value 20 and change the number of hidden layers,
+In our experiments, Model S is robust against model parameter changes. Adding or removing a hidden layer or several units in a hidden layer usually does not change the prediction accuracy dramatically.
+For example, when we set the number of hidden units in each hidden layer to the same constant value 20 and change the number of hidden layers,
 the prediction error has little fluctuation (less than 10\%) over a wide range of values for the number of hidden layers,
 as shown in Figure \ref{fig:robust}.
+We have similar results on other four datasets and with other parameters like number of units in each hidden layer.
 \begin{figure}[h] \centering
 	\begin{subfigure}{0.49 \linewidth}
 		\includegraphics[width=\linewidth]{authors}
@@ -472,7 +478,6 @@ as shown in Figure \ref{fig:robust}.
 	\end{subfigure}
 	\caption{
 		Model S is robust against changes of the model parameter number of hidden layers when using 3 different embedding techniques (LLE, Model R and node2vec) on 2 datasets (Authors and Facebook).
-		We have similar results on other datasets and with other parameters like number of units in each hidden layer.
 	}
 	\label{fig:robust}
 \end{figure}
@@ -482,6 +487,7 @@ Model S is the first generic deep learning approach to the link weight predictio
 It requires an effective node embedding technique to supply it node embeddings.
 It works with various embedding techniques including locally linear embedding \citep{roweis2000nonlinear}, skip-gram model \citep{grover2016node2vec} and the Model R \citep{hou2017deep}.
 In most cases, its prediction accuracy is better than the state-of-the-art non deep learning approaches SBM and pWSBM.
+The Model R embedding performs the best among the different embeddings, which indicates that embeddings learned in the context of the task they will be used for can improve performance over generic embedding methods.
 
 \section{Future work}
 A potential direction for this work is to identify metrics for evaluating the learned node embeddings.
