@@ -101,11 +101,7 @@ and A is not connected to B yet,
 we can recommend B as a new connection to A.
 
 \subsection{Problem definition}
-Now we define the link weight prediction problem in a weighted directed graph.
-\begin{itemize}
-	\item Given a weighted directed graph with the node set V and link subset E
-	\item Build a model w = f(x, y) where x and y are nodes and w is the weight of link (x, y) that can predict the weight of any link
-\end{itemize}
+The definition of the link weight prediction problem in a weighted directed graph is: given a weighted directed graph with the node set V and link subset E, build a model w = f(x, y) where x and y are nodes and w is the weight of link (x, y) that can predict the weight of any link
 For every possible link (1 out of $ n^2 $, where n is the number of nodes), 
 if we know its weight, we know it exists;
 if we do not know its weight, we do not know if it exists.
@@ -208,7 +204,6 @@ This model is a fully connected neural network \citep{hou2017deep}. It uses an e
 	}
 	\label{fig:model-r}
 \end{figure}
-
 The model contains the following layers:
 \begin{itemize}
 	\item An input layer directly activated by the one-hot encodings of a (source node, destination node) pair.
@@ -221,14 +216,11 @@ The model contains the following layers:
 
 
 \section{Observations and motivation}
-We are particularly interested in decoupling two learning processes in Model R to generalize it and design a generic deep learning approach.
-Model R attempts to accomplish two learning tasks at the same time:
-the first task is to learn to predict the link weight given a (source node, destination node) pair; the second task is to learn to embed each node in an embedding space.
+We are interested in decoupling two learning processes (node embedding learning and link weight prediction learning) in Model R to generalize it and design a generic deep learning approach.
 In other words, it mixes two learning processes into one single learning process.
 On the other hand, there are several other general purpose node embedding techniques such as Node2vec \citep{grover2016node2vec}.
 So we wonder if the node embeddings produced by those general purpose node embedding techniques are better than node embeddings produced by Model R.
-More specifically, we want to know if we can have more accurate link weight prediction if we use the node embeddings produced by a general purpose node embedding technique.
-If we can decouple the two learning processes in Model R (node embedding learning and link weight prediction learning), we can substitute the node embedding with any other node embedding technique.
+If we can decouple the two learning processes in Model R, we can substitute the node embedding with any other node embedding technique.
 This plug-and-play idea, if it works, is very appealing because every time a new node embedding technique comes out, we can easily use the embeddings it produces in link weight prediction and see if it can improve the prediction accuracy.
 
 \section{Approach}
@@ -431,7 +423,8 @@ so that everyone can use it without any restriction
 \footnote{https://github.com/xxxxxx}.
 
 \subsection{Model prediction accuracy}
-We evaluate the performance of Model S and compare it with two baselines SBM and pWSBM on 4 datasets (Airport, Collaboration, Congress and Forum).
+We evaluate the performance of Model S and compare it with a previously published performance evaluation of two baselines SBM and pWSBM on 4 datasets (Airport, Collaboration, Congress and Forum) \citep{aicher2014learning}.
+We were not able to acquire an implementation for SBM or pWSBM so we did not do any performance evaluation on other datasets.
 The Model S's prediction accuracy is better than baselines on 3 out of 4 datasets.
 Among all Model S variants,
 the one with Model R embedding technique performs the best,
@@ -443,21 +436,11 @@ as shown in Figure \ref{fig:errors}.
 	}
 	\label{fig:errors}
 \end{figure}
-A few possible reasons why Model S variants can outperform baselines are:
-\begin{itemize}
-	\item Higher level of discrimination for nodes:
-	SBM based approaches assume nodes within the same group are the same in terms of link weight distributions;
-	Model S does not assume that,
-	but gives every node a unique description - the node embedding - so that
-	it has a more accurate description for each node.
-	\item Higher level of model flexibility:
-	SBM based approaches assume the weight of every link follows
-	a normal distribution.
-	Model S does not assume that, but takes advantage of high flexibility of
-	layers of non-linear neural network units,
-	so that it can model very complex weight distributions.
-\end{itemize}
-A possible reason why the Model R with Model S embedding outperforms other two variants with node2vec and LLE embedding is Model S embedding is specifically designed for link weight prediction task.
+One obvious reason Model S can outperform baselines is higher level of flexibility.
+SBM based approaches assume nodes within the same group are the same in terms of link weight distributions and the weight of every link follows a normal distribution.
+Model S does not rely on these assumptions as it gives each node a unique description - the node embedding and it takes advantage of high flexibility of
+layers of non-linear neural network units.
+A possible reason why the Model S with Model R embedding outperforms other two variants with node2vec and LLE embedding is Model R embedding is specifically designed for link weight prediction task.
 
 \subsection{Model robustness}
 In our experiments, Model S is robust against model parameter changes. Adding or removing a hidden layer or several units in a hidden layer usually does not change the prediction accuracy dramatically.
@@ -485,7 +468,8 @@ We have similar results on other four datasets and with other parameters like nu
 \section{Conclusion}
 Model S is the first generic deep learning approach to the link weight prediction problem based on node embeddings.
 It requires an effective node embedding technique to supply it node embeddings.
-It works with various embedding techniques including locally linear embedding \citep{roweis2000nonlinear}, skip-gram model \citep{grover2016node2vec} and the Model R \citep{hou2017deep}.
+It works with various embedding techniques including
+LLE, node2vec and the Model R.
 In most cases, its prediction accuracy is better than the state-of-the-art non deep learning approaches SBM and pWSBM.
 The Model R embedding performs the best among the different embeddings, which indicates that embeddings learned in the context of the task they will be used for can improve performance over generic embedding methods.
 
