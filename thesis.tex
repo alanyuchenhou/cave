@@ -463,7 +463,12 @@ This encoding scheme has its advantages compared to other encoding schemes. For 
 
 \section{Linear regression}
 A linear model uses a single weighted sum of features to make a prediction.
-\[ y = linear(x) = Wx + b\]
+\begin{align*}
+	y
+	&= linear(x) \\
+	&= Wx + b \\
+\end{align*}
+where $ y \in R^1, x \in R^d, W \in R^{1 \times d}, b \in R^1 $.
 Linear models have a few advantages:
 \begin{itemize}
 	\item work well with large number of features
@@ -484,7 +489,7 @@ Logistic regression is designed to predict the value of a boolean variable(a spe
 	&= logistic(x) \\
 	&= \frac{1}{1 + exp(Wx+b)}\\
 \end{align*}
-where the output is exactly the probability of expected output being 1.
+where the output is exactly the probability of expected output being 1, and $ y \in R^1, x \in R^d, W \in R^{1 \times d}, b \in R^1 $.
 The standard loss function for logistic regression is the logistic loss
 \[ loss(y, t) = \frac{ln(1 + exp(-ty))}{ln(2)} \]
 
@@ -508,9 +513,12 @@ The final output, i.e., the probabilities y are a softmax function of the eviden
 \end{align*}
 Here the softmax creates a legal probability distribution through normalization. The exponentiation of the evidence follows the intuition that the increase of evidence probability of the hypothesis exponentially instead of linearly.
 More compactly, we can use matrix multiplication to represent the softmax regression as
-\[ y = softmax(Wx + b) \]
-where softmax is the function
-\[ y_i = softmax(x)_i = \frac{exp(x_i)}{\sum_j exp(x_j)} \]
+\begin{align*}
+	y
+	&= softmax(x) \\
+	&= \frac{exp(Wx + b)}{\sum_j exp((Wx + b)_j)} \\
+\end{align*}
+where $ y \in R^D, x \in R^d, W \in R^{D \times d}, b \in R^D $ and exp() is element wise.
 Softmax unites introduce nonlinearities into the model.
 In a typical classification task, the value with the highest probability is regarded as the predicted value.
 Some of the classification tasks require a slightly different output format: top k values, where the top k values with highest probability are regarded as the output.
@@ -529,13 +537,17 @@ The advantage of these methods over linear models is that they have higher flexi
 The disadvantage is that their performance is not robust against hyperparameter changes.
 The idea of kernel methods is to apply non-linear mapping from the original data space to a new high dimensional data space such that the data points mapped to the new space are linearly separable, and then apply a linear model on the mapped data points.
 One such non-linear mapping example is Random Fourier Features mapping
-\[y = RFFM(x) = cos(\Omega x + b)\]
-where $ y \in R^D, x \in R^d, \Omega \in R^{D \times d}, b \in R^D $ and cosine is element wise \cite{rahimi2008random}.
-In this example, the elements in $ \Omega $ and $ b $ are sampled from distributions such that the dot product (the similarity) of two data points in the new space approximates the radial basis function (RBF) kernel value of the two data points in the original space when D is large:
+\begin{align*}
+	y 
+	&= RFFM(x) \\
+	&= cos(Wx + b) \\
+\end{align*}
+where $ y \in R^D, x \in R^d, W \in R^{D \times d}, b \in R^D $ and cosine() is element wise \cite{rahimi2008random}.
+In this example, the elements in $ W $ and $ b $ are sampled from distributions such that the dot product (the similarity) of two data points in the new space approximates the radial basis function (RBF) kernel value of the two data points in the original space when D is large:
 \begin{align*}
 	y_1 \cdot y_2
 	&= RFFM(x_1) \cdot RFFM(x_2)\\
-	&= \approx exp(-\frac{||x_1-x_2||^2}{2\sigma^2})\\
+	&\approx exp(-\frac{||x_1-x_2||^2}{2\sigma^2})\\
 \end{align*}
 The right hand side of the equation is the radial basis function (RBF) kernel, i.e., Gaussian kernel, one of the most widely used kernel functions in machine learning, which measures similarity in the new space.
 Hyperparameter $ \sigma $ is the standard deviation of the approximated RBF kernel and controls the similarity measure used in the classification.
@@ -623,9 +635,12 @@ Assuming the stride of the convolution layer is 1 and padding is performed (the 
 Some of the convolution layers can have strides larger than one, resulting a layer with reduced size and less units.
 For example, if we change the stride of the above convolution layer to 4, its output will become an array of shape (1000, 16, 16, 32).
 Most of the convolutional neural nets use rectified linear units (ReLU) so the convolution is
-\[ y = relu(Wx+b) \]
-where relu is the function
-\[ y = relu(x) = max(0, x) \]
+\begin{align*}
+	y
+	&= relu(x) \\
+	&= max(0, Wx+b) \\
+\end{align*}
+where $ y \in R^n, x \in R^{a \times b}, W \in R^{n \times a \times b}, b \in R^n , 0 \in 0^n $, n is the number of filters in this layer, a is the filter kernel width, b is the filter kernel height, and max() is element wise.
 ReLU unites introduce nonlinearities into the model.
 Typically, each unit in a convolution layer computes multiple features from the input patch of units.
 Each one of these features is obtained by a specific convolution filter.
