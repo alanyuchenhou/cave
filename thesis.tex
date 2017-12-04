@@ -63,7 +63,7 @@
 \setmycommitteeb{Diane J. Cook}
 \setmycommitteec{Shuiwang Ji}
 
-\setmytitle{Model R: Link Weight Prediction with Deep Learning}					  %Title
+\setmytitle{Link Weight Prediction with Deep Learning}					  %Title
 
 \setmydept{School of Electrical Engineering and Computer Science} 	  % DEPARTMENT OR SCHOOL
 \setmyschool{Washington State University}                             % SCHOOL
@@ -82,7 +82,7 @@
 \DisplaySignaturePage % displays the signature page with your provided information
 \begin{acknowledgments}
 	
-	Many thanks to my advisor Larry for guiding and supporting me in my exploration of deep learning approaches to graph mining problems.
+	Many thanks to my advisor Dr. Larry Holder for guiding and supporting me in my exploration of deep learning approaches to graph mining problems.
 	This material is based upon work supported by the National Science Foundation under Grant No. 164640.
 	
 \end{acknowledgments}
@@ -102,12 +102,12 @@
 	We demonstrate the power of Model R through experiments and compare it with 
 	the stochastic block model and its derivatives.
 	Model R shows that deep learning can be successfully applied to 
-	link weight prediction and it outperforms stochastic block model and its derivatives by up to 73\% in terms of prediction accuracy.
+	link weight prediction and it outperforms stochastic block model and its derivatives by up to 73\% in terms of prediction performance.
 	We analyze the node embeddings to confirm that closeness in embedding space correlates with stronger relationships as measured by the link weight.
 	We anticipate this new approach will provide effective solutions to more
 	graph mining tasks.
 	
-	We also demonstrate how to apply Model for the collaborative rating prediction problem, which is a special case of the graph link weight prediction problem where the graph is a bipartite graph.
+	We also demonstrate how to apply Model R for the collaborative rating prediction problem, which is a special case of the graph link weight prediction problem where the graph is a bipartite graph.
 	This model extracts knowledge of users and items from known ratings and 
 	uses this knowledge to predict unknown ratings.
 	We demonstrate the power of Model R through experiments and compare it with 
@@ -115,9 +115,9 @@
 	collaborative filtering.
 	Model R shows that deep learning can be successfully applied to 
 	collaborative rating prediction and it outperforms neighborhood-based 
-	collaborative filtering by up to 18\% in terms of prediction accuracy.
+	collaborative filtering by up to 18\% in terms of prediction performance.
 	
-	We also present a generalized deep learning approach to the graph link weight prediction problem based on general node embedding techniques.
+	We also present Model S, a generalized deep learning approach to the graph link weight prediction problem based on general node embedding techniques.
 	We evaluate this approach with three different node embedding techniques experimentally and compare its performance with stochastic block model and its derivatives.
 	
 \end{abstract}
@@ -143,7 +143,7 @@ image recognition \cite{simonyan2014very},
 natural language processing \cite{yao2013recurrent},
 recommendation systems \cite{barkan2016item2vec},
 and graph mining \cite{grover2016node2vec}.
-These neural net models can not only achieve higher prediction accuracy than 
+These neural net models not only achieve higher prediction performance than 
 traditional models,
 but also require much less domain knowledge and engineering.
 
@@ -173,34 +173,32 @@ content-based filtering to get the strengths of both
 Collaborative filtering has multiple forms including producing a list of items 
 a user would like, and predicting the ratings a user would give to a list of 
 items \cite{su2009survey}.
-Rating prediction form of collaborative 
-filtering, which we call collaborative rating prediction is in fact a special form of the graph link weight prediction problem where the graph is a bipartite graph.
+Rating prediction as a form of collaborative filtering,
+which we call collaborative rating prediction,
+is in fact a special form of the graph link weight prediction problem where the graph is a bipartite graph.
 
 
 We want to create a technique to predict link weights in a graph using a 
 neural net model.
-The estimator should learn to represent the graph in a meaningful way and learn to predict the target link weights using the representation it learns.
+The model should learn to represent the graph in a meaningful way and learn to predict the target link weights using the representation it learns.
 
 \section{Contribution}
-The contribution of this paper is
-a first deep learning approach to the link weight prediction problem.
+The contribution of this thesis is
+the first deep learning approach to the link weight prediction problem.
 We introduce Model R - the first deep neural network model specifically designed to solve the link weight prediction problem.
 We systematically study Model R's node embedding technique and illustrate its uniqueness compared to other embedding techniques.
 We show that Model R significantly outperforms the state of the art non-deep learning approach to the link weight prediction problem - the stochastic block model.
-We also introduce a generalized deep learning approach to the link weight prediction problem based on general node embedding techniques.
+We also introduce Model S - a generalized deep learning approach to the link weight prediction problem based on general node embedding techniques.
 This approach requires an effective node embedding technique to produce node embeddings.
-We demonstrate how this approach works with various embedding techniques including locally linear embedding \citep{roweis2000nonlinear}, skip-gram model \citep{grover2016node2vec}.
+We demonstrate how this approach works with various embedding techniques including locally linear embedding \citep{roweis2000nonlinear}, and skip-gram model \citep{grover2016node2vec}.
 
-The rest of the paper includes the following sections:
+The rest of the thesis includes the following chapters:
 \begin{itemize}
-	\item Problem: a description of the link weight prediction problem, including a social network message volume prediction example and a formal definition.
-	\item Existing approaches: a review of the state of the art approaches to the link weight prediction problem, including Node Similarity Model, Stochastic Block Model and models derived from Stochastic Block Models.
-	\item Deep learning and embeddings: a review of latest deep learning embedding techniques including content based techniques and relation based techniques.
-	\item Approach: an introduction to Model R, including its neural network architecture, node embedding technique, deep learning techniques, design parameters and choices.
-	\item Experiments: an experimental evaluation of the performance of Model R, with comparison to 4 baseline approaches on 4 datasets.
-	\item Node embedding analysis: an analysis of the node embeddings Model R produces to confirm that closeness of nodes in embedding space correlates with strength of node relations.
-	\item Conclusion: Model R outperforming Stochastic Block Model shows deep learning can be applied to the link weight prediction problem and achieve better performance than the state of the art non-deep learning approaches.
-	\item Future work: a brief discussion of possible future directions of this work.
+	\item Problem and existing approaches: a description of the link weight prediction problem, including a social network message volume prediction example and a formal definition, and a review of the state of the art approaches to the link weight prediction problem, including Node Similarity Model, Stochastic Block Model and models derived from Stochastic Block Models.
+	\item Link weight prediction with deep learning: an introduction to Model R, including its neural network architecture, node embedding technique, deep learning techniques, design parameters and choices, an experimental evaluation of the performance of Model R, with comparison to 4 baseline approaches on 4 datasets, and node embedding analysis.
+	\item Model R in recommendation systems: a special use case of Model R in recommendation systems with experimental evaluations, which is a special case where the graph under analysis is a bipartite graph.
+	\item Model R with pre-trained embeddings: an extension of Model R which uses embeddings produced by a generic node embedding technique.
+	\item Conclusion and future work: a summary that deep learning can be applied to the link weight prediction problem and achieve better performance than the state of the art non-deep learning approaches and a brief discussion of possible future directions of this work.
 \end{itemize}
 
 \chapter{Problem and existing approaches}
@@ -289,7 +287,7 @@ s_{xy} = \sum_{z \in N(x) \cap N(y)} F
 where N(x) is the set of neighbors of node x, z is any common neighbor of x and y,
 and F is an index factor which has nine different forms, shown in Table \ref{tab:indexes}.
 \begin{table*}[!ht]\centering
-	\caption{9 different forms of index factor F.}
+	\caption{Nine different forms of index factor F.}
 	\begin{tabularx}{\textwidth}{>{\columncolor{blue!30}}cXXX}  \hline \rowcolor{blue!30}
 		& Common Neighbors & Adamic-Adar & Resource Allocation \\ \hline
 		Unweighted F &
@@ -376,7 +374,7 @@ is the vector-valued function of natural parameters of the Bernoulli random vari
 \subsection{pWSBM (pure Weighted Stochastic Block Model)}
 The pWSBM is designed for weighted graphs and uses only link weight information \cite{aicher2014learning}.
 So it differs from SBM in a few ways described below.
-Here we choose model link weight with normal distribution.
+Here we model link weight with a normal distribution.
 Adjacency matrix A becomes the link weight matrix where the weight of link (i, j)  $ A_{ij} $ is a real random variable following the normal distribution:
 \begin{align*}
 A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
@@ -416,7 +414,7 @@ The hybrid log likelihood becomes:
 \end{align*}
 where pair $ (T_e, \eta_e) $ denotes the family of link existence distributions in SBM
 and pair $ (T_w, \eta_w) $ denotes the family of the link weight distributions in pWSBM.
-and $ \alpha \in [0, 1]$ is a tuning parameter that determines their relative importance,
+Parameter $ \alpha \in [0, 1]$ is a tuning parameter that determines their relative importance,
 E is the set of observed interactions,
 and W is the set of weighted edges.
 In the following, we use $ \alpha = 0.5 $ following the practice in \cite{aicher2014learning}.
@@ -430,257 +428,11 @@ T_e(A_{ij}) &= (A_{ij}, -d_id_j)\\
 \end{align*}
 where $ d_i $ is the degree of node i \cite{aicher2014learning}.
 
-\chapter{Preliminaries and related work}
+In this chapter, we have studied the definition of link weight prediction problem and a social network message volume prediction example. We also reviewed the state of the art approaches to the link weight prediction problem, including Node Similarity Model, Stochastic Block Model and models derived from Stochastic Block Models. Now we have a clear idea of the problem we want to solve and the existing solutions our new solution needs to outperform.
 
-\section{Optimization, learning, training, fitting}
-The concepts learning, training, fitting and optimization are very similar. They describe the process where the model slowly changes its variables (also called parameters or weights) in order to minimize the loss. The simplest learning algorithm is the gradient descent, which modifies each variable according to the derivative of the loss with respect to that variable, a.k.a., the loss gradient.
-In each learning step, the model updates each variable a little bit along the direction of the gradient that reduces the loss.
-The model uses the entire dataset in each learning step so the training is very expensive and not scalable to large datasets.
-A more advanced learning algorithm is stochastic gradient descent, which uses a different batch of the dataset in each learning step.
-In this way, the training is cheap and scalable to large datasets.
-The batch size is typically less than one thousand.
-
-\section{One hot encoding}
-One hot encoding is a specific numeric vector representation for categorical entities. A one-hot vector is a one dimensional array which has one element set to 1 while all other elements set to 0. In this case, the one-hot vector with nth element set to 1 represents the nth element in the category.
-In a hand written digit recognition example, the input of the model is an image of a hand written digit and the output is the actual digit the image is related to.
-In this case, the output is a categorical variable with 10 possible values
-\[0, 1, 2, 3 ... 9\]
-which can have one hot encoding as shown in Table \ref{tab:one-hot-encoding}
-\begin{table}[ht]\centering
-	\caption{One hot encoding for digits.}
-	\begin{tabular}{cc} \hline \rowcolor{blue!30}
-		Digit & One-hot encoding \\ \hline
-		0 & [1, 0, 0, 0, ... 0]       \\ \hline
-		1 & [0, 1, 0, 0, ... 0]       \\ \hline
-		2 & [0, 0, 1, 0, ... 0]       \\ \hline
-		3 & [0, 0, 0, 1, ... 0]       \\ \hline
-		... & ...       \\ \hline
-		9 & [0, 0, 0, 0, ... 1]       \\ \hline
-	\end{tabular}
-	\label{tab:one-hot-encoding}
-\end{table}
-This encoding scheme has its advantages compared to other encoding schemes. For example, compared to binary encoding, output bits are completely independent from each other so that this encoding does not introduce any false relations between different entities. Notice that in terms of digit recognition, there is no relation between an two digits. In other words, all digits are meaningless entities.
-
-\section{Linear regression}
-A linear model uses a single weighted sum of features to make a prediction.
-\begin{align*}
-	y
-	&= linear(x) \\
-	&= Wx + b \\
-\end{align*}
-where $ y \in R^1, x \in R^d, W \in R^{1 \times d}, b \in R^1 $.
-Linear models have a few advantages:
-\begin{itemize}
-	\item work well with large number of features
-	\item simple and quick to train, debug and interpret
-	\item reveal the impact each feature has on the output through weights assigned to each feature
-\end{itemize}
-The loss (or cost) function measures how bad the current model is, i.e., how far apart the current model is from the function to be modeled by evaluating the difference between the expected output and the predicted output.
-The standard loss function for linear regression is the squared loss
-\[loss(y, t) = (t - y)^2 \]
-where t is the expected output.
-The output of the loss function is called loss, or cost.
-
-\section{Logistic regression}
-Logistic regression is designed to predict the value of a boolean variable(a special case of categorical variable when the categorical variable has only two possible values)
-\begin{align*}
-	y
-	&= P(t = 1 | x) \\
-	&= logistic(x) \\
-	&= \frac{1}{1 + exp(Wx+b)}\\
-\end{align*}
-where the output is exactly the probability of expected output being 1, and $ y \in R^1, x \in R^d, W \in R^{1 \times d}, b \in R^1 $.
-The standard loss function for logistic regression is the logistic loss
-\[ loss(y, t) = \frac{ln(1 + exp(-ty))}{ln(2)} \]
-
-\section{Softmax regression (multinomial logistic regression)}
-Softmax regression is designed to predict the value of a categorical variable.
-In the digit recognition example above, when the input of the model is an image of a hand written digit, the output should be the probabilities of the image being each digit
-\[P(y = digit_i | x)\]
-and the the probabilities of the output should always sum up to one because the expected output is one of the 10 possible values
-\[ \sum_{digit_i \in \{0, 1, 2, ... 9\}}P(y = digit_i | x) = 1 \]
-Softmax regression is commonly used as the activation function in the output layer of a neural net model to perform the final classification.
-A softmax regression follows the principal that each observation in the input contribute the probability of each consequence in the output. Therefore, the probability of each consequence in the output is a weighted sum of all the observations related to it. The weight is positive if the observation is evidence in favor of the consequence and the weight is negative if the observation is evidence against the consequence.
-The math form of a softmax regression is
-\[ evidence_i = \sum_j W_{i, j} x_j + b_i \]
-where $ W_i $ is the weights, $ b_i $ is the bias for class i, j is the index for the observations in the input, i.e., the elements in the input vector.
-The final output, i.e., the probabilities y are a softmax function of the evidences
-\begin{align*}
-	y_i
-	&= softmax(evidence_i) \\
-	&= normalize(exp(evidence_i)) \\
-	&= \frac{exp(evidence_i)}{\sum_j exp(evidence_j)} \\
-\end{align*}
-Here the softmax creates a legal probability distribution through normalization. The exponentiation of the evidence follows the intuition that the increase of evidence probability of the hypothesis exponentially instead of linearly.
-More compactly, we can use matrix multiplication to represent the softmax regression as
-\begin{align*}
-	y
-	&= softmax(x) \\
-	&= \frac{exp(Wx + b)}{\sum_j exp((Wx + b)_j)} \\
-\end{align*}
-where $ y \in R^D, x \in R^d, W \in R^{D \times d}, b \in R^D $ and exp() is element wise.
-Softmax unites introduce nonlinearities into the model.
-In a typical classification task, the value with the highest probability is regarded as the predicted value.
-Some of the classification tasks require a slightly different output format: top k values, where the top k values with highest probability are regarded as the output.
-The standard loss function for softmax regression is the cross entropy loss
-\[loss(y, t) = - \sum_i t_i log(y_i)\]
-where y is the predicted probability distribution and t is the expected probability distribution (the one-hot encoding of the output value).
-Cross entropy originates from information compressing codes in information theory.
-It measures how inefficient the predicted probability distributions are for predicting the expected output value.
-
-\section{Kernel methods}
-Kernel methods can increase the prediction accuracy of linear models.
-There are two types of kernel methods: implicit (dual) kernel methods and explicit (primal) kernel methods.
-Explicit kernel methods scales better with the dataset size in terms of training and evaluation time complexity and space complexity.
-Kernel methods usually employ support vector machines as the models \cite{hofmann2008kernel}.
-The advantage of these methods over linear models is that they have higher flexibility and better performance when the data points are not linearly separable.
-The disadvantage is that their performance is not robust against hyperparameter changes.
-The idea of kernel methods is to apply non-linear mapping from the original data space to a new high dimensional data space such that the data points mapped to the new space are linearly separable, and then apply a linear model on the mapped data points.
-One such non-linear mapping example is Random Fourier Features mapping
-\begin{align*}
-	y 
-	&= RFFM(x) \\
-	&= cos(Wx + b) \\
-\end{align*}
-where $ y \in R^D, x \in R^d, W \in R^{D \times d}, b \in R^D $ and cosine() is element wise \cite{rahimi2008random}.
-In this example, the elements in $ W $ and $ b $ are sampled from distributions such that the dot product (the similarity) of two data points in the new space approximates the radial basis function (RBF) kernel value of the two data points in the original space when D is large:
-\begin{align*}
-	y_1 \cdot y_2
-	&= RFFM(x_1) \cdot RFFM(x_2)\\
-	&\approx exp(-\frac{||x_1-x_2||^2}{2\sigma^2})\\
-\end{align*}
-The right hand side of the equation is the radial basis function (RBF) kernel, i.e., Gaussian kernel, one of the most widely used kernel functions in machine learning, which measures similarity in the new space.
-Hyperparameter $ \sigma $ is the standard deviation of the approximated RBF kernel and controls the similarity measure used in the classification.
-Generally speaking, larger D leads to better approximation, larger and more flexible model, higher classification accuracy, longer training time and higher possibility of over-fitting.
-
-\section{Representations of data}
-Neural nets use array representations of data exclusively in order to carry out numerical computation on the data. For example, a dataset representing a set of images is represented as an array with four dimensions:
-\begin{enumerate}
-	\item the dimension to index the image in the image set
-	\item the dimension to index the row of a pixel in an image
-	\item the dimension to index the column of a pixel in an image
-	\item the dimension to index the color channel of a pixel
-\end{enumerate}
-With such a representation, an array of shape (1000, 64, 64, 3) represents a dataset of 1000 images, where each image has 64 rows and 64 columns of pixels, where each pixel has 3 color channels.
-Moreover, array[3, 4, 5, 0] represent the light intensity value of image 3, row 4, column 5, channel 0.
-
-\subsection{Representations of words}
-Representations of words are very different from representations of images and audio.
-Images and audio data are rich, high-dimensional data encoded as arrays of the individual raw pixel intensities for image data and power spectral density coefficients for audio data.
-In image and spech recognition tasks all the available information about the entities is encoded in the data.
-However, natural language data are symbolic and there is no direct way to encode words to provide useful information regarding the relationships between the symbols.
-For example, images of dogs and cats illustrate their relations such as they are both animals, four-legged, furry, pets, but the words `dog' and `cat' do not illustrate these relations.
-
-\subsubsection{Vector space models}
-Vector space models represent (embed) words in a continuous space where semantically similar words are mapped (embedded) to nearby points.
-It is based on the Distributional Hypothesis (words appearing in the same contexts share semantic meaning).
-There are two categories of approaches leveraging this hypothesis: count-based methods and predictive methods.
-Count-based methods compute the statistics of word co-occurrence counts and map them to vectors of words. Predictive methods learn to predict a word from its neighbors using learned vectors of words \cite{baroni2014don}.
-
-\subsubsection{Word2vec}
-Word2vec is an efficient predictive methods for word embedding. It has two variants: the Continuous Bag-of-Words model and the Skip-Gram model.
-These two methods are very similar and the major difference is that the Continuous Bag-ofWords model predicts target words from context words, while the skip-gram model predicts context words from the target words \cite{levy2014dependency}.
-The skip-gram model gains popularity over time as it tends to outperform the continuous-bag-of-words model in larger datasets.
-The vectors obtained from this method are very useful as features for many canonical natural language processing tasks, such as part-of-speech tagging \cite{collobert2011natural}, named entity recognition \cite{turian2010word}.
-
-\subsubsection{Language modeling}
-In language modeling, the input of the neural net is a word history (a few previous words) and the output is the probability distribution of target word $ w_t $ (the next word)
-\begin{align*}
-	P(w_t | history)
-	&= softmax(score(w_t, history)) \\
-	&= \frac{exp(score(w_t, history))}{\sum_{w_u \in V}exp(score(w_u, history))}\\
-\end{align*}
-where V is the vocabulary, $ w_t $ is the target word and score is some computation of the compatibility of $ w_t $ and history.
-The output is produced by softmax regression and the target variable is a categorical variable, we can use cross-entropy loss in the training.
-The softmax computation is very expensive because it needs to compute the score for each word in the vocabulary at every training step so this computation does not scale well when the vocabulary is big because the time complexity is linear with respect to the vocabulary size
-\[T = O(|vocabulary|)\]
-So in practice, training usually approximates the softmax using negative sample technique where only sample of words beside the target word (negative words) in the vocabulary are used in the softmax calculation
-\begin{align*}
-	P(w_t | history)
-	&= softmax(score(w_t, history)) \\
-	&= \frac{exp(score(w_t, history))}{\sum_{w_u \in V}exp(score(w_u, history))}\\
-	&\approx \frac{exp(score(w_t, history))}{\sum_{w_u \in V_n \cap {w_t}}exp(score(w_u, history))}\\
-\end{align*}
-where $ V_n $ is the negative word sample out of the vocabulary.
-This approximation makes the cross-entropy loss computation much faster \cite{mnih2013learning}
-\begin{align*}
-	loss(y, t)
-	&= - \sum_i t_i log(y_i)\\
-	&= - \sum_i t_i log(P(w_t | history))\\
-\end{align*}
-Now the time complexity is linear with respect to the negative sample size instead of the vocabulary size, which is a small constant.
-\[T = O(|sample|) = O(1)\]
-
-\section{Convolutional neural net}
-A convolutional neural net is a neural net that uses convolution layers and max pooling layers \cite{krizhevsky2009learning}. Typically, it consists of a stack of convolution modules. Each module consists of a convolution layer followed by a pooling layer.
-The last convolution module is followed by a number of fully connected layers that perform classification.
-Convolutional neural nets are the current state-of-the-art model architecture for image classification tasks \cite{szegedy2015going} \cite{ioffe2015batch} \cite{szegedy2016rethinking}.
-They apply a series of filters to the raw pixel data of an image to extract and learn higher and higher level features and use them  for classifications.
-It is a very common neural net in speech recognition applications as well.
-It is very different from fully connected neural net in that each unit in each layer is only connected to the units in a small local region of the previous layer.
-This design takes advantage of the locality of the activations of units in each layer.
-For example, in image recognition applications, activations of units close to each other represent light intensities in a local spacial region; in speech recognition applications, activations of units close to each other represent sound intensities in a local temporal or frequency region.
-In a convolutional neural net, it is common for each unit to have multiple activation channels, where each activation channel corresponds an output channel.
-For example, light intensity pixel can have 3 channels to store light intensities at 3 different light frequency - red, green and blue.
-
-\subsection{Convolution layer}
-A convolution layer extracts features of the object from the activation of its previous layer.
-Each unit in a convolution layer is connected to a small region in the previous layer, such as a 4x4 square patch of 16 units, and uses their activations as input.
-This dimension of the patch is also called convolution kernel size.
-For example, a unit in a convolution layer can have an input of a 4x4 patch of unites where each unit has 3 channels, while it can have an output of 32 channels where each channel is a different convolution of the input.
-In this case, the input of this unit is an array of shape (4, 4, 3) and output is an array of shape (1, 1, 32).
-Assuming the dataset contains 1000 images of resolution 64x64, the input of the first convolution layer should be an array of shape
-(1000, 64, 64, 3).
-Assuming the stride of the convolution layer is 1 and padding is performed (the convolution layer add 0 values to the edges of the input sensor to preserve the width and height of the previous layer in the output), its output should be an array of shape (1000, 64, 64, 32).
-Some of the convolution layers can have strides larger than one, resulting a layer with reduced size and less units.
-For example, if we change the stride of the above convolution layer to 4, its output will become an array of shape (1000, 16, 16, 32).
-Most of the convolutional neural nets use rectified linear units (ReLU) so the convolution is
-\begin{align*}
-	y
-	&= relu(x) \\
-	&= max(0, Wx+b) \\
-\end{align*}
-where $ y \in R^n, x \in R^{a \times b}, W \in R^{n \times a \times b}, b \in R^n , 0 \in 0^n $, n is the number of filters in this layer, a is the filter kernel width, b is the filter kernel height, and max() is element wise.
-ReLU unites introduce nonlinearities into the model.
-Typically, each unit in a convolution layer computes multiple features from the input patch of units.
-Each one of these features is obtained by a specific convolution filter.
-
-\subsection{Max pooling layer}
-A max pooling layer reduces the features extracted from its previous layer.
-More specifically, it downsamples the image data extracted by the convolutional layer to reduce the dimensionality of the feature map to decrease model complexity and processing time.
-The connections between a max pooling layer and its previous layer is very similar to that between a convolution layer and its previous layer.
-Typically, each unit in a max pooling layer extracts the max features from the input patch of units.
-For example, a unit in a max pooling layer can have an input of a 4x4 patch of units where each unit has 32 channels, and an output of 32 channels where each channel is the maximum of all the corresponding output channels from the 4x4 patch.
-In this case, the input of this unit is an array of shape (4, 4, 32) and output is an array of shape (1, 1, 32).
-Assuming the input of the max pooling layer is an array of shape (1000, 16, 16, 32), its output should be an array of shape (1000, 4, 4, 32).
-The max pooling function is simply
-\[ y = max(x) \]
-It keeps the maximum of values for each feature in the feature map and discards all others.
-
-\subsection{Fully connected layer}
-A fully connected layer usually performs classification on the features extracted by convolution layers and downsampled by the pooling layers.
-In a fully connected layer, every unit is connected to every unit in the previous layer.
-
-\subsection{Dropout}
-Dropout is a common technique in convolutional neural nets to reduce over fitting \cite{srivastava2014dropout}. This technique forces the model to turn off each unit with a certain probability during each training step while turn on all units during testing.
-The goal is to encourage each unit to work independently and extract diverse features, instead of depending on each other and extract similar features.
-Dropout is most useful when the model complexity is high, i.e. when the neural net is very large.
-
-\section{Recurrent neural net}
-Recurrent neural nets (RNN) are very effective in language modeling.
-Language modeling is an important problem because it is the key to many interesting problems such as speech recognition, machine translation and image captioning \cite{zaremba2014recurrent}.
-To keep things simple, we assume all the words in the corpus are word IDs (integers).
-Recurrent neural net consists of multiple layers of LSTM (Long Short Term Memory) cells. Each LSTM cell processes one word at a time and computes the probability distribution of the next word.
-During evaluation stage, the memory state of the model is initialized with zeros and gets updated after reading each word.
-Theoretically, the output and state of an RNN depends on arbitrarily old inputs, making backpropagation computation in the learning process difficult.
-Practically, to simplify the computation, the model is approximated by an unrolled version with a finite number of LSTM inputs and outputs.
-The loss function is the cross entropy loss.
-
-\section{Transfer learning}
-Transfer learning is a technique that retrains the final layer of a fully trained model (trained on a dataset) on a new dataset while leaving all other layers unchanged \cite{donahue2014decaf}. Models obtained with this technique do not have prediction accuracy as good as models trained from scratch, but they are very fast to train and effective enough for many applications. For example, in image recognition, the new dataset can contain images of completely different entities from the old dataset, but the model can still quickly learn to recognize these new entity classes. The reason behind this is that lower layers in the model have been trained to recognize many basic objects and shapes so that they can be reused to recognize the same basics objects and shapes in the new datasets.
-The input to the model are the word embeddings which are randomly initialized and learned during the training.
-
-\chapter{Model R}
+\chapter{Link weight prediction with deep learning}
+In this chapter, we introduce the first deep learning approach to the graph link weight prediction problem - Model R.
+We provide a detailed description of its neural network architecture, node embedding technique, deep learning techniques, design parameters and choices, an experimental evaluation of the performance of Model R, with comparison to 4 baseline approaches on 4 datasets, and node embedding analysis.
 
 \section{Deep Learning and Embeddings}
 As deep learning techniques become more powerful and standardized,
@@ -695,7 +447,7 @@ graph mining (embeddings for nodes) and other applications.
 In this section, we review a few classical embedding techniques and models for images, audio, words, documents, items and nodes.
 A common goal of these techniques is to ensure that
 similar entities are close to each other in the embedding space.
-Observations about this process lead to the deep learning approach to link weight prediction.
+Observations about this process lead to our deep learning approach to link weight prediction.
 
 \subsection{Entities and representations}
 First of all, we summarize how a neural net represents various types of 
@@ -705,12 +457,12 @@ An image in image recognition is represented as
 a 2D light amplitude array with dimensions height and width.
 An audio/spectrogram in speech recognition is represented as
 a 2D sound amplitude array with dimensions time and frequency.
-The relation between two images or two audio is not commonly used. 
+The relation between two images or two audio signals is not commonly included in their representations. 
 Words in natural languages, items in recommendation systems, and nodes 
 in graphs can be represented by vectors (1D numeric arrays).
 The	relations between two words, two items and two nodes are commonly 
 used to learn these vectors.
-It is clear that representations for all the entities are numeric arrays, 
+Ultimately, representations for all the entities are numeric arrays, 
 because neural nets rely on neurons' activations and communications, which 
 are both numeric.
 \begin{table*}[!ht]\centering
@@ -724,7 +476,7 @@ are both numeric.
 		speech recognition & audio/spectrogram  & N/A & 2D sound amplitude array[time, frequency] \\ \hline
 		natural language processing & word   & co-occurrences of words in a context & 1D array (i.e., word vector) \\ \hline
 		recommendation systems & item   & co-purchases of items in a order & 1D array (i.e., item vector) \\ \hline
-		graph mining & node & connections of nods (i.e., links) & 1D array (i.e., node vector) \\ \hline
+		graph mining & node & connections of nodes (i.e., links) & 1D array (i.e., node vector) \\ \hline
 	\end{tabularx}
 	\label{tab:domains}
 \end{table*}
@@ -737,7 +489,7 @@ In a corpus, every word is described/defined only by related words in its
 contexts, by implicit relations between words in word co-occurrences.
 Nonetheless, the neural net can learn from word co-occurrences and map words to 
 vectors accordingly.
-It provides strong evidence that word embedding with the Skip-gram model can extract knowledge about words from the relations between words and represent this knowledge in the word embedding space \cite{mikolov2013linguistic}.
+This approach provides strong evidence that word embedding with the Skip-gram model can extract knowledge about words from the relations between words and represent this knowledge in the word embedding space \cite{mikolov2013linguistic}.
 In fact, most subsequent embedding techniques in other domains use the same Skip-gram model, such as
 doc2vec \cite{le2014distributed},
 item2vec \cite{barkan2016item2vec},
@@ -974,15 +726,12 @@ as shown in Table \ref{tab:words}.
 	\end{tabular}
 	\label{tab:words}
 \end{table}
-Given a word fox, its context word is a random variable with a probability distribution:
+Given a word ``fox'', its context word is a random variable with a probability distribution:
 \[P(context\_word = x | given\_word = fox)\]
 where
 \[x \in vocabulary\]
 and the context-word probability distribution sums to 1 over the vocabulary:
-\begin{align*}
-&\sum_{x \in vocabulary}P(context\_word = x | given\_word = fox)\\
-&= 1\\
-\end{align*}
+\[ \sum_{x \in vocabulary}P(context\_word = x | given\_word = fox) = 1 \]
 During each training step, one training example - a (word, context-word) pair - is used.
 The input layer is activated by the one-hot encoding of the given word.
 The output layer is expected to predict the one-hot encoding of the context-word.
@@ -1044,12 +793,12 @@ The relation between nodes is quite different from that between words:
 \begin{itemize}
 	\item The weight of a link from one node to another specifically tells us
 	how strong one node connects to the other;
-	this type of relation has regular and explicit form:
+	this type of relation has a regular and explicit form:
 	entity - relation - entity.
 	\item On the other hand, the co-occurrences of words 
 	(e.g., in the context ``The quick brown fox jumps over the lazy dog")
-	implicitly tell us these words are related
-	but do not tell us any specific relations
+	implicitly tells us these words are related
+	but does not tell us any specific relations
 	(e.g., Are ``quick" and ``brown" related? What is the relation between ``fox" and ``jumps"? Is ``over" a relation or entity?).
 \end{itemize}
 Natural languages do not have the notion that
@@ -1061,10 +810,11 @@ Therefore, the skip-gram model, designed to handle natural languages,
 can not take advantage of highly structured data in graphs.
 This suggests that a neural net, if correctly designed to handle graphs,
 should be able to learn a node-to-vector mapping supervised by the link weight,
-in a more specific, direct and simply way than it learns word-to-vector 
+in a more specific, direct and simple way than it learns word-to-vector 
 mappings supervised by word co-occurrences.
 
 \section{Approach}
+\label{model-r}
 Following the above observations,
 we build an estimator with a neural net model using a node pair as its input
 and the weight of the link connecting the nodes as its output.
@@ -1089,11 +839,11 @@ For example, given a social network where nodes are users and link weights are n
 We design the model in the estimator as a fully connected neural network model which we call Model R (R as in relation), shown in Figure \ref{fig:model-r}.
 We have considered a convolutional neural net as an alternative,
 but we decided it would not be a good fit for this application.
-The reason is that these node vectors do not have any spacial property
+The reason is that these node vectors do not have any spatial property
 for a convolutional neural network to take advantage of,
-compared to the 2D array of an image where the spacial location of each pixel
+compared to the 2D array of an image where the spatial location of each pixel
 has significant meaning (e.g., relative distances of pixels).
-These node vectors do not have any of the invariance properties of an image either,
+These node vectors also do not have any of the invariance properties of an image,
 such as translation invariance, rotation invariance,
 size invariance and illumination invariance.
 In this section, we describe the architecture of Model R and the node embedding technique based on this model.
@@ -1132,7 +882,7 @@ In this section, we describe the architecture of Model R and the node embedding 
 	\caption{
 		A simplified version of Model R with 1 input layer (red), 3 hidden layers (green), and 1 output layer (blue).
 		Notice that the embedding layer is the first hidden layer.
-		The embedding layer and the input layer each has two channels: one channel for the source node and one channel for the destination node.
+		The embedding layer and the input layer both have two channels: one channel for the source node and one channel for the destination node.
 		The embedding layer uses linear units
 		while other hidden layers use rectified linear units.
 		The output layer uses linear units.
@@ -1200,19 +950,19 @@ and also some justifications for our choices.
 	and consequently higher degrees of freedom,
 	higher dimensions of vectors and larger layer sizes.
 	Empirically, we usually set the layer size as a logarithm function of the dataset size:
-	\[d = log_2(n)\]
-	where d (as in dimension) is the layer size and n is the dataset size.
+	\[d = lg(n)\]
+	where d (as in dimension) is the layer size and n is the number of nodes in the dataset.
 	\item The choice of number of hidden layers is related to the complexity of the relation between the input and the output of the model.
 	As a trivial example, if the input and the output have a linear relation,
 	no hidden layer is necessary and the model is simply a linear model.
 	If the input and the output have a non-linear relation,
 	the more complex the relation is, the more layers are necessary.
 	Empirically, we usually set the number of hidden layers to 4,
-	as a good compromise of learning speed and prediction accuracy.
+	as a good compromise of learning speed and prediction performance.
 \end{itemize}
 We naturally assume the most optimum design parameters are dataset dependent.
 However, we do not know any theoretical way to calculate the most optimum parameters based on the statistic signatures of a specific dataset.
-Therefore, in this work, we evaluate different parameter choices through a few experiments.
+Therefore, in this work, we evaluate different parameter choices through experiments.
 We will work on design parameter optimization in our future research.
 
 \section{Scalability analysis}
@@ -1225,31 +975,31 @@ The node similarity model has two stages in its training process:
 	\item A simple linear regression training over the training set
 \end{enumerate}
 The calculation of the computation complexity of the second stage is very straightforward
-\[T_2 = O(v)\]
-where v is the dataset size, i.e., the number of links in the graph. However, the calculation of the computation complexity of the first stage is a bit complicated because there are nine different forms of the similarity index factor F. Here we only estimate the Reliable route weighted resource allocation index factor because it has the highest complexity. The analysis of eight other forms of the index factor is very similar.
+\[T_2 = O(e)\]
+where e is the dataset size, i.e., the number of links in the graph. However, the calculation of the computation complexity of the first stage is more complicated because there are nine different forms of the similarity index factor F. Here we only estimate the Reliable route weighted resource allocation index factor because it has the highest complexity. The analysis of eight other forms of the index factor is very similar.
 The first step is the calculation of the strengths of each node
 \begin{align*}
 	s_z = \sum_{u \in N(z)} w_{zu}
 \end{align*}
 where $ N(z) $ are all the neighbor nodes of $ z $ and $ w_{zu} $ are all the weights of the links connected to $ z $. This step has complexity
-\[T_{1strength} = O(v)\]
-where $ v $ is the dataset size, because it involves the summation of all link weights.
-The second step is the calculation of the similarity for each node pairs in the training set
+\[T_{1strength} = O(e)\]
+where $ e $ is the dataset size, because it involves the summation of all link weights.
+The second step is the calculation of the similarity for each node pair in the training set
 \[s_{xy} = \sum_{z \in N(x) \cap N(y)} \frac{w_{xz} \cdot w_{zy}}{s_z}\]
 where $ N(x) \cap N(y) $ are all the common neighbor nodes of $ x $ and $ y $. This step needs to iterate over all the two-hop paths in this graph so it has worst case complexity
-\[T_{1similarity} = O(v^2)\]
-The worst case occurs when every link is connected to every other link.
+\[T_{1similarity} = O(e^2)\]
+The worst case occurs when every node is connected to every other node.
 The total time complexity is the sum of the complexities of the first and second stage
 \begin{align*}
 	T
 	&= T_{1strength} + T_{1similarity} + T_2 \\
-	&= O(v) + O(v^2) + O(v) \\
-	&= O(v^2) \\
+	&= O(e) + O(e^2) + O(e) \\
+	&= O(e^2) \\
 \end{align*}
 So the complexity is quadratic with respect to the dataset size $ v $, which is not ideal for large datasets.
 Also, this model requires the presence of the entire dataset during the training due to repeated neighborhood lookup.
-In other words, it needs to access the data multiple times during the training so the graph data need to be stored locally and the learning can not be made online.
-This makes it difficult for node similarity model to handle streaming graphs.
+In other words, it needs to access the data multiple times during the training so the graph data need to be stored locally and the learning can not be done online.
+This makes it difficult for the node similarity model to handle streaming graphs.
 
 \subsection{SBM}
 The SBM model's training process is to fit parameters $ z $ and $ \theta $ to maximize the probability of observation A
@@ -1260,26 +1010,47 @@ Among these calculations, the one for A is the most complex dominating all other
 \[T = O(n^2)\]
 where n is the number of nodes in the graph.
 We know that the number of links is always bounded by the number of nodes
-\[v \leq n^2\]
+\[e \leq n^2\]
 Therefore we have a lower bound of the time complexity
-\[T = O(n^2) \geq O(v) \]
+\[T = O(n^2) \geq O(e) \]
 So in the best case the time complexity is linear
-\[ T = O(v) \]
+\[ T = O(e) \]
 And the best case occurs when the graph is fully connected.
-However, many real world graphs are sparse graphs, in which case the quadratic term of the number of nodes are far larger than the number of links
-\[v << n^2\]
+However, many real world graphs are sparse graphs, in which case the quadratic term of the number of nodes is far larger than the number of links
+\[e << n^2\]
 Furthermore, the SBM model requires the presence of the entire dataset and the construction of the adjacency matrix.
-Therefore, the learning cannot be made online and its not suitable for streaming graphs.
+Therefore, the learning cannot be done online and SBM is not suitable for streaming graphs.
 
 \subsection{Model R}
-Model R updates its weights at each training step so its training time complexity is linear:
-\[T(v) = O(v)\]
-where v is the dataset size, i.e., the number of links in the graph.
-This linear time complexity makes Model R an ideal choice for prediction tasks on very large datasets, as it is impossible to have any learning algorithm to achieve below linear time complexity.
+The time complexity of a single training step is linear with respect to the number of weights/parameters in the model.
+Also in a fully connected feed forward neural net layer, the number of weights is the multiplication of its number of units and the number of units in the previous layer it connects to.
+Therefore, assuming each layer in Model R has the same number of units and the number of layers is a constant per the design parameter choice, the time complexity of Model R training is
+\begin{align*}
+	T
+	&= O(NumberOfTrainingSteps * TimeOfEachTrainingStep) \\
+	&= O(NumberOfTrainingSteps * NumberOfLayers * NumberOfWeightsPerLayer) \\
+	&= O(DatasetSize * NumberOfUnitsPerLayer^2) \\
+	&= O(e * lg(n)^2) \\
+\end{align*}
+where $ lg(n) $ is the number of units in each layer, $ n $ is the number of nodes in the graph and v is the number of links in the graph.
+Most real world graphs has the number of nodes smaller than the number of links.
+\[ n < e\]
+Under this condition, for most real world datasets the training time complexity can be estimated by just the dataset size
+\begin{align*}
+	T
+	&= O(e * lg(n)^2) \\
+	&= O(e * lg(e)^2) \\
+\end{align*}
+Notice that the polylogarithmic term $ O(lg(e)^2) $ is much smaller than linear term $ O(e) $.
+We can see the time complexity of the Model R is lower than those of the node similarity model the SBM, which makes Model R an ideal choice for prediction tasks on very large datasets.
 Furthermore, the training process of Model R does not require the presence of the entire dataset.
 Instead, the training process accesses only a small subset of the dataset at a time (the mini batch of training examples) and it does not access the same data twice when the number of training epochs is set to one.
-Therefore, Model R can be online learning as long as it uses each example in the training set exactly once.
+Therefore, Model R can do online learning as long as it uses each example in the training set exactly once.
 This allows Model R to nicely handle streaming graphs.
+In case the entire dataset is present, Model R can have multiple epochs of training.
+Training with fixed number of epochs does not change the time complexity but it may lead to over-fitting.
+In the experiments, we used the technique early stopping to avoid over-fitting.
+With early stopping, time complexity analysis becomes hard, because there is no way to know how many epochs will it take for the over-fitting to occur.
 
 \section{Experiments} \label{section:experiments}
 We evaluate Model R experimentally with SBM, pWSBM, bWSBM and DCWBM as baselines,
@@ -1292,7 +1063,7 @@ that Model R can achieve much lower prediction error than the baseline models.
 The experiments use four datasets:
 \begin{itemize}
 	\item Airport \cite{colizza2007reaction}. Nodes represent the busiest airports in the United States, and each of the directed edges is weighted by the number of passengers traveling from one airport to another.
-	\item Collaboration \cite{pan2012world}. Nodes represent nations on Earth, and each of the edges	is weighted by a zed count of academic papers whose author lists include that pair of nations.
+	\item Collaboration \cite{pan2012world}. Nodes represent nations on Earth, and each of the edges	is weighted by the number of academic papers whose author lists include that pair of nations.
 	\item Congress \cite{porter2005network}. Nodes represent the committees in the 102nd United States Congress, and each of the edges is weighted by the number of shared members.
 	\item Forum \cite{opsahl2009clustering}. Nodes represent users of a student social network at UC Irvine, and each of the directed edges is weighted by the number of messages sent between users.
 \end{itemize}
@@ -1324,7 +1095,7 @@ In each trial, we split the dataset randomly into 3 subsets:
 \end{itemize}
 A larger or smaller validation set did not reduce the prediction error in the 
 experiments.
-We use mean squared error as the prediction accuracy metric.
+We use mean squared error as the prediction performance metric.
 For each trial, the model learns for several epochs.
 In each epoch,
 it learns on the training set,
@@ -1337,7 +1108,7 @@ At the end, the testing program lets the estimator predict on the test set
 and record its testing error as its prediction error on that dataset.
 For each experiment, we report the mean and standard deviation of the errors from 25 trials.
 
-\subsection{Model prediction accuracy}
+\subsection{Model prediction performance}
 In our experiments,
 Model R's error is lower than all other models on all datasets,
 as shown in Figure \ref{fig:errors} and Table \ref{tab:errors}.
@@ -1458,7 +1229,7 @@ A snippet of MovieLens100K dataset is shown in Table \ref{tab:movielens100k} as 
 	\centering
 	\caption{A snippet of MovieLens100K dataset.}
 	\begin{tabular}{ccc}  \hline \rowcolor{blue!30}
-		User ID & Item ID & rating \\ \hline
+		User ID & Movie ID & rating \\ \hline
 		196 & 272 & 3 \\ \hline
 		186 & 302 & 3 \\ \hline
 		22 & 377 & 1 \\ \hline
@@ -1470,7 +1241,7 @@ A snippet of MovieLens100K dataset is shown in Table \ref{tab:movielens100k} as 
 \end{table}
 
 \subsubsection{Embeddings}
-The embeddings are the vectors the model maps the nodes to, and the vectors these experiments produce for us to visualize and analyze.
+The model maps each node to a vector, or embedding, and it is these vectors that we will visualize and analyze.
 Technically, these embeddings are the weights of the embedding layer of Model R shown in Figure \ref{fig:model-r}.
 
 \subsubsection{Metadata}
@@ -1479,7 +1250,7 @@ The metadata provides domain specific information about the datasets necessary t
 	\centering
 	\caption{A snippet of MovieLens100K dataset metadata.}
 	\begin{tabular}{ccc} \hline \rowcolor{blue!30}
-		Item ID & Title & Release date \\ \hline
+		Movie ID & Title & Release date \\ \hline
 		1 & Toy Story & 01-Jan-1995 \\ \hline
 		2 & GoldenEye & 01-Jan-1995 \\ \hline
 		3 & Four Rooms & 01-Jan-1995 \\ \hline
@@ -1584,7 +1355,7 @@ The distances of a number of all countries to the reference country are shown in
 The data indicate that the distances from similar countries to the reference country are much shorter than that from the median point.
 The embeddings of all countries are shown in Figure \ref{fig:countries}.
 \begin{figure*}[!ht]\centering
-	\includegraphics[width=0.8\textwidth]{countries-annotation}
+	\includegraphics[width=0.8\textwidth]{countries-annotation-1}
 	\caption{
 		The embeddings of countries in Collaboration dataset:
 		The United States is the reference country, shown as a red node with bold font name.
@@ -1596,7 +1367,11 @@ The embeddings of all countries are shown in Figure \ref{fig:countries}.
 	\label{fig:countries}
 \end{figure*}
 
-\chapter{Model R: application in recommendation systems}
+\chapter{Model R in recommendation systems}
+In this chapter, we study the application of Model R in
+a special use case where the graph is a bipartite graph.
+We put special attention on bipartite graphs because they are the used to model relations between users and items/products in recommendation systems.
+We provide an experimental evaluation of the performance of Model R, with comparison to 4 baseline approaches.
 
 \section{Related work}
 In this section,
@@ -1613,14 +1388,14 @@ examples:
 	\item One example is a music recommendation system 	\cite{van2013deep}. 
 	It is a tag prediction system implemented with a convolutional neural net. 
 	The input is the spectrogram vector of the audio of a song,
-	and the output 	is the set of tags of the song (
-	e.g., genre, instrumentation, tempo, mood).
+	and the output 	is the set of tags of the song (e.g., genre, instrumentation, tempo, mood).
 	\item Another example is a multi-view recommendation system 	
 	\cite{elkahky2015multi}. 
 	It is a rating prediction system implemented with a fully connected 
 	neural net.
 	The input is the letter tri-gram vector of the text description of an item, 
 	and the output is the rating.
+	The letter tri-gram vector of a document is the count vector of all letter tri-grams in it, where each element in the vector is the number of appearances of a letter tri-gram. For example, the letter tri-grams of word ``recommendation'' are rec, eco, com, omm...
 	\item A much more comprehensive example is a hierarchical Bayesian model 
 	called collaborative deep learning \cite{wang2015collaborative}.
 	This approach uses a stacked denoising autoencoder to extract information 
@@ -1634,16 +1409,16 @@ One of the limitations of content-based filtering is limited content analysis
 For example, if the items are articles addressing the same topic,
 the badly written articles and well-written articles can have very similar 
 textual content. In this case, a content-based system will fail to distinguish 
-them and give them different ratings.
+them and will give them similar ratings.
 In this paper, we focus not on content-based filtering, but collaborative 
 filtering (i.e., our technique does not access the contents of items).
 
 \subsection{Collaborative filtering methods}
 Methods in this group extract information about an item from its relations 
-with other items, and the input of the neural net is a vector learned by the 
-neural net itself from the relations between items.
+with other items,
+and the neural net learns both a vector representation (embedding) of the relations and uses this vector to predict the rating..
 These methods treat a list of items as a sentence of words 
-(effectively reducing their problems to a natural language processing problem)  
+(effectively reducing the problem to a natural language processing problem)  
 and then apply the skip-gram model used in word2vec \cite{mikolov2013linguistic}:
 \begin{itemize}
 	\item An item similarity prediction example is item2vec 
@@ -1656,11 +1431,10 @@ and then apply the skip-gram model used in word2vec \cite{mikolov2013linguistic}
 \end{itemize}
 One drawback of these methods is that they fail to take advantage of 
 the highly organized, regular and repeated structure in their relational data: 
-relations between users and items (i.e., a user gives numeric rating to an 
-item) and relations between nodes (i.e., a source node connects to a 
+relations between users and items (i.e., a user gives a numeric rating to an 
+item) and relations between nodes of the same type (i.e., a source node connects to a 
 destination node through a labeled link).
-This structure is not exploited in natural language processing because it 
-does not exist (i.e., for a neural net, words can simply show up in a sequence 
+This structure is not exploited in natural language processing (i.e., for a neural net, words can simply show up in a sequence 
 from a day-to-day conversation, in many flexible and unpredictable ways, with 
 little structure or regularity).
 Although syntax and semantics exist in natural languages, we have not seen any 
@@ -1672,15 +1446,12 @@ value.
 
 \section{Problem}
 The problem we consider in this section is collaborative rating prediction.
-
-\subsection{Problem example}
 As an example of a collaborative rating prediction problem, consider 
 a set of 6 users who give numeric ratings to a set of 3 items.
 For each user, only a subset of their ratings are known; 
 and we want to predict the unknown ratings.
 The dataset for this example is shown in Table \ref{tab:ratings}.
-In this dataset, a set of 6 users give ratings to a set of 3 items: 
-for User[0], ratings to all 3 items are known; 
+For User[0], ratings to all 3 items are known; 
 for User[1], ratings to Item[1] and Item[2] are known, 
 but the rating to Item[0] is unknown; and so on.
 Every unknown rating is marked as a question mark.
@@ -1699,13 +1470,10 @@ The task is to predict the unknown ratings.
 	\end{tabular}
 	\label{tab:ratings}
 \end{table}
-
-\subsection{Problem definition}
 Formally, a collaborative rating prediction problem is defined as follows:
 \begin{itemize}
 	\item Given: a 2-D array R[m][n], 
-	where real number R[i][j] is the rating User[i] gives to Item[j],
-	integer i $ \in [0, m-1] $, integer j $ \in [0, n-1] $,
+	where real number R[i][j] is the rating User[i] gives to Item[j], i $ \in [0, m-1] $, j $ \in [0, n-1] $,
 	and p elements in R are unknown
 	\item Task: predict all unknown elements in R to minimize mean absolute error (MAE), defined as
 	\begin{align*}
@@ -1713,7 +1481,7 @@ Formally, a collaborative rating prediction problem is defined as follows:
 	\end{align*}
 \end{itemize}
 where $ f_k $ is the predicted value, $ y_k $ is the true value, and p is the 
-size of test set.
+size of the test set.
 Moreover, we define a user as the array of ratings they give to all items: 
 \begin{align*}
 User[i] = R[i]
@@ -1754,11 +1522,12 @@ function of User[i] and User[k]:
 	\begin{align*}
 	& S_{PCC}(x, y) \\
 	=& \frac{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})(R[y][i] - 
-		\overline{R[y]})}{\sum_{i \in I_{xy}}(R[x][i] - \overline{R[x]})^2 
+		\overline{R[y]})}{\sum_{i \in I_{x}}(R[x][i] - \overline{R[x]})^2 
 		\sum_{i 
-			\in I_{xy}}(R[y][i] - \overline{R[y]})^2 }
+			\in I_{y}}(R[y][i] - \overline{R[y]})^2 }
 	\end{align*}
 	where $ I_{x} $ is the set of items rated by User[x],
+	$ I_{y} $ is the set of items rated by User[y],
 	and	$ \overline{R[x]} $ is the average rating User[x] gives to all items,
 	and $ I_{xy} $ is the set of items rated by both User[x] and User[y].
 	PCC measures the linear correlation of two users.
@@ -1782,10 +1551,10 @@ function of User[i] and User[k]:
 	S_{SPCC} (x, y)
 	= \frac{S_{SPCC}(x, y)}{1 + exp(-\frac{|I_{xy}|}{2})}
 	\end{align*}
-	SPCC is very similar to WPCC in the sense two users have lower similarity 
+	SPCC is similar to WPCC in the sense two users have lower similarity 
 	if they have a smaller number of co-rated items.
 	\item MPCC: The multi-level PCC similarity \cite{polatidis2016multi}. 
-	This one is also very similar to the previous ones but much more complex.
+	This one is also similar to the previous ones but much more complex.
 	MPCC essentially uses the PCC similarity measure, but increases it 
 	based on the number of co-rated items between the two users,
 	as long as the PCC similarity is sufficiently high.
@@ -1801,26 +1570,25 @@ and the results show that Model R achieved much lower prediction error than
 the baseline solutions.
 
 \subsection{Datasets}
+\label{datasets}
 We evaluated Model R in the same settings used in a recent experimental 
 evaluation of the baseline solutions \cite{polatidis2016multi} on four datasets:
 \begin{itemize}
-	\item ML100K: MovieLens100K \cite{harper2015movielens}. MovieLens 100,000 is a real dataset which contains 1682 movies, 943 users and 100,000 ratings. The data have been collected by the University of Minnesota and are associated with their online movie recommendation system. This particular dataset is one of the many that is publicly available from the University and has been widely used before for offline experimental evaluation of collaborative filtering recommender system performance. The data in the dataset are in the form [userid] [itemid] [rating]. All the rating values are in the scale 1 to 5.
-	\item ML1M: MovieLens1M \cite{harper2015movielens}. MovieLens 1 million is a real dataset which contains 4000 movies, 6000 users and 1,000,000 ratings. The data have been collected by the University of Minnesota and are associated with their online movie recommendation system. This particular dataset is one of the many that is publicly available from the University and has been widely used before for offline experimental evaluation of collaborative filtering recommender system performance. The data in the dataset are in the form [userid] [itemid] [rating]. All the rating values are in the scale 1 to 5.
+	\item ML100K: MovieLens100K \cite{harper2015movielens}. MovieLens 100,000 is a real dataset which contains 1682 movies, 943 users and 100,000 ratings. The data have been collected by the University of Minnesota and are associated with their online movie recommendation system. This particular dataset is one of the many that is publicly available from the University and has been widely used for offline experimental evaluation of collaborative filtering recommender system performance. The data in the dataset are in the form [userid] [itemid] [rating]. All the rating values are in the scale 1 to 5.
+	\item ML1M: MovieLens1M \cite{harper2015movielens}. MovieLens 1 million is a real dataset which contains 4000 movies, 6000 users and 1,000,000 ratings. The data have been collected by the University of Minnesota and are associated with their online movie recommendation system. This particular dataset is one of the many that is publicly available from the University and has been widely used for offline experimental evaluation of collaborative filtering recommender system performance. The data in the dataset are in the form [userid] [itemid] [rating]. All the rating values are in the scale 1 to 5.
 	\item EP: Epinions \cite{massa2007trust}. This is a publicly available dataset crawled from Epinions.com. It is a general product recommendation dataset. The data in the dataset are in the form [userid] [itemid] [rating]. All the rating values are in the scale 1 to 5. The dataset has 664,824 ratings from 49,290 users on 139,738 items.
-	\item MT: MovieTweetings \cite{dooms2013movietweetings}. This is a publicly available dataset crawled from Twitter. It is a dataset consisted of movie ratings in the scale 0 to 10. The data in the dataset are in the form [userid] [itemid] [rating]. The dataset has 431,780 ratings from 39,363 users on 22,610 items.
+	\item MT: MovieTweetings \cite{dooms2013movietweetings}. This is a publicly available dataset crawled from Twitter. It is a dataset consisting of movie ratings in the scale 0 to 10. The data in the dataset are in the form [userid] [itemid] [rating]. The dataset has 431,780 ratings from 39,363 users on 22,610 items.
 \end{itemize}
 The statistics of these datasets are summarized in Table \ref{tab:datasets-recommendation}.
 \begin{table}[!ht]\centering
 	\caption{
-		The statistics of the graph datasets used in experiments.
-		The three columns are the dataset, number of users, items and ratings 
-		of the dataset.
+		The statistics of the graph datasets used in the recommendation system experiments.
 	}
 	\begin{tabular}{cccc}  \hline
-		Dataset & Users   & Items   & Ratings \\ \hline
+		MovieLens100K & Users   & Items   & Ratings \\ \hline
 		ML100K  & 1,000   & 1,700   & 100,000 \\ \hline
-		ML1M    & 6,000   & 4,000   & 1,000,000 \\ \hline
-		EP      & 49,290  & 139,738 & 664,824 \\ \hline
+		MovieLens1M    & 6,000   & 4,000   & 1,000,000 \\ \hline
+		Epinions      & 49,290  & 139,738 & 664,824 \\ \hline
 		MT      & 39,363  & 22,610  & 431,780 \\ \hline
 	\end{tabular}
 	\label{tab:datasets-recommendation}
@@ -1837,7 +1605,7 @@ In each trial, we split the dataset randomly into 3 subsets:
 \end{itemize}
 A larger or smaller validation set did not reduce the prediction error in the 
 experiments.
-We use mean absolute error as the prediction accuracy metric.
+We use mean absolute error (MAE) as the prediction performance metric.
 For each trial, the model learns for several epochs.
 In each epoch,
 it learns on the training set,
@@ -1850,9 +1618,25 @@ At the end, the testing program lets the estimator predict on the test set
 and record its testing error as its prediction error on that dataset.
 For each experiment, we report the mean of the errors from 25 trials.
 
-\subsection{Model prediction accuracy}
-In our experiments, Model R's prediction error is 18\% to 8\% lower than
-the best baseline solution (i.e., MPCC) on all datasets, as shown in Table 
+\subsection{Experiment running time}
+We record the mean number of epochs and training time needed for each experiment, shown in Table \ref{tab:time-recommendation}.
+\begin{table}[!htb]
+	\centering
+	\caption{
+		The number of epochs and running time(seconds) of the experiment on four datasets.
+	}
+	\begin{tabular}{ccc} \hline
+		Dataset & mean number of epochs & mean running time for each epoch(seconds) \\ \hline
+		MovieLens100K & 10 & 5.647 \\ \hline
+		MovieLens1M & 7 & 31.894 \\ \hline
+		Epinions & 6 & 19.770 \\ \hline
+		MovieTweetings & 6 & 16.584 \\ \hline
+	\end{tabular}
+	\label{tab:time-recommendation}
+\end{table}
+
+\subsection{Model prediction performance}
+In our experiments, Model R's prediction error is 9\% to 18\% lower than the best baseline solution (i.e., MPCC) on all datasets, as shown in Table 
 \ref{tab:rating-errors} and Figure \ref{fig:rating-errors}.
 \begin{figure*}[!ht]\centering
 	\includegraphics[width=1\textwidth]{rating-errors}
@@ -1871,21 +1655,23 @@ The error reduction from MPCC to Model R is calculated as:
 	\centering
 	\caption{
 		The comparison of prediction errors (measured by MAE).
-		Model R's (represented by letter R) prediction error is 18\% to 9\% 
+		Model R's (represented by letter R) prediction error is 9\% to 18\%
 		lower than the best baseline 
 		solution (MPCC) on all datasets.
+		Welch's t-test calculates its p value using the Student's t-distribution cumulative density function.
 	}
-	\begin{tabular}{ccccccc} \hline
-		Dataset & PCC & WPCC & SPCC & MPCC & Model R & $ \delta $ \\ \hline
-		MovieLens100K & 0.83 & 0.82 & 0.83 & 0.82 & 0.69 & 16\% \\ \hline
-		MovieLens1M & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 & 18\% \\ \hline
-		Epinions & 1.00 & 1.02 & 1.00 & 0.93 & 0.76 & 18\% \\ \hline
-		MovieTweetings & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 & 9\%  \\ \hline
+	\begin{tabular}{cccccccl} \hline
+		Dataset & PCC & WPCC & SPCC & MPCC & Model R & $ \delta $ & p \\ \hline
+		MovieLens100K & 0.83 & 0.82 & 0.83 & 0.82 & 0.69 & 16\% & 6.7e-75 \\ \hline
+		MovieLens1M & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 & 18\% & 4.8e-48 \\ \hline
+		Epinions & 1.00 & 1.02 & 1.00 & 0.93 & 0.76 & 18\% & 3.5e-64 \\ \hline
+		MovieTweetings & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 & 9\%  & 2.7e-63 \\ \hline
 	\end{tabular}
 	\label{tab:rating-errors}
 \end{table}
-Model R is also very robust in a wide range of parameter settings, shown in 
-Table \ref{tab:robust}.
+Model R is also very robust in a wide range of parameter settings.
+The robustness of performance against parameter changes on MovieLens100K dataset is shown in Table \ref{tab:robust}.
+The results for other datasets are similar.
 \begin{table}[!htb]
 	\centering
 	\caption{High robustness of Model R against parameter changes:
@@ -1908,17 +1694,22 @@ Table \ref{tab:robust}.
 	\end{tabular}
 	\label{tab:robust}
 \end{table}
+Model R shows that deep learning can be successfully applied to the collaborative rating prediction problem
+and it can achieve higher prediction performance than  state-of-the-art collaborative filtering methods.
+The model powered by Model R effectively learns complex and unobservable 
+user and item attributes from simple and observable relations (i.e., users rate items).
+The model learns both to map each entity to a vector, and to predict the rating using these vectors.
 
-
-\chapter{Model S}
+\chapter{Model R with pre-trained embeddings}
+In this chapter, we introduce an extension of Model R which uses embeddings produced by a generic node embedding technique.
+We evaluate this approach with three different node embedding techniques experimentally and compare its performance with stochastic block model and its derivatives.
 
 \section{Observations and motivation}
 We are interested in decoupling two learning processes (node embedding learning and link weight prediction learning) in Model R to generalize it and design a generic deep learning approach.
-In other words, it mixes two learning processes into one single learning process.
-On the other hand, there are several other general purpose node embedding techniques such as Node2vec \citep{grover2016node2vec}.
-So we wonder if the node embeddings produced by those general purpose node embedding techniques are better than node embeddings produced by Model R.
+There are several other general purpose node embedding techniques such as Node2vec \citep{grover2016node2vec}.
+So we want to investigate if the node embeddings produced by those general purpose node embedding techniques are better than node embeddings produced by Model R.
 If we can decouple the two learning processes in Model R, we can substitute the node embedding with any other node embedding technique.
-This plug-and-play idea, if it works, is very appealing because every time a new node embedding technique comes out, we can easily use the embeddings it produces in link weight prediction and see if it can improve the prediction accuracy.
+This plug-and-play idea, if it works, is very appealing because every time a new node embedding technique comes out, we can easily use the embeddings it produces in link weight prediction and see if it can improve the prediction performance.
 
 \section{Approach}
 We want to create a generic link weight prediction approach that uses the node embeddings produced by any node embedding technique.
@@ -1939,6 +1730,23 @@ similar entities are close to each other in the embedding space.
 \subsubsection{Node2vec: node embedding with skip-gram model}
 Node2vec is a node embedding technique similar to word embedding \citep{grover2016node2vec}.
 This technique reduces the node embedding problem to the word embedding problem and then applies the word embedding technique.
+The most important step in this technique is to sample random walks (node sequences) from a graph.
+Each random walk follows a 2nd order random walk policy: given the current node in the walk is v, the previous node in the walk is t, the unnormalized transition probability $ p(x | v, t) $ to the next node x is
+\[ p(x | v, t) = \alpha(t, x) w_{vx} \]
+where $ w_{vx} $ is the weight of the link (v, x), and
+\begin{equation*}
+	\alpha(t, x) =
+	\begin{cases}
+		\frac{1}{p} &\text{if $d_{tx} = 0$}\\
+		1 &\text{if $d_{tx} = 1$}\\
+		\frac{1}{q} &\text{if $d_{tx} = 2$}\\
+	\end{cases}
+\end{equation*}
+where $ d_{tx} $ is the unweighted shortest path length from t to x (which can only be one of \{0, 1, 2\}).
+The Return Parameter p controls the probability of revisiting the previous node t in the walk. With small values of p, the walk tends to go backward during the sampling process.
+The In-out Parameter q controls the probability of visiting a node further away from the previous node t in the walk.
+With small values of q, the walk tends to go forward during the sampling process.
+The remaining probability is distributed to visiting other nodes adjacent to t.
 It is a generalization of an earlier node embedding technique DeepWalk \citep{perozzi2014deepwalk}.
 More specifically, DeepWalk is a special case of Node2vec where the inbound parameter p and outbound parameter q are both set to 1.
 A graph has many walks, which can produce a dataset where each example is a (node, context-node) pair.
@@ -1948,13 +1756,12 @@ this technique reduces the node embedding problem to the word embedding problem.
 The final outcome is similar nodes have similar embeddings.
 
 \subsubsection{Model R: node embedding supervised by link weights}
-Model R not only learns to predict link weight,
-but also has its own node embedding technique,
-as we have shown in the previous section.
+Model R not only learns to predict link weights,
+but also has its own node embedding technique, shown in Section \ref{model-r}.
 In fact, Model R produces its own node embeddings.
-Model R based node embedding technique is different from the skip-gram based Node2vec technique.
+The Model R based node embedding technique is different from the skip-gram based Node2vec technique.
 One advantage of the Model R based node embedding technique is that it takes advantage of the highly organized, regular and repeated structure in the relational dataset representing a graph, i.e., a source node connects to a destination node through one and only one weighted link.
-The skip-gram model does not exploit this structure in natural language processing because this structure does not exist.
+The skip-gram model does not exploit this structure in natural language processing.
 
 \subsubsection{LLE (locally linear embedding): nonlinear dimensionality reduction}
 LLE is a member of the family of manifold learning approaches \citep{roweis2000nonlinear}.
@@ -1974,7 +1781,7 @@ where each data point (low dimensional vector) $ Y_i $ is linearly approximated 
 To apply this method, we use each row in the adjacency matrix of the graph as a data point in the high dimensional space, and then use LLE to map all rows to node embeddings in the low dimensional space.
 
 \subsection{Model S: link weight prediction with node embeddings}
-We introduce model S, a neural net model that predicts link weight using a pair of node embeddings (produced by any node embedding technique) as its input.
+We introduce Model S, a neural net model that predicts a link weight using a pair of node embeddings (produced by any node embedding technique) as its input.
 Model S is a generalization of Model R. More specifically, Model R is a special case of Model S when the pair of node embeddings is produced by itself.
 \begin{figure}[ht]\centering
 	\newcommand{\layersep}{1cm}
@@ -2013,62 +1820,52 @@ The approach uses the well-known deep learning techniques of back propagation \c
 Empirically, we use multiple hidden layers where each layer contains $ d = log_2(n) $ hidden units where d (as in dimension) is the number of units in each hidden layer and n is the dataset size.
 We will vary the number of hidden layers to assess impact on performance.
 This approach updates the model at each training step so Model S is an online learning method as long as the node embedding technique it depends on is also an online learning method (every embedding method we discussed in this section except LLE is an online learning method).
-Therefore, by using an online embedding method, Model S can nicely handle streaming graphs.
+Therefore, by using an online embedding method, Model S can handle streaming graphs.
 
 \section{Experiments}
 We evaluate Model S experimentally with SBM with pWSBM as baselines,
 and compare their prediction errors on several datasets.
 We use three different techniques to produce node embeddings: node2vec, LLE and Model R.
 The results show that Model S outperforms the baselines with all three embedding techniques on three out of four datasets.
-Model S with Model R embedding technique performs the best on four out of four datasets.
-
-\subsection{Datasets}
-The experiments use four datasets:
-\begin{itemize}
-	\item Airport \cite{colizza2007reaction}. Nodes represent the busiest airports in the United States, and each of the directed edges is weighted by the number of passengers traveling from one airport to another.
-	\item Collaboration \cite{pan2012world}. Nodes represent nations on Earth, and each of the edges	is weighted by a zed count of academic papers whose author lists include that pair of nations.
-	\item Congress \cite{porter2005network}. Nodes represent the committees in the 102nd United States Congress, and each of the edges is weighted by the number of shared members.
-	\item Forum \cite{opsahl2009clustering}. Nodes represent users of a student social network at UC Irvine, and each of the directed edges is weighted by the number of messages sent between users.
-\end{itemize}
-
-The statistics of these datasets are summarized in Table \ref{tab:datasets-graphs}.
-\begin{table}[!ht]\centering
-	\caption{
-		The statistics of the graph datasets used in experiments.
-		The three columns are the dataset, number of nodes, number of links and the average degree of the graph.
-	}
-	\begin{tabular}{cccc}  \hline
-		Dataset & Node \# & Link \# & Degree \\ \hline
-		Airport & 500 & 5960 & 11.92 \\ \hline
-		Collaboration & 226 & 20616 & 91.22 \\ \hline
-		Congress & 163 & 26569 & 163 \\ \hline
-		Forum  & 1899 & 20291 & 10.68 \\ \hline
-	\end{tabular}
-	\label{tab:datasets-graphs}
-\end{table}
+Model S with Model R embedding technique performs the best on all four datasets. The experiments use four datasets described in Section \ref{datasets}.
 
 \subsection{Experiment process}
 We do the same experiment for each dataset.
 All the link weights are normalized to the range [-1, 1] after applying a logarithm function.
 As mentioned in previous section, Model S is suitable as a online learning method for steaming graphs so it scales nicely with dataset size.
-More specifically, the time complexity of the training stage is n(E), where E is the number of links in the graph.
 Each experiment consists of 25 independent trials.
 In each trial, we split the dataset randomly into 2 subsets:
 \begin{itemize}
 	\item 80\% into training set
 	\item 20\% into testing set
 \end{itemize}
-We use mean squared error as the prediction accuracy metric.
-For each trial, the model learns for several epochs.
-In each epoch, it learns on the training set.
-At the end, the testing program lets the estimator predict on the test set 
+We use mean squared error as the prediction performance metric.
+The model learns for one epoch in each independent trial in order to simulate online learning scenario.
+The testing program lets the estimator predict on the test set 
 and record its testing error as its prediction error on that dataset.
 For each experiment, we report the mean of the errors from 25 trials.
 
-\subsection{Model prediction accuracy}
+\subsection{Experiment running time}
+We record the running time of training for three different embedding methods, shown in Table \ref{tab:time}.
+\begin{table}[!htb]
+	\centering
+	\caption{
+		The comparison of running time(seconds) for three different embedding methods on four datasets.
+	}
+	\begin{tabular}{cccc} \hline
+		Dataset & model-s(node2vec) & model-s(lle) & model-s(model-r) \\ \hline
+		airport & 4.008 & 1.484 & 0.880 \\ \hline
+		collaboration & 6.517 & 1.192 & 1.151 \\ \hline
+		congress & 1.728 & 1.029 & 1.469 \\ \hline
+		forum & 18.310 & 1.633 & 0.974 \\ \hline
+	\end{tabular}
+	\label{tab:time}
+\end{table}
+
+\subsection{Model prediction Performance}
 We evaluate the performance of Model S and compare it with a previously published performance evaluation of two baselines SBM and pWSBM on 4 datasets (Airport, Collaboration, Congress and Forum) \citep{aicher2014learning}.
 We were not able to acquire an implementation for SBM or pWSBM so we did not do any performance evaluation on other datasets.
-The Model S's prediction accuracy is better than baselines on 3 out of 4 datasets.
+Model S's prediction performance is better than the baselines on 3 out of 4 datasets.
 Among all Model S variants,
 the one with Model R embedding technique performs the best,
 as shown in Figure \ref{fig:weight-errors} and in Table \ref{tab:weight-errors}.
@@ -2082,10 +1879,10 @@ as shown in Figure \ref{fig:weight-errors} and in Table \ref{tab:weight-errors}.
 	}
 	\begin{tabular}{cccccc} \hline
 		Dataset & pwsbm & sbm & model-s(node2vec) & model-s(lle) & model-s(model-r) \\ \hline
-		airport & 0.83 & 0.82 & 0.83 & 0.82 & 0.69 \\ \hline
-		collaboration & 0.83 & 0.81 & 0.83 & 0.79 & 0.65 \\ \hline
-		congress & 1.00 & 1.02 & 1.00 & 0.93 & 0.76 \\ \hline
-		forum & 1.38 & 1.32 & 1.33 & 1.26 & 1.15 \\ \hline
+		airport & 0.0486 & 0.0632 & 0.0171 & 0.0170 & 0.0114 \\ \hline
+		collaboration & 0.0407 & 0.0497 & 0.0614 & 0.0576 & 0.0327 \\ \hline
+		congress & 0.0571 & 0.0634 & 0.0398 & 0.0402 & 0.0365 \\ \hline
+		forum & 0.0726 & 0.0851 & 0.0312 & 0.0294 & 0.0298 \\ \hline
 	\end{tabular}
 	\label{tab:weight-errors}
 \end{table}
@@ -2102,11 +1899,11 @@ One obvious reason Model S can outperform baselines is higher level of flexibili
 SBM based approaches assume nodes within the same group are the same in terms of link weight distributions and the weight of every link follows a normal distribution.
 Model S does not rely on these assumptions as it gives each node a unique description - the node embedding and it takes advantage of high flexibility of
 layers of non-linear neural network units.
-A possible reason why the Model S with Model R embedding outperforms other two variants with node2vec and LLE embedding is Model R embedding is specifically designed for link weight prediction task.
+A possible reason why the Model S with Model R embedding outperforms the other two variants with node2vec and LLE embedding is that Model R embedding is specifically designed for the link weight prediction task.
 
 \subsection{Model robustness}
 In our experiments, Model S is robust against model parameter changes.
-Adding or removing a hidden layer or several units in a hidden layer usually does not change the prediction accuracy dramatically.
+Adding or removing a hidden layer or several units in a hidden layer does not dramatically change the prediction error.
 For example, when we set the number of hidden units in each hidden layer to the same constant value 20 and change the number of hidden layers,
 the prediction error has little fluctuation (less than 10\%) when the number of hidden layers changes from 2 to 8,
 as shown in Figure \ref{fig:robust-num-hidden-layers}.
@@ -2128,11 +1925,15 @@ as shown in Figure \ref{fig:robust-num-hidden-layers}.
 		\caption{Evaluation on Forum dataset.}
 	\end{subfigure}
 	\caption{
-		Model S is robust against changes of the model parameter number of hidden layers when using 3 different embedding techniques (LLE, Model R and node2vec) on datasets Airport, Collaboration, Forum and Congress).
+		Model S is robust against changes of the model parameter number of hidden layers when using 3 different embedding techniques (LLE, Model R and node2vec) on datasets Airport, Collaboration, Forum and Congress.
 	}
 	\label{fig:robust-num-hidden-layers}
 \end{figure}
-We have similar results with other parameters like number of units in each hidden layer.
+Similar behavior is observed while varying other parameters, e.g., number of units per hidden layer.
+
+Model S is a generalized deep learning approach to the graph link weight prediction problem based on general node embedding techniques.
+In most cases, its prediction performance is better than the state-of-the-art non deep learning approaches SBM and pWSBM.
+The Model R embedding performs the best among the different embeddings, which indicates that embeddings learned in the context of the task they will be used for can improve performance over generic embedding methods.
 
 \chapter{Conclusion and future work}
 
@@ -2140,8 +1941,8 @@ We have similar results with other parameters like number of units in each hidde
 Model R shows that deep learning can be successfully applied to the link weight prediction problem.
 It effectively learns complex and unobservable node information (i.e., node vectors) from simple and observable relations between nodes (i.e., link weights),
 and uses that information to predict unknown link weights.
-Compared to SBM based approaches, Model R is much more accurate.
-A few possible reasons are:
+Compared to SBM based approaches, Model R is significantly more accurate.
+Two likely reasons are:
 \begin{itemize}
 	\item Higher level of discrimination for nodes:
 	SBM based approaches do not differentiate nodes within the same group,
@@ -2160,10 +1961,9 @@ A few possible reasons are:
 Model R learns meaningful node embeddings where similar nodes (based on their semantics associated with the specific domain) are close to each other in the node embedding space.
 
 Model S is the first generic deep learning approach to the link weight prediction problem based on node embeddings.
-It requires an effective node embedding technique to supply it node embeddings.
-It works with various embedding techniques including
+It requires an effective node embedding technique and works with various embedding techniques including
 LLE, node2vec and the Model R.
-In most cases, its prediction accuracy is better than the state-of-the-art non deep learning approaches SBM and pWSBM.
+In most cases, its prediction performance is better than the state-of-the-art non deep learning approaches SBM and pWSBM.
 The Model R embedding performs the best among the different embeddings, which indicates that embeddings learned in the context of the task they will be used for can improve performance over generic embedding methods.
 
 This work provides direct evidences that deep learning based embedding techniques are effective in two application domains beside natural language processing: recommender systems and graph mining.
@@ -2183,18 +1983,18 @@ During the learning stage, these two dictionaries learn to map the nodes to two 
 	\item The source node dictionary maps nodes to source node space.
 	\item The destination node dictionary maps nodes to destination node space.
 \end{itemize}
-A more intuitive approach is to have every node mapped to
+A more compact approach is to have every node mapped to
 one and only one node vector in both dictionaries,
 as in the word2vec technique.
-However, will this more intuitive approach actually perform better?
+However, will this approach actually perform better?
 Or does it depend on whether the graph is undirected or directed?
-These are interesting questions we can study in the future.
+These are interesting questions to study in the future.
 
 \subsection{Node embedding metrics}
 An important direction for this work is to identify metrics for evaluating the learned node embeddings.
 As embeddings are ubiquitous and valuable in deep learning and the popularity of deep learning is on the rise, we believe an important question is: what are good embeddings?
 A direct answer can be: embeddings that match humans' perceptions of the nodes are good embeddings.
-But humans' perceptions are, by nature, very complicated and subjective.
+But humans' perceptions are, by nature, complicated and subjective.
 
 As similar nodes should have their embeddings close to each other, a possible metric is the distances of the embeddings of similar nodes.
 This is an obvious metric and also the one we tried to use intuitively for this work.
@@ -2206,16 +2006,16 @@ Another possible way to measure similarity is some type of measurement of the di
 For example, the attribute vector of a user can be [age, gender, occupation, location] as exposed by the metadata.
 In order for this measure to be useful, we need to know what attributes are the most relevant to users' movie preferences.
 
-Node pairs with the same logical relation should have their embeddings with same spacial relation.
+Node pairs with the same logical relation should have their embeddings exhibit the same spatial relation.
 This one is less obvious and the logical relation measurement for nodes is hard.
 In natural language processing, words can have very clear logical relations.
 For example, (male, female) relation exists in word pairs such as [(gentleman, lady), (king, queen), (father, mother), (uncle, aunt)].
 We have not identified any way to measure the logical relations for nodes.
 For example, it is rather difficult to define any logical relation of two users or countries.
 
-Good embeddings should produce good prediction accuracy, despite the type of node targeted for prediction.
+Good embeddings should produce good prediction performance, despite the type of node targeted for prediction.
 This one is very obvious because eventually some other machine learning system should use these embeddings to do valuable predictions.
-Therefore, good metrics should have positive correlation with prediction accuracy of the later stages of the deep learning system whose inputs are the embeddings.
+Therefore, good metrics should have positive correlation with prediction performance of the later stages of the deep learning system whose inputs are the embeddings.
 This does not require any work with respect to the actual nodes but it is still hard to measure: some embeddings might work well on some models but not on other models, so it is hard to decide which model should be used as the evaluation reference.
 
 \subsection{Complex graphs}
@@ -2233,32 +2033,38 @@ data, and therefore make more accurate predictions.
 Specifically, we consider to study how to use this technique to handle the 
 following scenarios:
 \begin{itemize}
-	\item handle links with string attributes: e.g., given a text message from 
+	\item Handle links with string attributes: e.g., given a text message from 
 	user A to user B (a link from A to B with a string attribute), the 
 	estimator should extract knowledge of the users from the message content
-	\item handle links with logical implications: e.g., given a user has 
-	written an article (a link from user to article with a write attribute), 
+	\item Handle links with logical implications: e.g., given a user has 
+	written an article (a link from user to article with a ``write" attribute), 
 	the estimator should extract knowledge of the user and the article from 
 	this activity
-	\item handle nodes with rich attributes: e.g., given an article (a node 
+	\item Handle nodes with rich attributes: e.g., given an article (a node 
 	with a string attribute) or an image (a node with an image attribute), the 
 	estimator should extract knowledge of the node from the article or image 
-	content and integrate this knowledge to that extracted from links
+	content and integrate this knowledge with that extracted from links
 \end{itemize}
+
 \subsection{Large dynamic graphs}
 A social network can have a large volume of links collected continuously by a
 distributed system.
+In the context of streaming data, new nodes and links appear in the stream, which requires the model to add new node embeddings without a complete retrain on the entire dataset.
 A potential approach is to deploy an estimator to each computing node of
 the distributed system and analyze a link stream there,
 and let these estimators exchange their knowledge periodically.
+
+This work has its potential impact on many real-world problems in industry.
+For e-commerce industry, the enhancement in user-item rating prediction can make personalized product recommendation more effective and increase sales. For social network industry, the improvement on user interaction prediction can make friend recommendation more useful. We hope this work will see adoptioin in the industry and demonstrate its value with more real-world datasets.
 
 \newpage
 
 %*************** Epilogue *************************************
 \let\WriteBookmarks\relax
-\pdfbookmark[0]{Bibliography}{thebibliography}
+%\pdfbookmark[0]{Bibliography}{thebibliography}
+
+\bibliographystyle{plain}
 \bibliography{references}
-\bibliographystyle{abbrv}
 
 
 
