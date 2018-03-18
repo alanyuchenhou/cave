@@ -1,4 +1,56 @@
-\chapter{Preliminaries and related work}
+\documentclass[12pt]{WSUThesis}
+\usepackage{fullpage}
+\usepackage{pslatex}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily, frame=single, language=python, tabsize=4}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, automata, quotes, positioning, babel, shapes.geometric, arrows}
+
+
+%*************** Packages *************************************
+
+\usepackage{WSUThesis}
+\usepackage{amsfonts,amsmath,amssymb,amsthm}
+\usepackage{color}
+\usepackage{colortbl}
+\usepackage{subcaption}
+\usepackage[normalem]{ulem}
+\usepackage{vmargin}
+\usepackage{multirow}
+\usepackage{makeidx}
+\usepackage[square,sort,comma,numbers]{natbib}
+\usepackage[breaklinks]{hyperref}
+\hypersetup{
+	pdffitwindow=false,
+	pdftitle={Activity Models Revisited},
+	pdfauthor={Parisa Rashidi},
+	pdfsubject={Dissertation},
+	colorlinks=true, % false: boxed links; true: colored links
+	linkcolor=black,
+	breaklinks=true,
+	bookmarksnumbered=true
+}
+\usepackage[all]{hypcap}
+\usepackage{bookmark}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage[titletoc]{appendix}
+
+\theoremstyle{definition}
+\newtheorem{mydef}{Definition}
+
+% redefine the input and output for algorithms
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+
+\begin{document}
 
 \section{Optimization, learning, training, fitting}
 The concepts learning, training, fitting and optimization are very similar. They describe the process where the model slowly changes its variables (also called parameters or weights) in order to minimize the loss. The simplest learning algorithm is the gradient descent, which modifies each variable according to the derivative of the loss with respect to that variable, a.k.a., the loss gradient.
@@ -247,3 +299,5 @@ The loss function is the cross entropy loss.
 \section{Transfer learning}
 Transfer learning is a technique that retrains the final layer of a fully trained model (trained on a dataset) on a new dataset while leaving all other layers unchanged \cite{donahue2014decaf}. Models obtained with this technique do not have prediction accuracy as good as models trained from scratch, but they are very fast to train and effective enough for many applications. For example, in image recognition, the new dataset can contain images of completely different entities from the old dataset, but the model can still quickly learn to recognize these new entity classes. The reason behind this is that lower layers in the model have been trained to recognize many basic objects and shapes so that they can be reused to recognize the same basics objects and shapes in the new datasets.
 The input to the model are the word embeddings which are randomly initialized and learned during the training.
+
+\end{document}
