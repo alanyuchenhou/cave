@@ -552,21 +552,21 @@ this technique reduces the node embedding problem to the word embedding problem.
 The final outcome is similar nodes have similar embeddings.
 
 \section{Graph convolutional network}
-Graph convolutional network is node classification technique \cite{kipf2016semi}.
-It provides a method to create embeddings for graphs.
-This approach is based on a localized first-order approximation of spectral graph convolutions.
+The Graph Convolutional Network (GCN) is a node classification technique \cite{kipf2016semi}.
+GCN provides a method to create embeddings for graphs.
+The GCN approach is based on a localized first-order approximation of spectral graph convolutions.
 The input of the model is the feature vector of the node X and the adjacency matrix of the graph A, and the output of the model is the node label Y:
 \[Y = f(X, A)\]
-It learns the features of nodes and local graph topologies, and represent them as the weights in its hidden layer.
+GCN learns the features of nodes and local graph topologies, and represents them as the weights in its hidden layer.
 The building block of a graph convolutional network is the following layer-wise propagation function:
 \[H^{(l+1)} = \sigma(D^{-\frac{1}{2}} B D^{-\frac{1}{2}} H^{(l)} W^{(l)})\]
 where D is a diagonal matrix:
 \[D_{ii} = \sum_jB_{i,j}\]
 and B is the adjacency matrix of the graph with added self-connections
 \[B = (A + I)\]
-where I is the identity matrix
+where I is the identity matrix,
 $ H^l $ represents the activation of hidden layer l,
-$ \sigma $ is the activation function, such as rectified linear unit.
+and $ \sigma $ is the activation function, such as the rectified linear unit. While GCN targets the node classification problem, not the link weight prediction problem, it provides another approach to generating graph embeddings that may be useful for link weight prediction.
 
 In this chapter, we have studied the techniques in recent work on applying deep learning to natural language processing and graph mining.
 Specifically, for deep learning techniques, we reviewed one-hot encoding, word embedding, node embedding and graph convolutional network.
@@ -1756,7 +1756,7 @@ For each experiment, we report the mean of the errors from 25 trials.
 
 \subsection{Experiment running time}
 We record the mean number of epochs and training time needed for each experiment, shown in Table \ref{tab:time-recommendation}.
-Model S with Model R embeddings runs faster than with node2vec embeddings on all four datasets, and faster than LLE embeddings on three of the four datasets.
+Running times for the baseline methods were not reported in the published results. Model R's complexity is lower than that of the baseline methods, and so is likely to run faster. The longest training time for MovieLens1M was less than four minutes.
 \begin{table}[!htb]
 	\centering
 	\caption{
