@@ -1,4 +1,5 @@
 \documentclass{beamer}
+\usepackage{bookmark}
 \usepackage{amsmath}
 \usepackage{tabularx}
 \usepackage{graphicx}
@@ -10,7 +11,7 @@
 \usepackage{float}
 
 \title{A Deep Learning Approach to Link Weight Prediction}
-\author{Yuchen Hou \and Lawrence Holder}
+\author{Yuchen Hou}
 \date{}
 
 \begin{document}
@@ -40,23 +41,31 @@
 		\begin{subfigure}{0.49\textwidth}
 			\includegraphics[width=\linewidth]{Social_Network_Analysis_Visualization}
 			\caption{
-				\href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{Link prediction: predicting user connectivities in a social network} (Martin Grandjean / Wikimedia Commons / Attribution-Share Alike 3.0 Unported)
+				Link prediction: predicting user connectivities in a social network.
 			}
 			\label{fig:Social_Network_Analysis_Visualization}
 		\end{subfigure}
 		\begin{subfigure}{0.49\textwidth}
 			\includegraphics[width=\textwidth]{ProteinStructure}
 			\caption{
-				\href{https://commons.wikimedia.org/wiki/File:ProteinStructure.jpg}
-				{Graph classification: predicting the chemical activity of a macromolecule} (Maksim / Wikimedia Commons / public domain)
+				Graph classification: predicting the chemical activity of a macromolecule.
 			}
 			\label{fig:protein}
 		\end{subfigure}
 		\caption{
-			Example graph mining problems and their application scenarios
+			Example graph mining problems and their application scenarios.
 		}
 		\label{fig:trainnig}
 	\end{figure}
+\end{frame}
+
+\begin{frame}{Contribution: link weight prediction with deep learning}
+	\begin{itemize}
+		\item The first deep learning approach to the link weight prediction problem.
+		\item A unique supervised learning technique for node embedding.
+		\item 73\% more accurate than the state-of-the-art non deep learning approach.
+		\item A generalized link weight prediction model using pretrained node embeddings.
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Problem: link weight prediction}{Problem example}
@@ -79,7 +88,7 @@
 		(A) edge[bend left,"4"]   (C)
 		(C) edge[bend left,"11"]  (B);
 		\end{tikzpicture}
-		\caption{Message volume prediction in a social network of 3 users}
+		\caption{Message volume prediction in a social network of 3 users.}
 		\label{fig:example}
 	\end{figure}
 \end{frame}
@@ -91,7 +100,7 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Existing approach: pWSBM (pure Weighted Stochastic Block Model)}
+\begin{frame}{The state-of-the-art approach: pWSBM (pure Weighted Stochastic Block Model)}
 	\begin{itemize}
 		\item Partition the nodes in the graph into node groups
 		\item Each group consists of topologically similar nodes
@@ -102,12 +111,12 @@
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.4\linewidth]{SBM}
-		\caption{ \href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{pWSBM approach to link weight prediction}}
+		\caption{ \href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{pWSBM approach to link weight prediction.}}
 		\label{fig:SBM}
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Existing approach: pWSBM (pure Weighted Stochastic Block Model)}
+\begin{frame}{pWSBM (pure Weighted Stochastic Block Model)}
 	The SBM has the following parameters:
 	\begin{itemize}
 		\item z: the group vector,
@@ -123,7 +132,7 @@
 	\end{align*}
 \end{frame}
 
-\begin{frame}{Existing approach: pWSBM (pure Weighted Stochastic Block Model)}
+\begin{frame}{pWSBM (pure Weighted Stochastic Block Model)}
 	The pWSBM models the weight of link (i, j) $ A_{ij} $ as a real random variable following the normal distribution:
 	\begin{align*}
 		A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
@@ -133,14 +142,14 @@
 	\begin{align*}
 		\log(P(A|z, \mu, \sigma))
 		&= \sum_{ij} (
-		A_{ij} \frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
-		- A_{ij}^2 \frac{1}{2\sigma_{z_i z_j}^2}
+		\frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
+		- \frac{1}{2\sigma_{z_i z_j}^2}
 		- \frac{\mu_{z_i z_j}^2}{\sigma_{z_i z_j}^2}
 		)
 	\end{align*}
 \end{frame}
 
-\begin{frame}{Motivating approach: Skip-gram model}
+\begin{frame}{Motivation: Skip-gram model}{Model architecture}
 	\begin{itemize}
 		\item word2vec: map words in sentences to vectors
 		\item item2vec: reduce orders (lists of items) to sentences
@@ -188,9 +197,32 @@
 		\node[annot,above of=I-2] {input layer};
 		\node[annot,above of=O-2] {output layer};
 		\end{tikzpicture}	
-		\caption{The skip-gram model with vocabulary size 4 and embedding size 2}
+		\caption{The skip-gram model with vocabulary size 4 and embedding size 2.}
 		\label{fig:skipGram}
 	\end{figure}
+\end{frame}
+
+\begin{frame}{Motivation: Skip-gram model}{Datasets}
+	\begin{itemize}
+		\item Sentence: the quick brown fox jumps over the lazy dog
+		\item Context radius: 2
+		\item Training example: (word, context-word) pairs
+	\end{itemize}
+	\begin{table}[!ht]
+		\centering
+		\caption{The words dataset for a natural language corpus.}
+		\begin{tabularx}{0.8\textwidth}{|X|X|}  \hline
+			Input = word & Output = context-word \\ \hline
+			fox & quick \\ \hline
+			fox & brown \\ \hline
+			fox & jumps \\ \hline
+			fox & over \\ \hline
+			jumps & brown \\ \hline
+			jumps & fox \\ \hline
+			... & ...       \\ \hline
+		\end{tabularx}
+		\label{tab:words}
+	\end{table}
 \end{frame}
 
 \begin{frame}{Deep learning approach: Model R (R as in "relation")}
@@ -206,15 +238,15 @@
 		\node (relu) [process, below of=linearRegression] {rectifier ($ f(x) = \max (0, x) $)};
 		\node (linear1) [process, below of=relu, xshift=-2cm] {linear ($ f(x) = kx $)};
 		\node (linear2) [process, below of=relu, xshift=2cm] {linear ($ f(x) = kx $)};
-		\node (oneHot1) [startstop, below of=linear1] {one-hot};
-		\node (oneHot2) [startstop, below of=linear2] {one-hot};
+		\node (oneHot1) [startstop, below of=linear1] {one-hot activation};
+		\node (oneHot2) [startstop, below of=linear2] {one-hot activation};
 		\node (weight) [above of=linearRegression] {link weight};
 		\node (output) [left of=linearRegression, xshift=-4cm] {output layer};
 		\node (hidden) [below of=output] {hidden layers};
 		\node (embedding) [below of=hidden] {embedding layer};
 		\node (input) [below of=embedding] {input layer};
-		\node (source) [below of=oneHot1] {node ID};
-		\node (destination) [below of=oneHot2] {node ID};
+		\node (source) [below of=oneHot1] {node one-hot encoding};
+		\node (destination) [below of=oneHot2] {node one-hot encoding};
 		\draw [arrow] (source) -- (oneHot1);
 		\draw [arrow] (destination) -- (oneHot2);
 		\draw [arrow] (oneHot1) -- (linear1);
@@ -225,7 +257,7 @@
 		\draw [arrow] (linearRegression) -- (weight);
 		\end{tikzpicture}
 		\caption{
-			Model R with one or multiple hidden layers (only one layer shown)
+			Model R with multiple hidden layers.
 		}
 		\label{fig:model}
 	\end{figure}
@@ -233,7 +265,7 @@
 
 \begin{frame}{Comparison: pWSBM vs Model R}
 	\begin{table}[H]\centering
-		\caption{The advantages Model R has over pWSBM in several aspects}
+		\caption{The advantages Model R has over pWSBM in several aspects.}
 		\begin{tabularx}{\textwidth}{|X|c|c|}  \hline
 			Aspect & pWSBM & Model R \\ \hline
 			model granularity & node group level & node level \\ \hline
@@ -242,14 +274,6 @@
 		\end{tabularx}
 		\label{tab:comparison}
 	\end{table}
-\end{frame}
-
-\begin{frame}{Experiments}{Learning techniques}
-	\begin{itemize}
-		\item Stochastic gradient descent
-		\item Mini-batch
-		\item Early stopping
-	\end{itemize}	
 \end{frame}
 
 \begin{frame}{Experiments}{Baseline approaches}
@@ -263,7 +287,7 @@
 
 \begin{frame}{Experiments}{Datasets}
 	\begin{table}[H]\centering
-		\caption{The datasets used in experiments with weights scaled to [0, 1]}
+		\caption{The datasets used in experiments with weights scaled to [0, 1].}
 		\begin{tabularx}{\textwidth}{|X|c|c|}  \hline
 			Dataset & Nodes & Link weight semantics \\ \hline
 			Airport & 500 airports & number of passengers delivered \\ \hline
@@ -275,21 +299,118 @@
 	\end{table}
 \end{frame}
 
+\begin{frame}{Experiments}{Settings}
+	\begin{itemize}
+		\item 25 independent trials on each dataset
+		\item training set: 70\%
+		\item validation set: 20\%
+		\item testing set: 10\%
+	\end{itemize}
+\end{frame}
+
 \begin{frame}{Experiments}{Results}
 	\begin{figure}[H]\centering
 		\includegraphics[width=\textwidth]{link-weight-errors}
 		\caption{
-			Model R has the lower mean squared errors than 4 baseline approaches over 4 datasets consistently
+			Model R has lower mean squared errors than 4 baseline approaches over 4 datasets consistently.
 		}
 		\label{fig:errors}
 	\end{figure}
 \end{frame}
 
+\begin{frame}{Node embedding analysis}{Motivation}
+	\begin{itemize}
+		\item Question: What knowledge does Model R learns?
+		\item Hypothesis: It learns meaningful node embeddings (similar nodes are closer).
+		\item Related work: Word2vec word embedding analysis.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Node embedding analysis}{Methods}
+	\begin{itemize}
+		\item Datasets: real world datasets from well understood domains.
+		\item Embeddings: the weights of the embedding layer of Model R
+		\item Metadata: domain specific information about the nodes
+		\item Visualization: dimensionality reduction of embeddings with PCA
+		\item Verification: more similar nodes are closer
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Node embedding analysis}{Visualization}
+	\begin{figure}[!ht]\centering
+		\includegraphics[width=0.6\textwidth]{movies-annotation}
+		\caption{
+			The embeddings of all movies in MovieLens100K dataset.
+		}
+		\label{fig:movies}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Node embedding analysis}{Verification}
+	\begin{table}[!ht]\centering
+		\caption{
+			The distances of movies to the reference movie for MovieLens100K dataset. Star Wars and Return of Jedi are chosen as similar movies to the reference movie.
+		}
+		\begin{tabular}{ccc} \hline
+			Movie & Distance & Similarity \\ \hline
+			The Empire Strikes Back (1980) & 0 & self (reference) \\ \hline
+			Raiders of the Lost Ark (1981) & 0.012 & most similar \\ \hline
+			Star Wars (1977) & 0.047 & more similar \\ \hline
+			Return of the Jedi (1983) & 0.063 & more similar \\ \hline
+			Children of the Revolution (1996) & 0.256 & median point \\ \hline
+			Tomorrow Never Dies (1997) & 0.295 & less similar \\ \hline
+			Ayn Rand: A Sense of Life(1997) & 0.296 & less similar \\ \hline
+			101 Dalmatians (1996) & 0.335 & least similar \\ \hline
+		\end{tabular}
+		\label{tab:movielens100k-distance}
+	\end{table}
+\end{frame}
+
+\begin{frame}{Model S}{Motivation}
+	\begin{itemize}
+		\item Model S is an extension of Model R incorporating different types of embeddings.
+		\item Decoupling node embedding learning and weight prediction learning.
+		\item Investigating the effectiveness of other node embedding techniques.
+		\item Adopting more advanced embedding techniques developed in the future.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Model S}{Node embedding techniques}
+	\begin{itemize}
+		\item LLE(locally linear embedding): nonlinear dimensionality reduction
+		\item Node2vec: node embedding with skip-gram model
+		\item Model R: node embedding learning supervised by link weight
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Model S}{LLE(locally linear embedding)}
+	LLE is a manifold learning approach designed for dimensionality reduction consisting of 2 steps:
+	
+	Step 1: linear approximation of data points X's in original space minimizing cost function:
+	\begin{align*}
+		cost(W) = \sum_i |X_i - \sum_jW_{ij}X_j|^2
+	\end{align*}
+	Step 2: reconstruction of data points Y's in a low dimensional space minimizing cost function:
+	\begin{align*}
+		cost(Y) = \sum_i |Y_i - \sum_jW_{ij}Y_j|^2
+	\end{align*}
+\end{frame}
+
+\begin{frame}{Model S}{Experiments}
+	\begin{figure}[ht] \centering
+		\includegraphics[width=1\linewidth]{weight-errors}
+		\caption{
+			Model S performs better than SBM and pWSBM when using 3 different embedding techniques (LLE, Model R and node2vec) on 3 out of 4 datasets (Airport, Congress and Forum).
+		}
+		\label{fig:weight-errors}
+	\end{figure}
+\end{frame}
+
 \begin{frame}{Conclusions}
 	\begin{itemize}
-		\item Model R uses node vectors to predict unknown link weights
-		\item Model R is more accurate than Stochastic Block Model based approaches
-		\item Deep learning can be successfully applied to link weight prediction problem
+		\item Model R is more accurate than the state-of-the-art non deep learning approaches to the link weight prediction problem.
+		\item Model R learns node embeddings and use this information to predict unknown link weights.
+		\item Deep learning can be successfully applied to link weight prediction problem.
 	\end{itemize}
 \end{frame}
 
@@ -297,13 +418,6 @@
 	\begin{itemize}
 		\item On graph mining with deep learning: introducing Model R for link weight prediction JAISCR 2018
 		\item Deep learning approach to link weight prediction, IJCNN 2017
-	\end{itemize}
-\end{frame}
-
-\begin{frame}{Future work}
-	\begin{itemize}
-		\item Node embedding semantics
-		\item Unified embedding space for source and destination nodes
 	\end{itemize}
 \end{frame}
 
