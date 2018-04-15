@@ -100,13 +100,12 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{The state-of-the-art approach: pWSBM (pure Weighted Stochastic Block Model)}
+\begin{frame}{The state-of-the-art approach} {pWSBM (pure Weighted Stochastic Block Model)}
 	\begin{itemize}
-		\item Partition the nodes in the graph into node groups
-		\item Each group consists of topologically similar nodes
-		\item Connect groups by bundles to represent the original graph
-		\item Each bundle weight follows a normal distribution
-		\item Each link weight is an example of the bundle weight
+		\item Partition nodes into node groups of topologically similar nodes.
+		\item Connect groups with bundles with normal weight distributions.
+		\item A bundle represents all links connecting the two groups.
+		\item A link has the same weight distribution as the bundle representing it.
 	\end{itemize}
 	\begin{figure}[H]
 		\centering
@@ -116,24 +115,14 @@
 	\end{figure}
 \end{frame}
 
-\begin{frame}{pWSBM (pure Weighted Stochastic Block Model)}
+\begin{frame}{The state-of-the-art approach} {pWSBM (pure Weighted Stochastic Block Model)}
 	The SBM has the following parameters:
 	\begin{itemize}
-		\item z: the group vector,
-		where $ z_i \in \{ 1 ... L \} $ is the group label of node i
-		\item $ \mu $: the bundle weight expectation matrix,
-		where $ \mu_{z_i z_j} $ is the expectation of the weight of bundle ($z_i, z_j$)
-		\item $ \sigma $: the bundle weight standard deviation matrix,
-		where $ \sigma_{z_i z_j} $ is the standard deviation of the weight of bundle ($z_i, z_j$)
+		\item z: the node group label vector
+		\item $ \mu $: the bundle weight expectation matrix
+		\item $ \sigma $: the bundle weight standard deviation matrix
 	\end{itemize}
-	The pWSBM models the weight of link (i, j) $ A_{ij} $ as a real random variable following the normal distribution:
-	\begin{align*}
-		A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
-	\end{align*}
-\end{frame}
-
-\begin{frame}{pWSBM (pure Weighted Stochastic Block Model)}
-	The pWSBM models the weight of link (i, j) $ A_{ij} $ as a real random variable following the normal distribution:
+	The weight of each link (i, j) $ A_{ij} $ has normal distribution:
 	\begin{align*}
 		A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
 	\end{align*}
@@ -151,9 +140,9 @@
 
 \begin{frame}{Motivation: Skip-gram model}{Model architecture}
 	\begin{itemize}
-		\item word2vec: map words in sentences to vectors
-		\item item2vec: reduce orders (lists of items) to sentences
-		\item node2vec: reduce paths (lists of nodes) to sentences
+		\item word2vec: map words in sentences to vectors.
+		\item item2vec: reduce orders (lists of items) to sentences.
+		\item node2vec: reduce paths (lists of nodes) to sentences.
 	\end{itemize}
 	\begin{figure}[H]
 		\centering
@@ -288,13 +277,13 @@
 \begin{frame}{Experiments}{Datasets}
 	\begin{table}[H]\centering
 		\caption{The datasets used in experiments with weights scaled to [0, 1].}
-		\begin{tabularx}{\textwidth}{|X|c|c|}  \hline
-			Dataset & Nodes & Link weight semantics \\ \hline
-			Airport & 500 airports & number of passengers delivered \\ \hline
-			Collaboration & 226 nations & number of papers coauthored \\ \hline
-			Congress & 163 committees  & number of members shared \\ \hline
-			Forum  & 1899 users & number of messages sent \\ \hline
-		\end{tabularx}
+		\begin{tabular}{ccc}  \hline
+			Dataset & Nodes & Link weights \\ \hline
+			Airport & airports & passengers delivered between airports \\ \hline
+			Collaboration & nations & paper collaborations between nations \\ \hline
+			Congress & committees  & members shared between committees \\ \hline
+			Forum  & users & messages exchanged between users \\ \hline
+		\end{tabular}
 		\label{tab:datasets}
 	\end{table}
 \end{frame}
@@ -320,36 +309,59 @@
 
 \begin{frame}{Node embedding analysis}{Motivation}
 	\begin{itemize}
-		\item Question: What knowledge does Model R learns?
+		\item Question: What knowledge does Model R learn?
 		\item Hypothesis: It learns meaningful node embeddings (similar nodes are closer).
 		\item Related work: Word2vec word embedding analysis.
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Node embedding analysis}{Methods}
+\begin{frame}{Node embedding analysis}{Dataset: MovieLens 100K}
 	\begin{itemize}
-		\item Datasets: real world datasets from well understood domains.
-		\item Embeddings: the weights of the embedding layer of Model R
-		\item Metadata: domain specific information about the nodes
-		\item Visualization: dimensionality reduction of embeddings with PCA
-		\item Verification: more similar nodes are closer
+		\item Well understood domain: movie recommendation
+		\item 100,000 ratings from 1000 users on 1700 movies.
+		\item Bigraph: users and movies are nodes; ratings are link weights.
 	\end{itemize}
+	\begin{figure}[H]\centering
+		\begin{tikzpicture}[
+		node distance = 2cm,
+		on grid,
+		> = {Stealth[length=4pt,width=4pt]},
+		every state/.style = {very thick},
+		every edge quotes/.style = {sloped, anchor=north}
+		]
+		\node[state] (U1) {U1};
+		\node[state] (U2) [right =of U1] {U2};
+		\node[state] (U3) [right =of U2] {U3};
+		\node[state] (U4) [right =of U3] {U4};
+		\node[state] (M1) [below=of U2] {M1};
+		\node[state] (M2) [right =of M1] {M2};
+		\path[->]
+		(U1) edge["3"]   (M1)
+		(U2) edge["5"]   (M1)
+		(U2) edge["4"]  (M2)
+		(U3) edge["2"]   (M1)
+		(U3) edge["1"]   (M2)
+		(U4) edge["4"]   (M2);
+		\end{tikzpicture}
+		\caption{Movie rating illustration for a dataset of 4 users and 2 movies.}
+		\label{fig:movie}
+	\end{figure}
 \end{frame}
 
 \begin{frame}{Node embedding analysis}{Visualization}
 	\begin{figure}[!ht]\centering
 		\includegraphics[width=0.6\textwidth]{movies-annotation}
 		\caption{
-			The embeddings of all movies in MovieLens100K dataset.
+			The embeddings of all movies in MovieLens 100K dataset. Dimensionality reduction of embeddings uses Principal Component Analysis.
 		}
 		\label{fig:movies}
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Node embedding analysis}{Verification}
+\begin{frame}{Node embedding analysis}{Distance and similarity}
 	\begin{table}[!ht]\centering
 		\caption{
-			The distances of movies to the reference movie for MovieLens100K dataset. Star Wars and Return of Jedi are chosen as similar movies to the reference movie.
+			The distances of movies to the reference movie for MovieLens 100K dataset. The distance from similar movies (Star Wars and Return of Jedi) to the reference movie (The Empire Strikes Back) are shorter than the median distance.
 		}
 		\begin{tabular}{ccc} \hline
 			Movie & Distance & Similarity \\ \hline
@@ -385,22 +397,23 @@
 
 \begin{frame}{Model S}{LLE(locally linear embedding)}
 	LLE is a manifold learning approach designed for dimensionality reduction consisting of 2 steps:
-	
-	Step 1: linear approximation of data points X's in original space minimizing cost function:
-	\begin{align*}
-		cost(W) = \sum_i |X_i - \sum_jW_{ij}X_j|^2
-	\end{align*}
-	Step 2: reconstruction of data points Y's in a low dimensional space minimizing cost function:
-	\begin{align*}
+	\begin{enumerate}
+		\item Linear approximation of data points X's in original space minimizing cost function:
+		\begin{align*}
+			cost(W) = \sum_i |X_i - \sum_jW_{ij}X_j|^2
+		\end{align*}
+		\item Reconstruction of data points Y's in a low dimensional space minimizing cost function:
+		\begin{align*}
 		cost(Y) = \sum_i |Y_i - \sum_jW_{ij}Y_j|^2
-	\end{align*}
+		\end{align*}
+	\end{enumerate}
 \end{frame}
 
 \begin{frame}{Model S}{Experiments}
 	\begin{figure}[ht] \centering
 		\includegraphics[width=1\linewidth]{weight-errors}
 		\caption{
-			Model S performs better than SBM and pWSBM when using 3 different embedding techniques (LLE, Model R and node2vec) on 3 out of 4 datasets (Airport, Congress and Forum).
+			Model S with Model R embedding has the best overall performance. Model S generally performs better than SBM and pWSBM with 3 different embedding techniques (LLE, Model R and node2vec).
 		}
 		\label{fig:weight-errors}
 	\end{figure}
@@ -409,8 +422,16 @@
 \begin{frame}{Conclusions}
 	\begin{itemize}
 		\item Model R is more accurate than the state-of-the-art non deep learning approaches to the link weight prediction problem.
-		\item Model R learns node embeddings and use this information to predict unknown link weights.
+		\item Model R learns node embeddings and uses this information to predict unknown link weights.
 		\item Deep learning can be successfully applied to link weight prediction problem.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Future work}
+	\begin{itemize}
+		\item Unified node embedding: embedding nodes to only one space.
+		\item Node embedding metrics: evaluation of embedding qualities.
+		\item Complex graphs: taking advantage of rich node information.
 	\end{itemize}
 \end{frame}
 
