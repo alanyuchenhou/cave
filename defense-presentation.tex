@@ -197,11 +197,10 @@
 		\item Context radius: 2
 		\item Training example: (word, context-word) pairs
 	\end{itemize}
-	\begin{table}[!ht]
-		\centering
+	\begin{table}[H]\centering
 		\caption{The words dataset for a natural language corpus.}
-		\begin{tabularx}{0.8\textwidth}{|X|X|}  \hline
-			Input = word & Output = context-word \\ \hline
+		\begin{tabular}{|c|c|}  \hline
+			\textbf{Input = word} & \textbf{Output = context-word} \\ \hline
 			fox & quick \\ \hline
 			fox & brown \\ \hline
 			fox & jumps \\ \hline
@@ -209,7 +208,7 @@
 			jumps & brown \\ \hline
 			jumps & fox \\ \hline
 			... & ...       \\ \hline
-		\end{tabularx}
+		\end{tabular}
 		\label{tab:words}
 	\end{table}
 \end{frame}
@@ -255,12 +254,12 @@
 \begin{frame}{Comparison: pWSBM vs Model R}
 	\begin{table}[H]\centering
 		\caption{The advantages Model R has over pWSBM in several aspects.}
-		\begin{tabularx}{\textwidth}{|X|c|c|}  \hline
-			Aspect & pWSBM & Model R \\ \hline
+		\begin{tabular}{|c|c|c|}  \hline
+			\textbf{Aspect} & \textbf{pWSBM} & \textbf{Model R} \\ \hline
 			model granularity & node group level & node level \\ \hline
 			distribution assumption & normal distribution & NA \\ \hline
 			model flexibility & low & high \\ \hline
-		\end{tabularx}
+		\end{tabular}
 		\label{tab:comparison}
 	\end{table}
 \end{frame}
@@ -277,8 +276,8 @@
 \begin{frame}{Experiments}{Datasets}
 	\begin{table}[H]\centering
 		\caption{The datasets used in experiments with weights scaled to [0, 1].}
-		\begin{tabular}{ccc}  \hline
-			Dataset & Nodes & Link weights \\ \hline
+		\begin{tabular}{|c|c|c|}  \hline
+			\textbf{Dataset} & \textbf{Nodes} & \textbf{Link weights} \\ \hline
 			Airport & airports & passengers delivered between airports \\ \hline
 			Collaboration & nations & paper collaborations between nations \\ \hline
 			Congress & committees  & members shared between committees \\ \hline
@@ -359,12 +358,12 @@
 \end{frame}
 
 \begin{frame}{Node embedding analysis}{Distance and similarity}
-	\begin{table}[!ht]\centering
+	\begin{table}[H]\centering
 		\caption{
 			The distances of movies to the reference movie for MovieLens 100K dataset. The distance from similar movies (Star Wars and Return of Jedi) to the reference movie (The Empire Strikes Back) are shorter than the median distance.
 		}
-		\begin{tabular}{ccc} \hline
-			Movie & Distance & Similarity \\ \hline
+		\begin{tabular}{|c|c|c|} \hline
+			\textbf{Movie} & \textbf{Distance} & \textbf{Similarity} \\ \hline
 			The Empire Strikes Back (1980) & 0 & self (reference) \\ \hline
 			Raiders of the Lost Ark (1981) & 0.012 & most similar \\ \hline
 			Star Wars (1977) & 0.047 & more similar \\ \hline
