@@ -94,7 +94,7 @@
 \newcommand{\setUpThesisPages}{
  % Page setup: In most cases you won't need to change this.
 \setpapersize{USletter}
-\setmarginsrb{1.25in}{1.25in}{1.25in}{1.25in}  % left, top, right, bottom
+\setmarginsrb{1in}{1in}{1in}{1in}  % left, top, right, bottom
              {0ex}{5ex}{0in}{0.15in} % headht, headsp, footht, footsp
 \setlength\ULdepth{0.9ex}
 }
@@ -117,7 +117,7 @@
 \tableofcontents \clearpage
 \listoftables \clearpage
 \listoffigures \clearpage
-%\addtocontents{toc}{\hspace{-2.5em}Chapter}
+\addtocontents{toc}{\hspace{-2.5em} \hfill Page}
 \addtocontents{lot}{\hspace{-1em}Table\hfill Page}
 \addtocontents{lof}{\hspace{-1em}Figure\hfill Page}
 }
@@ -270,7 +270,7 @@
     \vspace{2ex}{\hrule height 2pt}\vspace{7ex}
     \vspace{4.5ex}
    %\resetbaselineskip\normalfont\normalsize
-   \normalfont\normalsize
+%   \normalfont\normalsize
 }{\newpage}
 
 %********************* Abstract Page ********************************************
