@@ -21,419 +21,111 @@
 }
 
 \begin{frame}{Introduction: deep learning in different application domains}
-So how did I get started with my research? 3 years ago, when I joined Dr Holder's research group, Dr Holder was looking into the growing popularity of deep learning in machine learning community. At that time, deep learning has already been very successful in many different application domains. 3 of the most well known domains are image recognition, speech recognition and natural language processing. Dr Holder and I noticed this success, and we ask: can deep learning achieve the same level of success in graph mining domain as well? what kind of graph mining problems can it solve? what kind of deep learning techniques will be useful? and how can we use these techniques? Looking for answers to these questions, I started this exciting and rewarding journey of my research exploring deep learning approach to graph mining problems.
+Everything has its beginning. So how did I get started with my research? 3 years ago, when I joined Dr Holder's research group, Dr Holder was looking into the growing popularity of deep learning in machine learning community. At that time, deep learning has already been very successful in many different application domains. 3 of the most well known domains are image recognition, speech recognition and natural language processing. Dr Holder and I noticed this success, and we ask: can deep learning achieve the same level of success in graph mining domain as well? what kind of graph mining problems can it solve? what kind of deep learning techniques will be useful? and how can we use these techniques? Looking for answers to these questions, I started this exciting and rewarding journey of my research exploring deep learning approach to graph mining problems.
 \end{frame}
 
 \begin{frame}{Background: graph mining problems}
-	\begin{figure}[H]
-		\centering
-		\begin{subfigure}{0.49\textwidth}
-			\includegraphics[width=\linewidth]{Social_Network_Analysis_Visualization}
-			\caption{
-				Link prediction: predicting user connectivities in a social network.
-			}
-			\label{fig:Social_Network_Analysis_Visualization}
-		\end{subfigure}
-		\begin{subfigure}{0.49\textwidth}
-			\includegraphics[width=\textwidth]{ProteinStructure}
-			\caption{
-				Graph classification: predicting the chemical activity of a macromolecule.
-			}
-			\label{fig:protein}
-		\end{subfigure}
-		\caption{
-			Example graph mining problems and their application scenarios.
-		}
-		\label{fig:trainnig}
-	\end{figure}
+Whatever we do, we do it for a reason. So why do we do this? We work on graph mining problems because they have very high impact on many real world application scenarios. Let's look at two example problems here. The first example is a problem from social network industry. In order to help a user grow his social network, an important task is to predict what new connections this user will have in the future and recommend the user to add these connections. We can model a social network as a graph where users are nodes, users' connectivities are links and the task of predicting new connections becomes the link prediction problem of graph mining. This is the first example. The second example is problem from pharmaceutical industry. In order to estimate the effects of new molecules engineered as drugs, an important task is to predict the chemical activities the molecule. We can model a molecule as a graph where atoms are nodes and bonds are links and the task of predicting chemical activities becomes the graph classification problem of graph mining. Innovative solutions to these problems can have big impact in the corresponding industries.
 \end{frame}
 
 \begin{frame}{Contribution: link weight prediction with deep learning}
-	\begin{itemize}
-		\item The first deep learning approach to the link weight prediction problem.
-		\item A unique supervised learning technique for node embedding.
-		\item 73\% more accurate than the state-of-the-art non deep learning approach.
-		\item A generalized link weight prediction model using pretrained node embeddings.
-	\end{itemize}
+Every PhD student should make his contribution to science. So what is my contribution to computer science? I created the first deep learning approach ot the link weight prediction problem. This approach takes advantage of its unique supervised learning technique for node embedding. It has great performance. 73\% more accurate than the state of the art non deep learning approach. And it is extensible. I used it to build a generalized link weight prediction model that can use any pretrained node embeddings. So far we have had a quick overview of what I have achieved in my research, why I worked on it and how it got started. Now, it's time to take a closer look.
 \end{frame}
 
 \begin{frame}{Problem: link weight prediction}{Problem example}
-	\begin{figure}[H]\centering
-		\begin{tikzpicture}[
-		node distance = 4cm,
-		on grid,
-		> = {Stealth[length=5pt,width=4pt]},
-		every state/.style = {very thick},
-		every edge quotes/.style = {sloped, anchor=north}
-		]
-		\node[state] (B) {B};
-		\node[state] (C) [below right=of B] {C};
-		\node[state] (A) [above right=of C] {A};
-		\path[->]   
-		(A) edge["?"]   (B)
-		(B) edge["7"]   (C)
-		(C) edge["74"]  (A)
-		(B) edge[bend left,"?"]   (A)
-		(A) edge[bend left,"4"]   (C)
-		(C) edge[bend left,"11"]  (B);
-		\end{tikzpicture}
-		\caption{Message volume prediction in a social network of 3 users.}
-		\label{fig:example}
-	\end{figure}
+When I study any research work, I usually start by understanding the problem it tackles. The problem I tackled is the link weight prediction problem. Let's take look at an example before the formal definition. In this example, we have a social network of 3 users and the only interactions between these users are message exchanges. We know the volume of messages exchanges between A and C, B and C, but not those between A and B. We want to build a machine learning model that can learn from the know interactions and predict the unknown interactions. A potential use case is that we can recommend a new connection to a user if they are predicted to communicate a lot. This example is similar to the earlier link prediction problem example we looked at, except that the graph here is a weighted graph and the interaction is quantitative instead of qualitative. This example gives us some intuition of the nature of the problem. Let's give it a formal definition.
 \end{frame}
 
 \begin{frame}{Problem: link weight prediction}{Problem definition}
-	\begin{itemize}
-		\item Given a weighted directed graph with the node set V and a link subset E
-		\item Build a model weight = f(source, destination) to predict the weight of any link (source, destination) $ \notin $ E
-	\end{itemize}
+Succinctly defining a problem is important. And this is how I define the link weight prediction problem. Given a weighted directed graph with a node set V and a link subset E. Notice that we only consider directed graphs in this problem. We can always reduce an undirected graph to a directed graph by replacing each undirected link connecting two nodes with a pair of directed links connecting the same two nodes. The task of the problem is to build a machine learning model that takes a pair of nodes as input (source node and destination node) and predicts the weight of the link connecting the source node to destination node as output, for any link that is not given in the condition. That's the link weight prediction problem. Now we can take a look at the solution.
 \end{frame}
 
 \begin{frame}{The state-of-the-art approach} {pWSBM (pure Weighted Stochastic Block Model)}
-	\begin{itemize}
-		\item Partition nodes into node groups of topologically similar nodes.
-		\item Connect groups with bundles with normal weight distributions.
-		\item A bundle represents all links connecting the two groups.
-		\item A link has the same weight distribution as the bundle representing it.
-	\end{itemize}
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.4\linewidth]{SBM}
-		\caption{ \href{https://commons.wikimedia.org/wiki/File:Social_Network_Analysis_Visualization.png}{pWSBM approach to link weight prediction.}}
-		\label{fig:SBM}
-	\end{figure}
+Once we understand a problem, it's usually a good idea to see what existing approaches are out there and what the state-of-the-art approach is. Here is the state-of-the-art approach to the link weight prediction problem. The pure Weighted Stochastic Block Model. We can intuitively understand the process of building this model as a two-step process. In the first step, we partition nodes into node groups. Each node group consists of topologically similar nodes. In other words, we represent nodes with node groups. In the second step, we connect node groups with link bundles. Each link bundle consists of similar links. In other words, we represent links with link bundles. The model assumes a bundle and all the links it represents have weights that follow the same normal distribution. It's possible to assume weight distributions other than normal distribution but we won't discuss those variants here. That's the intuition. To make the model concrete, we will need to write it down in math.
 \end{frame}
 
 \begin{frame}{The state-of-the-art approach} {pWSBM (pure Weighted Stochastic Block Model)}
-	The SBM has the following parameters:
-	\begin{itemize}
-		\item z: the node group label vector
-		\item $ \mu $: the bundle weight expectation matrix
-		\item $ \sigma $: the bundle weight standard deviation matrix
-	\end{itemize}
-	The weight of each link (i, j) $ A_{ij} $ has normal distribution:
-	\begin{align*}
-		A_{ij} \sim N(\mu_{z_i z_j}, \sigma_{z_i z_j}^2)
-	\end{align*}
-	The pWSBM fits parameter z, $ \mu $ and $ \sigma $
-	to maximize the log likelihood of observation A:
-	\begin{align*}
-		\log(P(A|z, \mu, \sigma))
-		&= \sum_{ij} (
-		\frac{\mu_{z_i z_j}}{\sigma_{z_i z_j}^2}
-		- \frac{1}{2\sigma_{z_i z_j}^2}
-		- \frac{\mu_{z_i z_j}^2}{\sigma_{z_i z_j}^2}
-		)
-	\end{align*}
+I understand it's not entertaining to go over a hundred equations in this presentation, so I put all the equations in this one slide and I'll explain it very quick. The model has these parameters: Z is the node group label vector, the ith element Zi is the group node i belongs to. mu is the bundle weight expectation matrix, so mu Zi Zj is the expectation of bundle weight connecting node group Zi and node group Zj. sigma is the bundle weight standard deviation matrix, so sigma Zi Zj is the standard deviation of bundle weight connecting node group Zi and node group Zj. With these parameters, we can model the weight of link (i, j) A ij as a normal distribution. A is the adjacency matrix for the weighted graph. The training of the model is a optimization process that maximizes the log likelihood of the observation A, fitting the parameters z, mu and sigma. The log likelihood makes the product of exponentials into a sum of exponents. So this is the SBM approach. We're going to use it and a few of its variants as baselines of the problem. And we'll compare the deep learning approach against them.
 \end{frame}
 
 \begin{frame}{Motivation: Skip-gram model}{Model architecture}
-	\begin{itemize}
-		\item word2vec: map words in sentences to vectors.
-		\item item2vec: reduce orders (lists of items) to sentences.
-		\item node2vec: reduce paths (lists of nodes) to sentences.
-	\end{itemize}
-	\begin{figure}[H]
-		\centering
-		\newcommand{\layersep}{2cm}
-		\newcommand{\vocabularySize}{4}
-		\newcommand{\embeddingSize}{2}
-		\begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
-		\tikzstyle{every pin edge}=[<-,shorten <=1pt]
-		\tikzstyle{neuron}=[circle,fill=black!25,minimum size=16pt,inner sep=0pt]
-		\tikzstyle{input neuron}=[neuron, fill=green!50];
-		\tikzstyle{output neuron}=[neuron, fill=red!50];
-		\tikzstyle{hidden neuron}=[neuron, fill=blue!50];
-		\tikzstyle{annot} = [text width=4em, text centered]
-		
-		% Draw the input layer
-		\foreach \name / \y in {1,...,\vocabularySize}
-		% This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
-		\node[input neuron, pin=left:$ w_\y $] (I-\name) at (0,-\y) {};
-		
-		% Draw the hidden layer
-		\foreach \name / \y in {1,...,\embeddingSize}
-		\path[yshift=-1cm]
-		node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
-		
-		% Draw the output layer
-		\foreach \name / \y in {1,...,\vocabularySize}
-		\node[output neuron, pin={[pin edge={->}]right:$ w_\y $}] (O-\name) at (2*\layersep,-\y) {};
-		
-		% Connect the input layer with the hidden layer
-		\foreach \source in {1,...,\vocabularySize}
-		\foreach \dest in {1,...,\embeddingSize}
-		\path (I-\source) edge (H-\dest);
-		
-		% Connect the hidden layer with the output layer
-		\foreach \source in {1,...,\embeddingSize}
-		\foreach \dest in {1,...,\vocabularySize}
-		\path (H-\source) edge (O-\dest);
-		
-		% Annotate the layers
-		\node[annot,above of=H-2] {embedding layer};
-		\node[annot,above of=I-2] {input layer};
-		\node[annot,above of=O-2] {output layer};
-		\end{tikzpicture}	
-		\caption{The skip-gram model with vocabulary size 4 and embedding size 2.}
-		\label{fig:skipGram}
-	\end{figure}
+I have introduced the baseline approaches. I should also mention a related work that motivated the approach I created. That is the skip-gram model. This model is significant because it can map entities in different domains to vectors purely based on the relations between entities without requiring any attributes of the entities. These vectors are important because deep learning models rely on numeric inputs. Its most famous application is in word2vec technique. This diagram shows how word2vec uses the skip-gram model to map each of the four words in the vocabulary to a vector of 2 numbers. In each training step, we use a pair of related words as the input and the output. The activation in the embedding layer is the embedding of the input word. The outcome of the training is similar words have similar embeddings. Similar techniques such as item2vec and node2vec use the same skip-gram model to embed different entities. The trick is to regard list of items in a purchase order or list of nodes in a path as a list of words in a sentence.
 \end{frame}
 
 \begin{frame}{Motivation: Skip-gram model}{Datasets}
-	\begin{itemize}
-		\item Sentence: the quick brown fox jumps over the lazy dog
-		\item Context radius: 2
-		\item Training example: (word, context-word) pairs
-	\end{itemize}
-	\begin{table}[H]\centering
-		\caption{The words dataset for a natural language corpus.}
-		\begin{tabular}{|c|c|}  \hline
-			\textbf{Input = word} & \textbf{Output = context-word} \\ \hline
-			fox & quick \\ \hline
-			fox & brown \\ \hline
-			fox & jumps \\ \hline
-			fox & over \\ \hline
-			jumps & brown \\ \hline
-			jumps & fox \\ \hline
-			... & ...       \\ \hline
-		\end{tabular}
-		\label{tab:words}
-	\end{table}
+Let's take a look at an example natural language processing dataset skip-gram model works on to get a better understanding of the training process. The dataset is a sentence, a list of words: the quick brown fox jumps over the lazy dog. We set the context radius to 2 and we get the training data shown in this table. Because the context radius is 2, each word has 4 context words and generates 4 training examples. This training data implicitly tells the model each word is related to 4 context words even though the relation is not known. For example, the word fox is related brown because fox usually has brown colored fur. But relations manifest through word co-occurrences. In natural language, similar words tend to appear in similar context. A unique consequence of training outcome of skip-gram model is that words with similar context words are embedded into similar vectors. So the result we get with word2vec is really similar words have similar word embeddings. Notice that the training doesn't use any attributes of words such as its spelling. All the information is from the relations.
 \end{frame}
 
 \begin{frame}{Deep learning approach: Model R (R as in "relation")}
-	\begin{figure}[H]
-		\centering
-		\begin{tikzpicture}[node distance=1.3cm]
-		\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=1cm, 
-		minimum height=1cm, text centered, draw=black, fill=red!30]
-		\tikzstyle{process} = [rectangle, minimum width=1cm, minimum height=1cm, 
-		text centered, draw=black, fill=blue!30]
-		\tikzstyle{arrow} = [thick,->,>=stealth]
-		\node (linearRegression) [startstop] {linear regression ($ f(x) = kx $)};
-		\node (relu) [process, below of=linearRegression] {rectifier ($ f(x) = \max (0, x) $)};
-		\node (linear1) [process, below of=relu, xshift=-2cm] {linear ($ f(x) = kx $)};
-		\node (linear2) [process, below of=relu, xshift=2cm] {linear ($ f(x) = kx $)};
-		\node (oneHot1) [startstop, below of=linear1] {one-hot activation};
-		\node (oneHot2) [startstop, below of=linear2] {one-hot activation};
-		\node (weight) [above of=linearRegression] {link weight};
-		\node (output) [left of=linearRegression, xshift=-4cm] {output layer};
-		\node (hidden) [below of=output] {hidden layers};
-		\node (embedding) [below of=hidden] {embedding layer};
-		\node (input) [below of=embedding] {input layer};
-		\node (source) [below of=oneHot1] {node one-hot encoding};
-		\node (destination) [below of=oneHot2] {node one-hot encoding};
-		\draw [arrow] (source) -- (oneHot1);
-		\draw [arrow] (destination) -- (oneHot2);
-		\draw [arrow] (oneHot1) -- (linear1);
-		\draw [arrow] (oneHot2) -- (linear2);
-		\draw [arrow] (linear1) -- (relu);
-		\draw [arrow] (linear2) -- (relu);
-		\draw [arrow] (relu) -- (linearRegression);
-		\draw [arrow] (linearRegression) -- (weight);
-		\end{tikzpicture}
-		\caption{
-			Model R with multiple hidden layers.
-		}
-		\label{fig:model}
-	\end{figure}
+Now it's time to introduce model R, the first deep learning model designed specifically for the link weight prediction problem. And it looks like this. It has an input layer with one-hot activation, an embedding layer of linear units, several hidden layers of rectifier and an output layer of linear unit. During the research, the biggest challenge I encountered was to find a way to feed the graph into the deep learning model. Neural network requires fixed input dimensions, but a graph can be infinite and can have unbounded dimensions. To overcome this challenge, I came up with this idea to feed the graph into the model using the simplest and most basic way: one link at a time. So how does it work? Each example in dataset is a link. During training, we use the one-hot encoding of the source and destination node of the link as the input and the weight of the link as the output. The embedding of each node is randomly initialized in the embedding space. In each training step, the model updates the embedding of the nodes to minimize the prediction error. This model solves the link weight prediction problem.
 \end{frame}
 
 \begin{frame}{Comparison: pWSBM vs Model R}
-	\begin{table}[H]\centering
-		\caption{The advantages Model R has over pWSBM in several aspects.}
-		\begin{tabular}{|c|c|c|}  \hline
-			\textbf{Aspect} & \textbf{pWSBM} & \textbf{Model R} \\ \hline
-			model granularity & node group level & node level \\ \hline
-			distribution assumption & normal distribution & NA \\ \hline
-			model flexibility & low & high \\ \hline
-		\end{tabular}
-		\label{tab:comparison}
-	\end{table}
+Now we have seen the deep learning model that solves the problem, but how is this solution compared to the non deep learning baseline? Is it actually better than the baseline? The answer is yes. Here are some of the main advantages of Model R over the baseline. First, it has better granularity because it learns about the graph at node level where the baseline learns at node group level. Second, it does not assume any particular link weight distribution where the baseline does enforce a normal distribution assumption. And the consequence is Model R is more flexible than the non deep learning approach. With this comparison, we can expect Model R to perform better than the baseline in prediction accuracy. To verify that, we're going to perform experimental evaluation for them.
 \end{frame}
 
 \begin{frame}{Experiments}{Baseline approaches}
-	\begin{itemize}
-		\item SBM (Stochastic Block Model)
-		\item pWSBM (pure Weighted Stochastic Block Model)
-		\item bWSBM (balanced Weighted Stochastic Block Model)
-		\item DCWBM (Degree Corrected Weighted Stochastic Block Model)
-	\end{itemize}
+Here are the baseline approaches we use in the experiments. The one we have reviewed earlier is of them. The others are a few different variants of it following the same principal, so we won't go in much details about them here.
 \end{frame}
 
 \begin{frame}{Experiments}{Datasets}
-	\begin{table}[H]\centering
-		\caption{The datasets used in experiments with weights scaled to [0, 1].}
-		\begin{tabular}{|c|c|c|}  \hline
-			\textbf{Dataset} & \textbf{Nodes} & \textbf{Link weights} \\ \hline
-			Airport & airports & passengers delivered between airports \\ \hline
-			Collaboration & nations & paper collaborations between nations \\ \hline
-			Congress & committees  & members shared between committees \\ \hline
-			Forum  & users & messages exchanged between users \\ \hline
-		\end{tabular}
-		\label{tab:datasets}
-	\end{table}
+Every applied machine learning research needs to evaluate the proposed approach on a few datasets. Here are the datasets we use as benchmarks to evaluate the model's prediction accuracies. We have airport network where link weights are the amounts of passengers delivered from one airport to another, collaboration network of nations where link weights are the amounts of scientific research papers the nations collaborate on. We also have social network of users where link weights are the amount of messages exchanged between users. These real world dataset cover a wide range of application domains.
 \end{frame}
 
 \begin{frame}{Experiments}{Settings}
-	\begin{itemize}
-		\item 25 independent trials on each dataset
-		\item training set: 70\%
-		\item validation set: 20\%
-		\item testing set: 10\%
-	\end{itemize}
+To ensure a rigorous evaluation, for each approach, for each dataset, we perform 25 independent trails and report the average. Each data set is split into 3 parts: training set, validation set and testing set as in a standard machine learning evaluation process. If the deep learning approach really has the advantage over the non deep learning baselines, we should expect to see the deep learning approach to have much lower prediction errors compared to the baselines. But does it? Let's take a look at the result.
 \end{frame}
 
 \begin{frame}{Experiments}{Results}
-	\begin{figure}[H]\centering
-		\includegraphics[width=\textwidth]{link-weight-errors}
-		\caption{
-			Model R has lower mean squared errors than 4 baseline approaches over 4 datasets consistently.
-		}
-		\label{fig:errors}
-	\end{figure}
+Indeed, Model R does perform much better than all 4 other baselines on all 4 benchmarks consistently, just as we expected. The error here is measured as the mean squared error, averaged over 25 independent trials. In fact, the error reduction ranges from 30\% to 70\% depending on the dataset. That's great! But this is not the end of story yet.
 \end{frame}
 
 \begin{frame}{Node embedding analysis}{Motivation}
-	\begin{itemize}
-		\item Question: What knowledge does Model R learn?
-		\item Hypothesis: It learns meaningful node embeddings (similar nodes are closer).
-		\item Related work: Word2vec word embedding analysis.
-	\end{itemize}
+We have seen the good performance of Model R. It's easy to see, clearly shown in the experiment results. But understanding why it performs so well is less obvious. So what knowledge does Model R learn and use to make such good prediction? That is the question we're going to answer next. The hypothesis here is that Model R learns meaningful node embeddings where similar nodes are closer in the embedding space. That's the knowledge it learns. To confirm this, we do a node embedding analysis, similar to the word embedding analysis done in the word2vec research.
 \end{frame}
 
 \begin{frame}{Node embedding analysis}{Dataset: MovieLens 100K}
-	\begin{itemize}
-		\item Well understood domain: movie recommendation
-		\item 100,000 ratings from 1000 users on 1700 movies.
-		\item Bigraph: users and movies are nodes; ratings are link weights.
-	\end{itemize}
-	\begin{figure}[H]\centering
-		\begin{tikzpicture}[
-		node distance = 2cm,
-		on grid,
-		> = {Stealth[length=4pt,width=4pt]},
-		every state/.style = {very thick},
-		every edge quotes/.style = {sloped, anchor=north}
-		]
-		\node[state] (U1) {U1};
-		\node[state] (U2) [right =of U1] {U2};
-		\node[state] (U3) [right =of U2] {U3};
-		\node[state] (U4) [right =of U3] {U4};
-		\node[state] (M1) [below=of U2] {M1};
-		\node[state] (M2) [right =of M1] {M2};
-		\path[->]
-		(U1) edge["3"]   (M1)
-		(U2) edge["5"]   (M1)
-		(U2) edge["4"]  (M2)
-		(U3) edge["2"]   (M1)
-		(U3) edge["1"]   (M2)
-		(U4) edge["4"]   (M2);
-		\end{tikzpicture}
-		\caption{Movie rating illustration for a dataset of 4 users and 2 movies.}
-		\label{fig:movie}
-	\end{figure}
+A big challenge we have in this analysis is in the selection of datasets.
+For word2vec, the selection is easy because similarity of English words is well understood and easy to justify. But for graphs the similarities of nodes is usually not well understood or easy to justify. For example, it's easy to justify word computer and word laptop are very similar; but its not so easy to justify why airport A and airport B are similar. So we ended up using a dataset from the domain of movie recommendation: movielens 100K dataset. It is a public dataset with a collection of 100 thousand movie ratings ranging from 1 to 5 given by 1000 users to 1700 movies. It's relatively easy to identify some movies everyone is familiar with and can agree they are similar. Most obviously movie sequels. This graph is naturally a bigraph where users and movies are two sets of nodes and  ratings are link weights. So how are the movie embeddings look like?
 \end{frame}
 
 \begin{frame}{Node embedding analysis}{Visualization}
-	\begin{figure}[!ht]\centering
-		\includegraphics[width=0.6\textwidth]{movies-annotation}
-		\caption{
-			The embeddings of all movies in MovieLens 100K dataset. Dimensionality reduction of embeddings uses Principal Component Analysis.
-		}
-		\label{fig:movies}
-	\end{figure}
+Here is a visualization of the movie embeddings produced by the model on the dataset. The original embeddings live in a high dimensional space so we use Principal Component Analysis to reduce their dimension to 2 in order to project them on the a 2 dimensional screen here to see. Here we chose The Empire Strikes back as a reference movie and other two star wars movies in the original trilogy as 2 similar movies: A new hope and the return of the Jedi. We're going to measure the distances from these two similar movies to the reference and compare these distances with median distances from all nodes to the reference movie. If our hypothesis is true (similar nodes have similar nodes are closer together), we can expect the 2 star wars movies should be much closer to the reference movie than the median distance. Let's see if this is true from the analysis.
 \end{frame}
 
 \begin{frame}{Node embedding analysis}{Distance and similarity}
-	\begin{table}[H]\centering
-		\caption{
-			The distances of movies to the reference movie for MovieLens 100K dataset. The distance from similar movies (Star Wars and Return of Jedi) to the reference movie (The Empire Strikes Back) are shorter than the median distance.
-		}
-		\begin{tabular}{|c|c|c|} \hline
-			\textbf{Movie} & \textbf{Distance} & \textbf{Similarity} \\ \hline
-			The Empire Strikes Back (1980) & 0 & self (reference) \\ \hline
-			Raiders of the Lost Ark (1981) & 0.012 & most similar \\ \hline
-			Star Wars (1977) & 0.047 & more similar \\ \hline
-			Return of the Jedi (1983) & 0.063 & more similar \\ \hline
-			Children of the Revolution (1996) & 0.256 & median point \\ \hline
-			Tomorrow Never Dies (1997) & 0.295 & less similar \\ \hline
-			Ayn Rand: A Sense of Life(1997) & 0.296 & less similar \\ \hline
-			101 Dalmatians (1996) & 0.335 & least similar \\ \hline
-		\end{tabular}
-		\label{tab:movielens100k-distance}
-	\end{table}
+The answer is yes. Indeed, the median distance from any point to the reference is more than 4 times larger than the similar nodes we selected. One interesting thing we can observe here is that there are movies more similar to the reference movie than the selected star wars sequels. One example is the Raiders of the Lost Ark. So far, we have covered the majority of the presentation today. We examined the problem of the link weight prediction. We reviewed the state-of-the-art non deep learning approach to the problem: the pure weighted stochastic block model. We looked at related work that motivates the proposed approach: the skip-gram model. Then we introduced the proposed approach: the Model R. We saw its good performance in experimental evaluation and performed a node embedding analysis on a movie dataset to understand why it performs so well. In the last section, I introduce an extension of Model R, a generalized approach to the link weight prediction problem.
 \end{frame}
 
 \begin{frame}{Model S}{Motivation}
-	\begin{itemize}
-		\item Model S is an extension of Model R incorporating different types of embeddings.
-		\item Decoupling node embedding learning and weight prediction learning.
-		\item Investigating the effectiveness of other node embedding techniques.
-		\item Adopting more advanced embedding techniques developed in the future.
-	\end{itemize}
+And I called it Model S. This extension incorporates different types of embeddings? We do this because we want to decouple the two learning processes in Model R's training process: node embedding learning and weight prediction learning. Doing so allows us to investigate the effectiveness of other node embedding techniques and see if how is the Model R embedding technique compared to other embedding techniques. Also, even if Model R embeddgins are the best at the moment, newer and better embedding techniques will appear in the future. When they appear, we want the extension to be able to easily adopt them and take advantage of them.
 \end{frame}
 
 \begin{frame}{Model S}{Node embedding techniques}
-	\begin{itemize}
-		\item LLE(locally linear embedding): nonlinear dimensionality reduction
-		\item Node2vec: node embedding with skip-gram model
-		\item Model R: node embedding learning supervised by link weight
-	\end{itemize}
+For this extension, we evaluate 3 different types of embedding techniques. We have already seen 2 of them in this presentation. The one we haven't seen yet is the locally linear embedding. This is in fact a nonlinear dimensionality reduction technique. It can reduce the dimensions of vectors of any nature. Here we're going to use it to reduce node embeddings dimensions. You might wonder, if we're going to use this technique to produce the embeddings, how can it use another set of embeddings? For this task, we can use the rows in the graph adjacency matrix as the original embeddings. Let's take a closer look at locally linear embedding.
 \end{frame}
 
 \begin{frame}{Model S}{LLE(locally linear embedding)}
-	LLE is a manifold learning approach designed for dimensionality reduction consisting of 2 steps:
-	\begin{enumerate}
-		\item Linear approximation of data points X's in original space minimizing cost function:
-		\begin{align*}
-			cost(W) = \sum_i |X_i - \sum_jW_{ij}X_j|^2
-		\end{align*}
-		\item Reconstruction of data points Y's in a low dimensional space minimizing cost function:
-		\begin{align*}
-		cost(Y) = \sum_i |Y_i - \sum_jW_{ij}Y_j|^2
-		\end{align*}
-	\end{enumerate}
+Technically speaking, Locally Linear embedding is a manifold learning technique that tries to uncover the low dimensional manifold in a high dimensional space such that the actual data points live in the low dimensional manifold. The method approximate the data points on the manifold using a reduced amount of coordinates. The process contains 2 steps. The first step is a linear approximation for all data points in the original space. Each data point is approximated as a linear combination of its neighbors. The cost function to minimize is the squared distance from the approximated points to the actually points. The optimization is with respect to the coefficients, or weights. The second step is the reconstruction of the new data points in the low dimensional space. As the weights are determined by the nature of geometry, they remain the same across two spaces. So the optimization in the 2nd step is with respect to the new coordinates.
 \end{frame}
 
 \begin{frame}{Model S}{Experiments}
-	\begin{figure}[ht] \centering
-		\includegraphics[width=1\linewidth]{weight-errors}
-		\caption{
-			Model S with Model R embedding has the best overall performance. Model S generally performs better than SBM and pWSBM with 3 different embedding techniques (LLE, Model R and node2vec).
-		}
-		\label{fig:weight-errors}
-	\end{figure}
+With the same experiment settings as before, we evaluate the performance of Model S with these different embedding techniques. Not surprisingly, we find that Model S generally performs better than non deep learning baselines by a large margin and Model S with Model R embedding has the best overall performance. Why do we get this result? The other two embedding techniques (LLE and node2vec) are not specifically designed for link weight prediction. They still take advantage of the deep learning model and performs better than baselines, but they can not use the power of the model to its full potential.
 \end{frame}
 
 \begin{frame}{Conclusions}
-	\begin{itemize}
-		\item Model R is more accurate than the state-of-the-art non deep learning approaches to the link weight prediction problem.
-		\item Model R learns node embeddings and uses this information to predict unknown link weights.
-		\item Deep learning can be successfully applied to link weight prediction problem.
-	\end{itemize}
+Let's conclude our findings. As the first deep learning approach to the link weight prediction problem, Model R beats the state of the art non deep learning approach in prediction accuracy by a large margin. Model R learns knowledge about nodes in the form of node embeddings from relations of nodes in the form of link weights and uses the knowledge it learns to predict unknown link weights. Lastly, we can conclude we can successfully apply deep learning to link weight prediction problem. These are very exciting discoveries. What else can we expect from this approach?
 \end{frame}
 
 \begin{frame}{Future work}
-	\begin{itemize}
-		\item Unified node embedding: embedding nodes to only one space.
-		\item Node embedding metrics: evaluation of embedding qualities.
-		\item Complex graphs: taking advantage of rich node information.
-	\end{itemize}
+Here I point out a few potential directions of future research from Model R. The first one is Unified node embedding. Model R embeds nodes to two separate spaces: source node space and destination node space. We have two channels learning about all nodes independently. There is no direct way we can merge the two separate knowledge set into one after the training under the current framework. But if there is a way, it might leads to better prediction results. The second one is node embedding metrics. Currently, we can't tell which embeddings are good embeddings or how good each embedding technique is. If we can find an objective metric to evaluate the qualities of embeddings, we can reduce the uncertainty in embedding quality evaluation. The last one is complex graph. Model R doesn't require node attributes which makes the learning process easy to implement. However, real world graph data can come with rich node information. If we can find a way to take advantage of this information, we can expect much better prediction accuracy.
 \end{frame}
 
 \begin{frame}{Publications}
-	\begin{itemize}
-		\item Comparative analysis of deep node embeddings for link weight prediction in graphs, TNNLS 2018 (in preparation)
-		\item On graph mining with deep learning: introducing Model R for link weight prediction, JAISCR 2018
-		\item Deep learning approach to link weight prediction, IJCNN 2017
-	\end{itemize}
+I have already published my earlier work in link weight prediction in a conference paper and a journal paper. I'm going to publish my work on node embedding analysis and its effect on link prediction in an upcoming journal paper.
 \end{frame}
 
 \begin{frame}
-	\begin{center}
-		\Huge Thank you!
-	\end{center}
+Alright, this is it. Thank you so much for your attention. I really enjoyed presenting my exciting findings with you. I hope you find it interesting. If you have any question or you are interested in learning more about any part of this presentation, I'm happy to explain them in more details.
 \end{frame}
 \end{document}
