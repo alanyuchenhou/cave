@@ -96,8 +96,7 @@
 	still in an early stage.
 	Here we present Model R, a neural network model created to provide a deep 
 	learning approach to the link weight prediction problem.
-	This model uses a node embedding technique that extracts node embeddings (
-	knowledge of nodes) from the known links' weights (relations between nodes) and 
+	This model uses a node embedding technique that extracts node embeddings (knowledge of nodes) from the known links' weights (relations between nodes) and 
 	uses this knowledge to predict the unknown links' weights.
 	We demonstrate the power of Model R through experiments and compare it with 
 	the stochastic block model and its derivatives.
@@ -150,8 +149,7 @@ but also require much less domain knowledge and engineering.
 Among those domains,
 graph mining is a new and active application area for deep learning.
 An important task in graph mining is link prediction \cite{liben2007link} 
-\cite{al2006link}, i.e., link existence prediction:
-to predict the existence of a link.
+\cite{al2006link}, or more specifically link existence prediction, which is to predict the existence of a link.
 A less well-known problem is link weight prediction: to predict the weight of a link.
 Link weight prediction is more informative in many scenarios.
 For example, when describing the connection of two users in a social network,
@@ -1323,8 +1321,8 @@ so that everyone can use it without any restriction.
 
 \section{Node embedding analysis}
 The purpose of this section is to find out what knowledge Model R learns during training.
-Our hypothesis is that the knowledge it learns consists of meaningful node embeddings where similar nodes (according to our own (human) semantics associated with the domain's entities) are close to each other in the node embedding space.
-We make this hypothesis based on the following observations that Model R and the skip-gram model have similar architecture in their one-hot encoding input layer and linear embedding layer, and that the skip-gram model produces word embeddings where similar words are close to each other in the word embedding space.
+Our hypothesis is that the knowledge it learns consists of meaningful node embeddings where similar nodes (according to our own human semantics associated with the domain's entities) are close to each other in the node embedding space.
+We make this hypothesis based on the observations that Model R and the skip-gram model have similar architecture in their one-hot encoding input layer and linear embedding layer, and that the skip-gram model produces word embeddings where similar words are close to each other in the word embedding space.
 Our goal is to verify this hypothesis by analyzing and visualizing the node embeddings produced by Model R in real world datasets from well understood domains to make the results obvious to most readers.
 
 \subsection{Motivation}
