@@ -1,0 +1,58 @@
+\documentclass{beamer}
+\usepackage{bookmark}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,automata,quotes,positioning,babel}
+\usetikzlibrary{shapes.geometric, arrows}
+\usepackage{hyperref}
+\usepackage{float}
+
+\title{A Deep Learning Approach to Link Weight Prediction}
+\author{Yuchen Hou}
+\date{}
+
+\begin{document}
+
+\frame{
+	Hello! My name is Alan. Thank you so much for your interest in my research. Let me present you the most exciting discovery I've ever had: A deep learning approach to link weight prediction. Now, let's begin.
+}
+
+\begin{frame}{Application scenario: friend recommendation}
+Whatever problem we work on, we work on it for a reason. So why do I work on link weight prediction problem? I work on link weight prediction problem because it has very high impact in many real world application scenarios. Let's look at an example application scenario here. Friend recommendation in a social network. In order to help a user grow his social network, an important task is to predict what new friends this user will have in the future and recommend the user to add these friends. We can model a social network as a graph where users are nodes, users' connectivities are links. If we can predict two users will communicate often in the future, we can recommend them to add each other as friends. We can formulate the task of predicting communication as a graph link weight prediction problem. Innovative solutions to this problem can have big impact in a social network.
+\end{frame}
+
+\begin{frame}{Contribution: link weight prediction with deep learning}
+Every PhD student should make his contribution to science. So what is my contribution to computer science? I created the first deep learning approach ot the link weight prediction problem. This approach takes advantage of its unique supervised learning technique for node embedding. It has great performance. 73\% more accurate than the state of the art non deep learning approach. So far we have had a quick overview of my achievement of my research, and why I worked on it. Now, it's time to take deep dive.
+\end{frame}
+
+\begin{frame}{Problem: link weight prediction}{Problem example}
+When I study any research work, I usually start by understanding the problem it tackles. The problem I tackled is the link weight prediction problem. Let's take look at an example. In this example, we have a social network of 3 users and the only interactions between these users are message exchanges. We know the volume of messages exchanges between A and C, B and C, but not those between A and B. We want to build a machine learning model that can learn from the known interactions and predict the unknown interactions. A potential use case is that we can recommend a new friend to a user if they are predicted to communicate a lot in the future. This example gives us some intuition of the nature of the problem. Formally, the machine learning model should take two nodes as input and predict the link weight as the output.
+\end{frame}
+
+\begin{frame}{Deep learning approach: Model R (R as in "relation")}
+Now it's time to introduce model R, the first deep learning model designed specifically for the link weight prediction problem. And it looks like this. It has an input layer with one-hot activation, an embedding layer of linear units, several hidden layers of rectifier and an output layer of linear unit. During the research, the biggest challenge I encountered was to find a way to feed the graph into the deep learning model. Neural network requires fixed input dimensions, but a graph can be infinite and can have unbounded dimensions. To overcome this challenge, I came up with this idea to feed the graph into the model using the simplest and most basic way: one link at a time. So how does it work? Each example in dataset is a link. During training, we use the one-hot encoding of the source and destination node of the link as the input and the weight of the link as the output. The embedding of each node is randomly initialized in the embedding space. In each training step, the model updates the embedding of the nodes to minimize the prediction error. This model solves the link weight prediction problem.
+\end{frame}
+
+\begin{frame}{Experiments}{Results}
+I measured the performance of Model R and compared it with 4 state-of-the-art approaches on 4 benchmark datasets. In the evaluation, Model R performed much better than all 4 baselines on all 4 benchmarks consistently. The error here is measured as the mean squared error, averaged over 25 independent trials. In fact, the error reduction ranges from 30\% to 73\% depending on the dataset. That's great! But this is not the end of story yet.
+\end{frame}
+
+\begin{frame}{Node embedding analysis}{Motivation}
+We have seen the good performance of Model R. It's easy to see, clearly shown in the experiment results. But understanding why it performs so well is less obvious. So what knowledge does Model R learn and use to make such good prediction? These are the questions we're going to answer next. To answer these questions, I did a node embedding analysis.
+\end{frame}
+
+\begin{frame}{Node embedding analysis}{Dataset: MovieLens 100K}
+For this analysis, I used a dataset from the domain of movie recommendation: movielens 100K dataset. It is a public dataset with a collection of 100 thousand movie ratings ranging from 1 to 5 given by 1000 users to 1700 movies. This graph is naturally a bigraph where users and movies are two sets of nodes and  ratings are link weights. So how do the movie embeddings look like?
+\end{frame}
+
+\begin{frame}{Node embedding analysis}{Visualization}
+Here is a visualization of the movie embeddings produced by the model on the dataset. The original embeddings live in a high dimensional space so we use Principal Component Analysis to reduce their dimension to 2 in order to project them on the a 2 dimensional screen here to see. Here we chose The Empire Strikes back as a reference movie and other two star wars movies in the original trilogy as 2 similar movies: A new hope and the return of the Jedi. We're going to measure the distances from these two similar movies to the reference and compare these distances with median distance from all movies to the reference movie. We found that similar nodes were mapped to embeddings close to each other. The 2 star wars movies are much closer to the reference star wars movie than the median distance. In fact, the median distance from any point to the reference is more than 4 times larger than the similar nodes we selected.
+\end{frame}
+
+\begin{frame}{Summary: what deep learning can do for us}
+Let's summarize our findings. As the first deep learning approach to the link weight prediction problem, Model R has demonstrated what deep learning can do for us in graph link weight prediction problem. Model R can learn knowledge of nodes from the past behaviors of nodes. It can represent knowledge of nodes, which can be very complex real world entities, with very simple mathematical objects: numbers. At last, it can use the knowledge of nodes it learns to predict the future behavior of nodes. Alright, this is it. Thank you so much for your attention. I really enjoyed presenting my exciting findings with you. I hope you find it interesting. If you have any question or you are interested in learning more about any part of this presentation, I'm happy to explain them in more details.
+\end{frame}
+\end{document}
