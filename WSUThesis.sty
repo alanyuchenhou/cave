@@ -111,13 +111,13 @@
 %********************* Tables Setup ********************************************
 %TOC, LOF, LOT
 \newcommand{\setUpTables}{
-\addtocontents{toc}{\hfill Page}
 \let\WriteBookmarks\relax
 \pdfbookmark[0]{Table of Contents}{theTOC}
 \tableofcontents \clearpage
 \listoftables \clearpage
 \listoffigures \clearpage
-% \addtocontents{toc}{\hspace{-2.5em} \hfill Page}
+
+\addtocontents{toc}{\vspace{-12em} \hfill Page \\ \\ \\ \\}
 \addtocontents{lot}{\hspace{-1em}Table\hfill Page}
 \addtocontents{lof}{\hspace{-1em}Figure\hfill Page}
 }
@@ -251,7 +251,7 @@
 \newenvironment{acknowledgments}{
    \def\toclevel@section{0}
    \phantomsection
-  %  \addcontentsline{toc}{chapter}{ACKNOWLEDGMENTS}
+   \addcontentsline{toc}{chapter}{ACKNOWLEDGMENTS}
    \def\toclevel@section{1}
    \vspace*{2.0 \baselineskip}
    \begin{center}\textbf{ACKNOWLEDGMENTS}\end{center}
@@ -279,7 +279,7 @@
    \def\toclevel@section{0}
    \cleardoublepage
    \phantomsection
-  %  \addcontentsline{toc}{chapter}{ABSTRACT}
+   \addcontentsline{toc}{chapter}{ABSTRACT}
    \def\toclevel@section{1}
    \vspace*{2.0 \baselineskip}
    \begin{center}
